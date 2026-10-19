@@ -27,7 +27,11 @@ X밴드 아날로그 빔포밍 SAR 시스템을 만들면서 회로 설계, 제�
 - **디버깅**: 디버깅 로그를 AI로 분석해 수신단 역전압 문제의 원인을 좁히고 디버깅 절차를 정리했습니다.
 - **기술**: `ADAR1000` `SPI` `Level Shifter` `Breadboard`
 
-<!-- 그림: figures/level-shifter.png (브레드보드 회로), figures/acrylic-jig.png (아크릴 지그 도면) -->
+<img src="figures/acrylic-jig.png" width="720" alt="빔포밍 실험용 아크릴 지그 도면">
+
+*AI로 설계한 빔포밍 실험용 아크릴 지그. 왼쪽은 배열 안테나 고정 플레이트(평면도와 3D), 오른쪽은 단일 안테나 고정 플레이트(평면도와 3D). 치수는 생략했습니다.*
+
+<!-- 그림: figures/level-shifter.png (브레드보드 회로) -->
 
 ## 안테나 설계 자동화 루프 (비공개 연구 저장소)
 
