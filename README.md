@@ -9,7 +9,7 @@
 
 | 분류 | 내용 | 바로가기 |
 |---|---|---|
-| 🔬 연구 | 벽 투과 인체 탐지 분산형 FMCW 레이다, 광각 위상배열 안테나, 저손실 동축 케이블 · 논문 7편, 수상·장학 4건 | [research](research/README.md) |
+| 🔬 연구 | 벽 투과 인체 탐지 분산형 FMCW 레이다, 광각 위상배열 안테나, 저손실 동축 케이블 · 논문 6편(심사 중 1편 포함), 수상·장학 4건 | [research](research/README.md) |
 | 📝 제안서·자문 | 3GPP, LG PLC 자문, 국방기술품질원, 도시철도차량 추진시스템, 드론 탐지 레이다, 수중 비소나 탐지, 워털루대학교 자문 (7건) | [proposals](proposals/README.md) |
 | 🤖 AI 활용 | CST 안테나 설계 자동화 루프, 해석 시간 근본 원인 분석, 연구실 문서 자동화 스킬 | [ai-workflows](ai-workflows/README.md) |
 | 📱 앱 | 코트사이드 코치, 압축풀기, Travel App | [apps](apps/README.md) |
