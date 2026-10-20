@@ -242,11 +242,13 @@ SAR은 CST의 SAR 후처리로 계산했다. CST는 밀도가 있는 모든 물�
 
 ### 5.3 전력밀도 기준과 SAR 기본 제한
 
-입사 1 W/m²당 전신 평균 SAR은 성인 4.75–5.19 × 10⁻³ W/kg, 아동 모형 7.43–8.84 × 10⁻³ W/kg다. 일반인 기준레벨 10 W/m²로 몸 전체가 조사되면 성인은 0.047–0.052 W/kg로 기본 제한(0.08 W/kg)의 59–65%다. 아동 모형은 0.074–0.088 W/kg로 93–110%다. 작은 몸은 질량에 비해 전자파를 받는 표면이 넓어 같은 전력밀도에서 전신 평균 SAR이 크다. 2.45 GHz에서 근육의 전계 침투 깊이는 약 2.2 cm(전력 기준 1.1 cm)여서 흡수가 표면 가까이에서 일어나므로, 흡수 전력은 대략 몸의 단면적에, 평균은 질량에 비례한다. [문헌 확인 중: 아동 모형의 기준레벨 노출 SAR 선행 결과와 비교] 이 결과는 전자레인지와 별개로 의미가 있다. 아동에게는 전력밀도 기준레벨이 기본 제한보다 보수적이지 않을 수 있다. 다만 전자레인지 누설은 기준레벨보다 훨씬 낮으므로 이 차이가 이 연구의 결론을 바꾸지는 않는다.
+입사 1 W/m²당 전신 평균 SAR은 성인 4.75–5.19 × 10⁻³ W/kg, 아동 모형 7.43–8.84 × 10⁻³ W/kg다. 일반인 기준레벨 10 W/m²로 몸 전체가 조사되면 성인은 0.047–0.052 W/kg로 기본 제한(0.08 W/kg)의 59–65%다. 아동 모형은 0.074–0.088 W/kg로 93–110%다. 작은 몸은 질량에 비해 전자파를 받는 표면이 넓어 같은 전력밀도에서 전신 평균 SAR이 크다. 2.45 GHz에서 근육의 전계 침투 깊이는 약 2.2 cm(전력 기준 1.1 cm)여서 흡수가 표면 가까이에서 일어나므로, 흡수 전력은 대략 몸의 단면적에, 평균은 질량에 비례한다. 아동 모형과 성인 모형의 체중당 체표면적 비는 약 1.5배(Du Bois 식)이고, 흡수 전력을 체표면적으로 나눈 값은 두 모형에서 0.19–0.24로 비슷하다. GHz 대역의 전신 흡수가 체표면적에 좌우된다는 선행 연구(Hirata 등 2007; Flintoft 등 2014)와 같은 결과다. 성인의 정면 흡수 단면적 0.35–0.39 m²는 성인 60명의 측정값(모든 방향 평균 0.15–0.4 m², Flintoft 등 2014)의 위쪽 끝으로, 정면 입사이므로 자연스럽다. 수평 편파가 수직 편파보다 전신 SAR이 큰 것(성인 +9%, 아동 +19%)도 2 GHz 이상에서 보고된 경향과 같다(Hirata 등 2009; Uusitupa 등 2010).
+
+아동 모형이 기준레벨에서 기본 제한에 닿거나 넘는 것은 해부학적 인체 모형으로 계산한 선행 연구와 같은 방향이다. 성인은 기준레벨에서 기본 제한 아래이고(Piuzzi 등 2011), 작은 아동은 2 GHz 부근에서 기본 제한을 넘을 수 있다는 보고가 여럿 있다(Wang 등 2006; Uusitupa 등 2010; Bakker 등 2010; Piuzzi 등 2011). 보고된 초과 폭(최대 약 20–45%)보다 이 연구의 초과 폭(최대 10%)이 작은 것은, 선행 연구의 최댓값이 여러 입사 방향·편파와 기준레벨이 가장 엄격해지는 2 GHz 부근을 포함한 반면 이 연구는 2.45 GHz 정면 입사 하나만 계산했기 때문으로 보인다. 이 결과는 전자레인지와 별개로 의미가 있다. 아동에게는 전력밀도 기준레벨이 기본 제한보다 보수적이지 않을 수 있다. 다만 전자레인지 누설은 기준레벨보다 훨씬 낮으므로 이 차이가 이 연구의 결론을 바꾸지는 않는다.
 
 ### 5.4 한계
 
-- 인체 모형: 원통·타원 기둥·구로 단순화했고 자세는 선 자세 하나다. 전신 평균 SAR은 몸의 크기와 단면적에 주로 좌우되어 단순 모형에서도 크게 틀리지 않지만, 국부 최댓값은 몸의 굴곡과 모서리에 민감하다(4.2절의 수평 편파 1 g 값).
+- 인체 모형: 원통·타원 기둥·구로 단순화했고 자세는 선 자세 하나다. 전신 평균 SAR은 몸의 크기와 표면적에 주로 좌우되어 단순 모형에서도 선행 연구와 같은 경향을 보였지만(5.3절), 피부·지방 층의 처리가 GHz 대역 전신 SAR을 바꾼다는 보고가 있고(Flintoft 등 2014), 국부 최댓값은 몸의 굴곡과 모서리에 민감하다(4.2절의 수평 편파 1 g 값). 입사 방향도 정면 하나다. 2.4 GHz에서 여러 평면파가 동시에 오는 경우 전신 SAR이 약 ±25% 달라진다는 보고가 있다(Kientega 등 2011).
 - 격자: 인체 격자 2 mm는 근육 속 파장의 1/8이다. 전신 평균과 10 g 평균은 영향이 작지만, 1 g 최댓값과 눈 SAR은 격자에 따라 달라질 수 있다.
 - 오븐 모형: 초크와 문 타공판이 없고, 누설은 문 둘레 슬롯 전체에서 나온다. 누설 크기는 보정했지만 공간 분포는 실제 제품과 다르다. 이 차이는 거리 감쇠를 느리게 만들어 결과를 보수적으로 만든다.
 - 환경: 바닥, 조리대, 벽의 반사를 넣지 않았다.
@@ -284,12 +286,20 @@ SAR은 CST의 SAR 후처리로 계산했다. CST는 밀도가 있는 모든 물�
 학술 문헌
 10. Foster, K. R., & Adair, E. R. (2004). Modeling thermal responses in human subjects following extended exposure to radiofrequency energy. BioMedical Engineering OnLine, 3, 4. https://doi.org/10.1186/1475-925X-3-4
 11. Gabriel, S., Lau, R. W., & Gabriel, C. (1996). The dielectric properties of biological tissues: III. Parametric models for the dielectric spectrum of tissues. Physics in Medicine and Biology, 41(11), 2271–2293.
-12. Hirata, A., Ushio, G., & Shiozawa, T. (2000). Calculation of temperature rises in the human eye exposed to EM waves in the ISM frequency bands. IEICE Transactions on Communications, E83-B(3), 541–548.
-13. Lopez-Iturri, P., de Miguel-Bilbao, S., Aguirre, E., Azpilicueta, L., Falcone, F., & Ramos, V. (2015). Estimation of radiofrequency power leakage from microwave ovens for dosimetric assessment at nonionizing radiation exposure levels. BioMed Research International, 2015, 603260. https://doi.org/10.1155/2015/603260
-14. Oates, W. H., Jr., Snellings, D. D., Jr., & Wilson, E. F. (1973). Microwave oven survey results in Arkansas during 1970. American Journal of Public Health, 63(3), 193–198. https://doi.org/10.2105/AJPH.63.3.193
-15. Oizumi, T., Laakso, I., Hirata, A., et al. (2013). FDTD analysis of temperature elevation in the lens of human and rabbit models due to near-field and far-field exposures at 2.45 GHz. Radiation Protection Dosimetry, 155(3), 284–291. [전체 저자, DOI 확인 필요]
-16. Oleson, J., Samulski, T., Clegg, S., Das, S., & Grant, W. (1994). Heating rate modeling and measurements in phantom and in vivo of the human upper extremity in a defective 2450 MHz microwave oven. Journal of Microwave Power and Electromagnetic Energy, 29(2), 101–108. https://doi.org/10.1080/08327823.1994.11688237
-17. Tian, R., Wei, J.-C., & Lu, M. (2025). The numerical assessment of RF human exposure to microwave ovens with contact-type doors. Electronics, 14(5), 873. https://doi.org/10.3390/electronics14050873
+12. Bakker, J. F., et al. (2010). Assessment of induced SAR in children exposed to electromagnetic plane waves between 10 MHz and 5.6 GHz. Physics in Medicine and Biology, 55(11), 3115–3130. https://doi.org/10.1088/0031-9155/55/11/009 [공저자 확인 필요]
+13. Flintoft, I. D., Robinson, M. P., Melia, G. C. R., Dawson, J. F., & Marvin, A. C. (2014). Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: results of a human volunteer study. Physics in Medicine and Biology, 59(13), 3297–3317. https://doi.org/10.1088/0031-9155/59/13/3297
+14. Hirata, A., Kodera, S., Wang, J., & Fujiwara, O. (2007). Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions. Bioelectromagnetics, 28(6), 484–487. https://doi.org/10.1002/bem.20335
+15. Hirata, A., Ito, N., & Fujiwara, O. (2009). Influence of electromagnetic polarization on the whole-body averaged SAR in children for plane-wave exposures. Physics in Medicine and Biology, 54(4), N59–N65. https://doi.org/10.1088/0031-9155/54/4/N02
+16. Hirata, A., Ushio, G., & Shiozawa, T. (2000). Calculation of temperature rises in the human eye exposed to EM waves in the ISM frequency bands. IEICE Transactions on Communications, E83-B(3), 541–548.
+17. Kientega, T., Conil, E., Hadjem, A., Richalot, E., Gati, A., et al. (2011). A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz. Annals of Telecommunications, 66, 419–428. https://doi.org/10.1007/s12243-011-0261-z [나머지 저자 확인 필요]
+18. Lopez-Iturri, P., de Miguel-Bilbao, S., Aguirre, E., Azpilicueta, L., Falcone, F., & Ramos, V. (2015). Estimation of radiofrequency power leakage from microwave ovens for dosimetric assessment at nonionizing radiation exposure levels. BioMed Research International, 2015, 603260. https://doi.org/10.1155/2015/603260
+19. Oates, W. H., Jr., Snellings, D. D., Jr., & Wilson, E. F. (1973). Microwave oven survey results in Arkansas during 1970. American Journal of Public Health, 63(3), 193–198. https://doi.org/10.2105/AJPH.63.3.193
+20. Oizumi, T., Laakso, I., Hirata, A., et al. (2013). FDTD analysis of temperature elevation in the lens of human and rabbit models due to near-field and far-field exposures at 2.45 GHz. Radiation Protection Dosimetry, 155(3), 284–291. [전체 저자, DOI 확인 필요]
+21. Oleson, J., Samulski, T., Clegg, S., Das, S., & Grant, W. (1994). Heating rate modeling and measurements in phantom and in vivo of the human upper extremity in a defective 2450 MHz microwave oven. Journal of Microwave Power and Electromagnetic Energy, 29(2), 101–108. https://doi.org/10.1080/08327823.1994.11688237
+22. Piuzzi, E., Bernardi, P., Cavagnaro, M., Pisa, S., & Lin, J. C. (2011). Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz). IEEE Transactions on Electromagnetic Compatibility, 53(1), 38–47. https://doi.org/10.1109/TEMC.2010.2053376
+23. Tian, R., Wei, J.-C., & Lu, M. (2025). The numerical assessment of RF human exposure to microwave ovens with contact-type doors. Electronics, 14(5), 873. https://doi.org/10.3390/electronics14050873
+24. Uusitupa, T., Laakso, I., Ilvonen, S., & Nikoskinen, K. (2010). SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures. Physics in Medicine and Biology, 55(4), 1157–1176. https://doi.org/10.1088/0031-9155/55/4/017
+25. Wang, J., Fujiwara, O., Kodera, S., & Watanabe, S. (2006). FDTD calculation of whole-body average SAR in adult and child models for frequencies from 30 MHz to 3 GHz. Physics in Medicine and Biology, 51(17), 4119–4127. https://doi.org/10.1088/0031-9155/51/17/001
 
 소프트웨어
-18. Dassault Systèmes (2019). CST Studio Suite 2019, Version 2019.7 (build 20190705), Time Domain Solver.
+26. Dassault Systèmes (2019). CST Studio Suite 2019, Version 2019.7 (build 20190705), Time Domain Solver.
