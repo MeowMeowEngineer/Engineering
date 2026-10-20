@@ -19,7 +19,7 @@
 
 | | 분류 | 내용 |
 |---|---|---|
-| 04 | [💻 AI로 만든 소프트웨어](04-side-projects/README.md) | 코트사이드 코치, 압축풀기, Travel App |
+| 04 | [💻 AI로 만든 소프트웨어](04-side-projects/README.md) | 코트사이드 코치, 포켓 문서 뷰어, 압축풀기, Travel App |
 
 ## 대표 성과
 
