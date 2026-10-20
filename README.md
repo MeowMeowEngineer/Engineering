@@ -31,6 +31,9 @@
 
 ## 기술
 
-- **RF·전자기**: `EM Simulator` `ADS` `openEMS` `MATLAB`
+- **RF·전자기 해석**: `EM Simulator` `ADS` `openEMS` `MATLAB`
+- **RF 계측**: `VNA` `스펙트럼 분석기` `오실로스코프` `디지털 멀티미터` `신호 발생기` `파워 미터` `DC 전원 공급기` `무향실 안테나 측정`
+- **하드웨어 제작**: `납땜` `브레드보드` `PCB 설계·제작` `실험 지그 설계` `ADAR1000` `SPI` `레벨 시프터` `벅 컨버터`
+- **EDA**: `ADS` `PADS`
 - **프로그래밍**: `Python` `JavaScript` `Java (Android)` `VBA`
-- **AI 활용**: `Claude Code` `Gaussian Process` `JAX` `MediaPipe`
+- **AI 도구**: `Claude Code` `GPT Codex` `Gemini` `Gaussian Process` `JAX` `MediaPipe`
