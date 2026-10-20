@@ -28,7 +28,7 @@
 | 연도 | 내용 |
 |---|---|
 | 2026 | 석사우수장학(이공계) 장학생 |
-| 2025 | BK21 대학원혁신 우수논문상 금상 |
+| 2026 | BK21 대학원혁신 우수논문상 금상 |
 | 2025 | 제24회 전파분야 대학원생 논문공모전 장려상: "고이득 렌즈 배열 안테나를 이용한 이중 편파 분산형 FMCW 레이더 시스템 설계 및 벽 뒤 인체 탐지 응용" (장은성, 박경환, 김정욱) |
 | 2024 | Encouragement Award, 2024 Industry-Academia Fair, Department of Electrical and Computer Engineering, Ajou University |
 
