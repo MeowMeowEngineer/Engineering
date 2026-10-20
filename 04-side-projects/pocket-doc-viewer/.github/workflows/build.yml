@@ -26,12 +26,16 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - name: Smoke test (mobile viewport)
+      - name: Smoke and edit tests (mobile viewport)
         run: |
           npx playwright install --with-deps chromium
+          pip install python-docx python-pptx openpyxl pypdf python-hwpx
           npx vite preview --port 4173 --strictPort &
           npx wait-on http://localhost:4173/
           node scripts/screenshots.mjs
+          # 앱에서 형식별로 고쳐 저장한 파일이 Word·Excel·PowerPoint·한글 형식 규칙에 맞는지 검사
+          node scripts/edit-e2e.mjs edit-out
+          python3 scripts/check-compat.py edit-out
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

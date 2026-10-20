@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 공유할 때만 쓰는 앱 전용 임시 폴더. 다른 저장소 위치는 열어 두지 않는다 -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
-    <cache-path name="my_cache_images" path="." />
+    <cache-path name="shared" path="shared/" />
 </paths>

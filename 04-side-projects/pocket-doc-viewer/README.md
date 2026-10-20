@@ -1,6 +1,6 @@
 # 📄 포켓 문서 뷰어 (Pocket Doc Viewer)
 
-휴대폰에서 **워드·엑셀·피피티·PDF·한글** 문서를 바로 여는 무료 문서 뷰어입니다. React로 만들었고, 웹 앱(PWA)과 안드로이드 앱(APK) 두 가지로 배포합니다.
+휴대폰에서 **워드·엑셀·피피티·PDF·한글** 문서를 바로 열고 **고쳐서 원래 형식 그대로 저장**하는 무료 문서 앱입니다. 저장한 파일은 Word·Excel·PowerPoint·한글·PDF 프로그램에서 그대로 열립니다. React로 만들었고, 웹 앱(PWA)과 안드로이드 앱(APK) 두 가지로 배포합니다.
 
 문서는 **기기 안에서만** 열립니다. 서버로 보내지 않고, 광고·회원가입·인터넷 연결이 필요 없습니다. 안드로이드 앱은 인터넷 권한도 저장소 권한도 요청하지 않습니다.
 
@@ -28,6 +28,31 @@
 | 텍스트 | `.txt` `.md` `.json` 등 | UTF-8/EUC-KR 자동 판별 |
 
 예전 바이너리 형식(`.doc`, `.ppt`), 암호가 걸린 오피스 문서, HWP 3.0은 열 수 없는 이유를 안내합니다.
+
+## 편집: 실제 프로그램과 호환
+
+문서 화면의 **편집**을 누르고 고친 뒤 **완료 → 저장**을 누르면, 원래 형식 그대로 새 파일로 저장합니다(원본은 그대로). 안드로이드 앱에서는 시스템 '다른 이름으로 저장' 창이나 공유 시트(카카오톡·메일·드라이브)로 보냅니다.
+
+<img src="docs/edit.png" alt="편집 화면: 한글 서식 빈칸 채우기, Word 글자 고치기, Excel 값·수식, PDF 필기·회전, 저장" width="100%">
+
+| 형식 | 고칠 수 있는 것 | 호환을 지키는 방법 |
+|---|---|---|
+| 한글 `.hwpx` | 글자 고치기, **빈 표 칸·빈 문단에 새로 쓰기**(서식 채우기) | 원본 XML의 글자 노드만 바꾼다. 고친 문단의 줄 배치 캐시(`linesegarray`)를 지워 한글이 다시 계산하게 하고, `mimetype`을 ZIP 첫 항목·무압축으로 유지한다 |
+| Word `.docx` | 글자 고치기, 빈 문단에 쓰기 | 글자 조각(`w:t`)마다 원본 위치를 기억해 그 자리만 바꾸므로 굵게·색·표·그림 같은 서식이 그대로 남는다. 앞뒤 공백은 `xml:space="preserve"`로 지킨다 |
+| PowerPoint `.pptx` | 슬라이드·표의 글자 고치기, 비어 있는 제목·본문 틀에 쓰기 | `a:t`만 바꾸고, 새 글자는 문단 끝 글자 모양(`endParaRPr`)을 이어받는다. 레이아웃·마스터 글자는 모든 슬라이드에 영향을 주므로 고치지 않는다 |
+| Excel `.xlsx` | 칸 값 입력(숫자·글자), **수식**(`=SUM(B4:E4)`), 지우기 | 시트 XML의 해당 `<c>`만 고쳐 칸 서식·차트·다른 시트를 지킨다. 수식을 바꾸면 계산 순서표(`calcChain`)를 지우고 `fullCalcOnLoad`를 켜 Excel이 열 때 다시 계산한다(복구 창 방지) |
+| Excel `.xls` `.ods` `.csv` | 칸 값·수식 | SheetJS로 같은 형식으로 다시 쓴다. CSV는 Excel이 한글을 바르게 읽도록 UTF-8 BOM을 붙인다. 이 형식들은 글꼴·색 서식이 사라질 수 있다고 화면에 안내한다 |
+| PDF | 펜·형광펜 필기, 글자 넣기, 쪽 회전·삭제 | [pdf-lib](https://github.com/Hopding/pdf-lib)으로 원본 쪽 위에 그려 넣는다. 한글 글꼴을 PDF에 넣지 않아도 되도록 글자는 기기 글꼴로 그린 그림으로 넣는다 |
+| 텍스트 | 전체 편집 | UTF-8로 저장 |
+| 한글 `.hwp` (바이너리) | 보기 전용 | 압축된 바이너리 레코드라 안전하게 고칠 수 없다. 한글에서 HWPX로 저장하면 고칠 수 있다고 안내한다 |
+
+편집이 끝나면(**완료**) 고친 내용을 실제 파일로 만든 뒤 그 파일을 다시 열어 보여 줍니다. 화면에 보이는 것이 곧 저장될 파일입니다. 저장하지 않고 나가려 하면(뒤로 가기 포함) 확인 창을 띄웁니다.
+
+### 호환성 검증
+- **왕복 단위 테스트**: 형식마다 고치기 → 저장 → 다시 열기를 확인합니다. HWPX의 `mimetype` 위치·압축 방식, DOCX의 서식 보존, XLSX의 칸 서식·`fullCalcOnLoad`도 확인합니다.
+- **실제 화면 테스트** ([scripts/edit-e2e.mjs](scripts/edit-e2e.mjs)): 휴대폰 화면 크기의 브라우저에서 형식별로 편집 → 완료 → 저장을 누르고 내려받은 파일을 남깁니다. 실제 공공기관 HWPX 서식의 빈칸 채우기도 포함합니다.
+- **외부 프로그램 검사** ([scripts/check-compat.py](scripts/check-compat.py)): 내려받은 파일을 python-hwpx(한글 문서 열기 안전성 검사), python-docx, python-pptx, openpyxl, pypdf로 열고, LibreOffice로 DOCX·PPTX·XLSX를 변환해 실제로 열리는지 확인합니다. XLSX는 LibreOffice가 연 뒤 새 수식(`=SUM(B4:E4)`)을 다시 계산한 값까지 확인했습니다.
+- 이 검사에서 단위 테스트(jsdom)로는 보이지 않던 버그를 찾았습니다. 크롬의 `XMLSerializer`는 XML 선언을 스스로 붙여서, 원본 선언과 겹쳐 두 번 들어가면 Word·한글이 파일을 열지 못합니다. 고친 뒤 같은 상황을 흉내 내는 회귀 테스트를 넣었습니다.
 
 ## 직접 구현한 부분
 
@@ -58,7 +83,7 @@ PowerPoint 파일(ZIP 안의 XML)을 해석해 슬라이드 좌표 그대로 HTM
 - **콘텐츠 보안 정책(CSP)**: 앱 자신의 스크립트만 실행하고(`script-src 'self'`), 외부로 통신하지 못하게 막습니다(`connect-src 'self'`). 문서 안에 스크립트가 숨어 있어도 실행되지 않습니다.
 - 문서 안의 링크는 `http(s)`·`mailto`만 남기고 `javascript:` 링크는 제거합니다. Word 문서에 끼워 넣은 HTML 조각(altChunk)은 그리지 않습니다.
 - pdf.js는 알려진 임의 코드 실행 취약점([GHSA-hq66-cqwq-w95j](https://github.com/advisories/GHSA-hq66-cqwq-w95j))이 고쳐진 6.x를 씁니다. PPTX 미리보기 라이브러리 후보였던 `pptx-preview`는 소스가 비공개이고 XSS 취약점이 있는 의존성을 포함하고 있어, 쓰지 않고 렌더러를 직접 만들었습니다.
-- 안드로이드 앱은 권한을 하나도 요청하지 않습니다. 다른 앱이 넘겨준 문서는 그 순간 허락된 읽기 권한으로만 읽습니다.
+- 안드로이드 앱은 권한을 하나도 요청하지 않습니다. 다른 앱이 넘겨준 문서는 그 순간 허락된 읽기 권한으로만 읽고, 저장은 사용자가 고른 위치에만(시스템 저장 창) 씁니다. 공유용 임시 파일은 앱 전용 폴더에만 둡니다.
 
 ## 구조
 
@@ -71,15 +96,22 @@ src/
 │  ├─ pptx.ts              PPTX 해석기 (직접 구현)
 │  ├─ hwpx.ts              HWPX 해석기 (직접 구현)
 │  ├─ xml.ts               네임스페이스와 무관한 XML 탐색 도우미
+│  ├─ docx.ts              DOCX 편집용 해석기 (직접 구현)
+│  ├─ zipdoc.ts            원본 ZIP+XML을 그대로 두고 고친 파트만 다시 쓰는 저장기
+│  ├─ xlsxEdit.ts          XLSX 칸 수정 (시트 XML 직접 수정, 계산 순서표 처리)
+│  ├─ pdfEdit.ts           PDF 필기·글자·회전·삭제 (pdf-lib)
+│  ├─ save.ts              기기에 저장·공유 (웹 / 안드로이드)
 │  ├─ recent.ts            최근 문서 (IndexedDB)
 │  └─ native.ts            안드로이드 '열기/공유' 연동, 뒤로 가기
 └─ viewers/                형식별 뷰어 (처음 열 때 내려받는 지연 로딩)
 android/                   Capacitor 안드로이드 프로젝트
-└─ .../OpenedFilePlugin.java  다른 앱이 넘겨준 content:// 문서 읽기
+└─ .../OpenedFilePlugin.java  다른 앱이 넘겨준 문서 읽기, 저장 창(SAF)·공유 시트로 내보내기
 scripts/
 ├─ make-samples.py         데모·테스트용 샘플 문서 생성 (docx, xlsx, pptx, pdf, hwpx, csv)
 ├─ make-icons.py           앱 아이콘·스플래시 생성
-└─ screenshots.mjs         휴대폰 화면 크기로 형식별 화면 촬영 + 콘솔 오류 검사
+├─ screenshots.mjs         휴대폰 화면 크기로 형식별 화면 촬영 + 콘솔 오류 검사
+├─ edit-e2e.mjs            실제 화면에서 형식별 편집·저장 후 파일 내려받기
+└─ check-compat.py         저장한 파일을 외부 라이브러리·LibreOffice로 열어 호환성 검사
 ```
 
 ## 개발
@@ -87,17 +119,17 @@ scripts/
 ```bash
 npm install
 npm run dev          # 개발 서버
-npm test             # 단위 테스트 (형식 판별, HWPX·PPTX 해석)
+npm test             # 단위 테스트 (형식 판별, 해석, 편집 왕복)
 npm run build        # dist/ 에 PWA 빌드
 npm run android:apk  # Android SDK가 있으면 APK 빌드
 ```
 
-`main` 브랜치에 올리면 GitHub Actions가 린트, 단위 테스트, 휴대폰 화면 스모크 테스트를 거쳐 웹 앱을 GitHub Pages에 배포하고 APK를 빌드해 릴리스에 올립니다. APK는 저장소에 들어 있는 공개 디버그 키로 서명하므로 새 버전이 이전 설치본 위에 업데이트됩니다(구글 플레이 배포용 키는 아닙니다).
+`main` 브랜치에 올리면 GitHub Actions가 린트, 단위 테스트, 휴대폰 화면 스모크 테스트, 편집·저장 호환성 검사를 거쳐 웹 앱을 GitHub Pages에 배포하고 APK를 빌드해 릴리스에 올립니다. APK는 저장소에 들어 있는 공개 디버그 키로 서명하므로 새 버전이 이전 설치본 위에 업데이트됩니다(구글 플레이 배포용 키는 아닙니다).
 
 ## 기술
 
-`React 19` `TypeScript` `Vite` `PWA (Workbox)` `Capacitor (Android)` `pdf.js` `docx-preview` `SheetJS` `hwp.js` `JSZip` `Vitest` `Playwright` `GitHub Actions`
+`React 19` `TypeScript` `Vite` `PWA (Workbox)` `Capacitor (Android)` `pdf.js` `pdf-lib` `docx-preview` `SheetJS` `hwp.js` `JSZip` `Vitest` `Playwright` `LibreOffice (검증)` `GitHub Actions`
 
 ## 라이선스
 
-MIT. 사용한 라이브러리는 각자의 라이선스(pdf.js·docx-preview·SheetJS·hwp.js: Apache-2.0, JSZip: MIT)를 따릅니다.
+MIT. 사용한 라이브러리는 각자의 라이선스(pdf.js·docx-preview·SheetJS·hwp.js: Apache-2.0, JSZip·pdf-lib: MIT)를 따릅니다.

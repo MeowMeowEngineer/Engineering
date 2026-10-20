@@ -1,5 +1,8 @@
 import { useEffect, useState, type RefObject } from 'react'
 
+/** 고친 내용을 반영한 새 파일을 만든다. 형식을 바꿔 저장할 때만 name을 돌려준다 */
+export type Saver = () => Promise<{ bytes: Uint8Array; name?: string }>
+
 export interface ViewerProps {
   bytes: Uint8Array
   name: string
@@ -7,6 +10,12 @@ export interface ViewerProps {
   zoom: number
   /** 툴바에 보여줄 위치 정보 (예: "3 / 12") */
   onStatus?: (text: string) => void
+  /** 편집 화면 여부 */
+  editing?: boolean
+  /** 고친 내용이 생기면 true */
+  onDirty?: (dirty: boolean) => void
+  /** 편집을 지원하는 뷰어가 저장 함수를 등록하는 자리 */
+  saverRef?: { current: Saver | null }
 }
 
 /**

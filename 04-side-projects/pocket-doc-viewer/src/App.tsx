@@ -1,8 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
-import { ACCEPT, detectType, UnsupportedError, type DocKind, type DocType } from './lib/detect'
+import { ACCEPT, detectType, extOf, UnsupportedError, type DocKind, type DocType } from './lib/detect'
 import { clearRecent, listRecent, loadRecent, removeRecent, saveRecent, type RecentEntry } from './lib/recent'
 import { initNative, isNative } from './lib/native'
-import type { ViewerProps } from './viewers/common'
+import type { Saver, ViewerProps } from './viewers/common'
+import { canShare, saveToDevice, shareFile } from './lib/save'
 import { usePinchZoom } from './usePinchZoom'
 
 // 형식별 뷰어는 처음 열 때 내려받는다 (첫 화면을 가볍게)
@@ -75,6 +76,11 @@ export default function App() {
   useEffect(() => {
     docRef.current = doc
   }, [doc])
+  // 고친 내용이 남아 있으면 문서 화면이 닫기를 막고 확인 창을 띄운다
+  const guard = useRef<(() => boolean) | null>(null)
+  const setGuard = useCallback((fn: (() => boolean) | null) => {
+    guard.current = fn
+  }, [])
 
   const refreshRecent = useCallback(() => void listRecent().then(setRecent), [])
   useEffect(refreshRecent, [refreshRecent])
@@ -106,12 +112,17 @@ export default function App() {
   )
 
   const close = useCallback(() => {
+    if (guard.current?.()) return
     if (!isNative() && history.state?.doc) history.back()
     else setDoc(null)
   }, [])
 
   useEffect(() => {
-    const onPop = () => setDoc(null)
+    const onPop = () => {
+      // 뒤로 가기 제스처로 나가려 할 때 저장 안 한 내용이 있으면 기록을 되돌려 놓고 확인 창을 띄운다
+      if (docRef.current && guard.current?.()) history.pushState({ doc: true }, '')
+      else setDoc(null)
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
@@ -125,7 +136,7 @@ export default function App() {
       onError: setError,
       onBack: () => {
         if (!docRef.current) return false
-        setDoc(null)
+        if (!guard.current?.()) setDoc(null)
         return true
       },
     }).then((d) => (disposed ? d() : (dispose = d)))
@@ -144,7 +155,7 @@ export default function App() {
     })
   }, [openFile])
 
-  if (doc) return <ViewerScreen doc={doc} onClose={close} />
+  if (doc) return <ViewerScreen doc={doc} onClose={close} setGuard={setGuard} />
 
   return (
     <Home
@@ -296,12 +307,85 @@ function Home(props: {
 
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]
 
-function ViewerScreen({ doc, onClose }: { doc: OpenDoc; onClose: () => void }) {
+/** 문서 화면이 닫히기 전에 확인할 것이 있으면 true를 돌려 닫기를 막는 함수를 등록한다 */
+type SetGuard = (fn: (() => boolean) | null) => void
+
+function ViewerScreen({ doc, onClose, setGuard }: { doc: OpenDoc; onClose: () => void; setGuard: SetGuard }) {
   const [zoom, setZoom] = useState(1)
   const [status, setStatus] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
   const Viewer = VIEWERS[doc.type.kind]
   usePinchZoom(scroller, zoom, setZoom)
+
+  // 편집 상태
+  const [file, setFile] = useState({ name: doc.name, bytes: doc.bytes, version: 0 })
+  const [editing, setEditing] = useState(false)
+  const [dirty, setDirty] = useState(false) // 편집 화면에서 고친 내용이 있다
+  const [unsaved, setUnsaved] = useState(false) // 고친 내용을 아직 기기에 저장하지 않았다
+  const [applying, setApplying] = useState(false)
+  const [sheet, setSheet] = useState<'save' | 'confirm' | null>(null)
+  const [toast, setToast] = useState<string>()
+  const saverRef = useRef<Saver | null>(null)
+  const canEdit = doc.type.kind !== 'hwp'
+
+  const flash = useCallback((msg: string) => {
+    setToast(msg)
+    window.setTimeout(() => setToast((t) => (t === msg ? undefined : t)), 3500)
+  }, [])
+
+  /** 편집 화면에서 고친 내용을 실제 파일로 만들어 다시 연다 (보이는 화면 = 저장될 파일) */
+  const apply = async (): Promise<boolean> => {
+    if (!dirty) return true
+    const saver = saverRef.current
+    if (!saver) return true
+    setApplying(true)
+    try {
+      const out = await saver()
+      setFile((f) => ({ name: out.name ?? f.name, bytes: out.bytes, version: f.version + 1 }))
+      setDirty(false)
+      setUnsaved(true)
+      return true
+    } catch (e) {
+      flash(e instanceof Error ? e.message : String(e))
+      return false
+    } finally {
+      setApplying(false)
+    }
+  }
+
+  const toggleEdit = async () => {
+    if (!canEdit) {
+      flash('HWP(한글 바이너리) 문서는 보기만 됩니다. 한글에서 HWPX로 저장하면 고칠 수 있습니다.')
+      return
+    }
+    if (!editing) {
+      setEditing(true)
+      return
+    }
+    if (await apply()) setEditing(false)
+  }
+
+  const openSave = async () => {
+    if (await apply()) {
+      setEditing(false)
+      setSheet('save')
+    }
+  }
+
+  const pending = dirty || unsaved
+  useEffect(() => {
+    if (!pending) return
+    setGuard(() => {
+      setSheet('confirm')
+      return true
+    })
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => {
+      setGuard(null)
+      window.removeEventListener('beforeunload', warn)
+    }
+  }, [pending, setGuard])
 
   const step = (dir: 1 | -1) => {
     const next =
@@ -310,40 +394,221 @@ function ViewerScreen({ doc, onClose }: { doc: OpenDoc; onClose: () => void }) {
   }
 
   useEffect(() => {
-    document.title = `${doc.name} - 포켓 문서 뷰어`
+    document.title = `${file.name} - 포켓 문서 뷰어`
     return () => {
       document.title = '포켓 문서 뷰어'
     }
-  }, [doc.name])
+  }, [file.name])
 
   return (
-    <div className="viewer">
+    <div className={`viewer${editing ? ' editing' : ''}`}>
       <header className="toolbar">
         <button className="icon-btn" onClick={onClose} aria-label="닫기">
           ←
         </button>
         <FileBadge kind={doc.type.kind} label={doc.type.label} />
         <div className="title">
-          <strong>{doc.name}</strong>
-          {status && <small>{status}</small>}
+          <strong>{file.name}</strong>
+          <small>{editing ? (dirty ? '고치는 중 · 아직 저장 안 됨' : '편집 중') : unsaved ? '수정됨 · 저장 필요' : status}</small>
         </div>
-        <div className="zoom">
-          <button className="icon-btn" onClick={() => step(-1)} aria-label="축소">
-            −
+        {!editing && (
+          <div className="zoom">
+            <button className="icon-btn" onClick={() => step(-1)} aria-label="축소">
+              −
+            </button>
+            <button className="zoom-val" onClick={() => setZoom(1)} aria-label="화면에 맞추기">
+              {Math.round(zoom * 100)}%
+            </button>
+            <button className="icon-btn" onClick={() => step(1)} aria-label="확대">
+              +
+            </button>
+          </div>
+        )}
+        <button className={`text-btn${editing ? ' strong' : ''}`} onClick={() => void toggleEdit()} disabled={applying}>
+          {applying ? '반영 중…' : editing ? '완료' : '편집'}
+        </button>
+        {pending && (
+          <button className="text-btn primary" onClick={() => void openSave()} disabled={applying}>
+            저장
           </button>
-          <button className="zoom-val" onClick={() => setZoom(1)} aria-label="화면에 맞추기">
-            {Math.round(zoom * 100)}%
-          </button>
-          <button className="icon-btn" onClick={() => step(1)} aria-label="확대">
-            +
-          </button>
-        </div>
+        )}
       </header>
       <div ref={scroller} className={`viewer-body kind-${doc.type.kind}`}>
         <Suspense fallback={<div className="viewer-message">뷰어 준비 중…</div>}>
-          <Viewer bytes={doc.bytes} name={doc.name} zoom={zoom} onStatus={setStatus} />
+          <Viewer
+            key={file.version}
+            bytes={file.bytes}
+            name={file.name}
+            zoom={zoom}
+            onStatus={setStatus}
+            editing={editing}
+            onDirty={setDirty}
+            saverRef={saverRef}
+          />
         </Suspense>
       </div>
+
+      {sheet === 'save' && (
+        <SaveSheet
+          name={file.name}
+          bytes={file.bytes}
+          label={doc.type.label}
+          onClose={() => setSheet(null)}
+          onSaved={(msg) => {
+            setUnsaved(false)
+            setSheet(null)
+            flash(msg)
+          }}
+          onError={flash}
+        />
+      )}
+      {sheet === 'confirm' && (
+        <div className="sheet-backdrop" onClick={() => setSheet(null)}>
+          <div className="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="confirm-title" onClick={(e) => e.stopPropagation()}>
+            <h2 id="confirm-title">저장하지 않은 수정 내용이 있습니다</h2>
+            <p className="muted">닫으면 고친 내용이 사라집니다. 원본 파일은 그대로 남아 있습니다.</p>
+            <div className="sheet-actions">
+              <button className="btn primary" onClick={() => void openSave()}>
+                저장하기
+              </button>
+              <button
+                className="btn danger"
+                onClick={() => {
+                  setGuard(null)
+                  setSheet(null)
+                  setDirty(false)
+                  setUnsaved(false)
+                  onClose()
+                }}
+              >
+                저장하지 않고 닫기
+              </button>
+              <button className="btn" onClick={() => setSheet(null)}>
+                계속 보기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
     </div>
   )
+}
+
+function SaveSheet({
+  name,
+  bytes,
+  label,
+  onClose,
+  onSaved,
+  onError,
+}: {
+  name: string
+  bytes: Uint8Array
+  label: string
+  onClose: () => void
+  onSaved: (msg: string) => void
+  onError: (msg: string) => void
+}) {
+  const ext = extOf(name)
+  const [base, setBase] = useState(name.slice(0, ext ? -(ext.length + 1) : undefined))
+  const [busy, setBusy] = useState(false)
+  const fileName = (base.trim() || '문서') + (ext ? '.' + ext : '')
+  const run = async (fn: () => Promise<string | null>) => {
+    setBusy(true)
+    try {
+      const msg = await fn()
+      if (msg) {
+        void saveRecent(fileName, label, bytes)
+        onSaved(msg)
+      }
+    } catch (e) {
+      if (!(e instanceof DOMException && e.name === 'AbortError')) onError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <form
+        className="bottom-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="save-title"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={(e) => e.preventDefault()}
+      >
+        <h2 id="save-title">고친 문서 저장</h2>
+        <label className="field">
+          <span>파일 이름</span>
+          <span className="field-row">
+            <input id="save-name" value={base} onChange={(e) => setBase(e.target.value)} autoComplete="off" />
+            {ext && <span className="ext">.{ext}</span>}
+          </span>
+        </label>
+        <p className="muted">
+          원래 형식({label}) 그대로 저장하므로 {appFor(label)}에서 그대로 열립니다. 새 파일로 저장되며 원본은 바뀌지 않습니다.
+        </p>
+        <div className="sheet-actions">
+          <button
+            type="button"
+            className="btn primary"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                const r = await saveToDevice(fileName, bytes)
+                return r === 'saved' ? '저장했습니다.' : r === 'downloaded' ? '다운로드 폴더에 저장했습니다.' : null
+              })
+            }
+          >
+            기기에 저장
+          </button>
+          {canShare(fileName) && (
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  await shareFile(fileName, bytes)
+                  return '공유했습니다.'
+                })
+              }
+            >
+              공유하기 (카카오톡·메일·드라이브)
+            </button>
+          )}
+          <button type="button" className="btn" onClick={onClose}>
+            닫기
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+function appFor(label: string): string {
+  switch (label) {
+    case 'DOCX':
+      return 'Word'
+    case 'XLSX':
+    case 'XLS':
+    case 'CSV':
+    case 'TSV':
+      return 'Excel'
+    case 'ODS':
+      return 'LibreOffice·Excel'
+    case 'PPTX':
+      return 'PowerPoint'
+    case 'HWPX':
+      return '한글'
+    case 'PDF':
+      return 'PDF 프로그램'
+    default:
+      return '원래 프로그램'
+  }
 }

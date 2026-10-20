@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { renderAsync } from 'docx-preview'
 import { errorMessage, fitScale, sanitizeLinks, useWidth, type ViewerProps } from './common'
+import DocxEditView from './DocxEditView'
 
-export default function DocxViewer({ bytes, zoom, onStatus }: ViewerProps) {
+/** 보기: docx-preview(원본에 가까운 배치) · 편집: 직접 만든 편집 화면 */
+export default function DocxViewer(props: ViewerProps) {
+  return props.editing ? <DocxEditView {...props} /> : <DocxPreview {...props} />
+}
+
+function DocxPreview({ bytes, zoom, onStatus }: ViewerProps) {
   const outer = useRef<HTMLDivElement>(null)
   const host = useRef<HTMLDivElement>(null)
   const width = useWidth(outer)

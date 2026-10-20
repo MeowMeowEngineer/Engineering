@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { parseHwpx, type Border, type BorderFill, type CharStyle, type HwpxDocument, type Para, type Table } from '../lib/hwpx'
 import { errorMessage, fitScale, useWidth, type ViewerProps } from './common'
+import { EditableText } from './Editable'
+import { EditingContext } from './editing'
 
 /** HWPUNIT(1/7200 inch) → CSS px(1/96 inch) */
 const u = (v: number) => v / 75
@@ -46,7 +48,7 @@ function fillCss(bf?: BorderFill): CSSProperties {
   }
 }
 
-export default function HwpxViewer({ bytes, zoom, onStatus }: ViewerProps) {
+export default function HwpxViewer({ bytes, zoom, onStatus, editing, onDirty, saverRef }: ViewerProps) {
   const ref = useRef<HTMLDivElement>(null)
   const width = useWidth(ref)
   const [doc, setDoc] = useState<HwpxDocument | null>(null)
@@ -72,6 +74,16 @@ export default function HwpxViewer({ bytes, zoom, onStatus }: ViewerProps) {
     }
   }, [bytes, onStatus])
 
+  useEffect(() => {
+    if (!doc) return
+    const unsubscribe = doc.zip.subscribe(() => onDirty?.(doc.zip.dirty))
+    if (saverRef) saverRef.current = async () => ({ bytes: await doc.zip.save() })
+    return () => {
+      unsubscribe()
+      if (saverRef) saverRef.current = null
+    }
+  }, [doc, onDirty, saverRef])
+
   if (error) return <div className="viewer-message">한글(HWPX) 문서를 열 수 없습니다.<small>{error}</small></div>
 
   const pageWidth = doc ? Math.max(...doc.sections.map((s) => u(s.page.width))) : 0
@@ -80,7 +92,8 @@ export default function HwpxViewer({ bytes, zoom, onStatus }: ViewerProps) {
     <div ref={ref} className="hwpx-outer">
       {!doc && <div className="viewer-message">불러오는 중…</div>}
       {doc && (
-        <div className="hwpx" style={{ zoom: scale }}>
+        <EditingContext.Provider value={!!editing}>
+        <div className={`hwpx${editing ? ' is-editing' : ''}`} style={{ zoom: scale }}>
           {doc.sections.map((sec, si) =>
             sec.pages.map((paras, pi) => (
               <div
@@ -99,6 +112,7 @@ export default function HwpxViewer({ bytes, zoom, onStatus }: ViewerProps) {
             )),
           )}
         </div>
+        </EditingContext.Provider>
       )}
     </div>
   )
@@ -127,11 +141,7 @@ function ParaView({ p }: { p: Para }) {
       {p.items.map((it, i) => {
         switch (it.type) {
           case 'text':
-            return (
-              <span key={i} style={charCss(it.style)}>
-                {it.text}
-              </span>
-            )
+            return <EditableText key={i} slot={it.slot} text={it.text} style={charCss(it.style)} />
           case 'tab':
             return <span key={i} className="hwpx-tab" />
           case 'br':

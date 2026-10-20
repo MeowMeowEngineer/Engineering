@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { parsePptx, type Line, type PptxDocument, type Slide, type SlideElement, type TextBody } from '../lib/pptx'
 import { errorMessage, fitScale, useCurrentPage, useWidth, type ViewerProps } from './common'
+import { EditableText } from './Editable'
+import { EditingContext } from './editing'
 
 const EMU_PX = 1 / 9525
 const PT_PX = 4 / 3
@@ -12,7 +14,7 @@ function fontStack(face?: string) {
   return face ? `"${face}", ${fallback}` : fallback
 }
 
-export default function PptxViewer({ bytes, zoom, onStatus }: ViewerProps) {
+export default function PptxViewer({ bytes, zoom, onStatus, editing, onDirty, saverRef }: ViewerProps) {
   const ref = useRef<HTMLDivElement>(null)
   const width = useWidth(ref)
   const [doc, setDoc] = useState<PptxDocument | null>(null)
@@ -41,16 +43,28 @@ export default function PptxViewer({ bytes, zoom, onStatus }: ViewerProps) {
     if (doc) onStatus?.(`${current} / ${doc.slides.length}장`)
   }, [doc, current, onStatus])
 
+  useEffect(() => {
+    if (!doc) return
+    const unsubscribe = doc.zip.subscribe(() => onDirty?.(doc.zip.dirty))
+    if (saverRef) saverRef.current = async () => ({ bytes: await doc.zip.save() })
+    return () => {
+      unsubscribe()
+      if (saverRef) saverRef.current = null
+    }
+  }, [doc, onDirty, saverRef])
+
   if (error) return <div className="viewer-message">PowerPoint 문서를 열 수 없습니다.<small>{error}</small></div>
 
   const scale = doc ? fitScale(width, px(doc.width)) * zoom : 1
   return (
-    <div ref={ref} className="slides">
+    <EditingContext.Provider value={!!editing}>
+    <div ref={ref} className={`slides${editing ? ' is-editing' : ''}`}>
       {!doc && <div className="viewer-message">불러오는 중…</div>}
       {doc?.slides.map((s) => (
         <SlideView key={s.index} slide={s} w={px(doc.width)} h={px(doc.height)} scale={scale} />
       ))}
     </div>
+    </EditingContext.Provider>
   )
 }
 
@@ -275,13 +289,15 @@ function TextView({ body }: { body: TextBody }) {
                 {p.bullet}
               </span>
             )}
-            {p.runs.length === 0 && '​'}
+            {p.runs.every((r) => !r.text && !r.slot) && '\u200b'}
             {p.runs.map((run, j) =>
               run.br ? (
                 <br key={j} />
               ) : (
-                <span
+                <EditableText
                   key={j}
+                  slot={run.slot}
+                  text={run.text}
                   style={{
                     fontSize: run.sizePt * body.fontScale * PT_PX,
                     fontWeight: run.bold ? 700 : undefined,
@@ -291,9 +307,7 @@ function TextView({ body }: { body: TextBody }) {
                     fontFamily: fontStack(run.font),
                     verticalAlign: run.baseline ? (run.baseline > 0 ? 'super' : 'sub') : undefined,
                   }}
-                >
-                  {run.text}
-                </span>
+                />
               ),
             )}
           </p>

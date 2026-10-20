@@ -2,8 +2,8 @@
 // 슬라이드 → 레이아웃 → 마스터 순으로 상속되는 위치·글자 모양·배경을 풀어
 // 절대 좌표(EMU)로 배치된 도형 목록으로 바꾼다. 1 EMU = 1/914400 inch.
 
-import JSZip from 'jszip'
 import { all, attr, bool, first, kid, kids, num, parseXml, path } from './xml'
+import { createLike, ZipDoc, type TextSlot } from './zipdoc'
 
 export interface Run {
   text: string
@@ -16,6 +16,8 @@ export interface Run {
   font?: string
   br?: boolean
   baseline?: number
+  /** 편집 손잡이 (슬라이드 자체의 글자에만 있다. 레이아웃·마스터 글자는 모든 슬라이드에 영향을 주므로 고치지 않는다) */
+  slot?: TextSlot
 }
 
 export interface Paragraph {
@@ -85,6 +87,7 @@ export interface PptxDocument {
   height: number
   slides: Slide[]
   objectUrls: string[]
+  zip: ZipDoc
 }
 
 // ---------------------------------------------------------------- 패키지 읽기
@@ -113,21 +116,19 @@ function resolvePath(base: string, target: string): string {
 }
 
 class Pkg {
-  private xmlCache = new Map<string, Document | null>()
   private relCache = new Map<string, Rels>()
   private media = new Map<string, string>()
   readonly objectUrls: string[] = []
-  private zip: JSZip
-  constructor(zip: JSZip) {
-    this.zip = zip
+  readonly doc: ZipDoc
+  private get zip() {
+    return this.doc.zip
+  }
+  constructor(doc: ZipDoc) {
+    this.doc = doc
   }
 
-  async xml(name: string): Promise<Document | null> {
-    if (this.xmlCache.has(name)) return this.xmlCache.get(name)!
-    const f = this.zip.file(name)
-    const doc = f ? parseXml(await f.async('string')) : null
-    this.xmlCache.set(name, doc)
-    return doc
+  xml(name: string): Promise<Document | null> {
+    return this.doc.xml(name)
   }
 
   async rels(part: string): Promise<Rels> {
@@ -266,6 +267,49 @@ interface Scope {
   clrMap: Map<string, string>
   /** 도형 style에서 오는 placeholder 색 (phClr) */
   phClr?: string
+  /** 글자를 고칠 수 있는 파트 (슬라이드 본문을 읽을 때만 있다) */
+  editPart?: string
+}
+
+function runSlot(t: Element, sc: Scope): TextSlot | undefined {
+  const part = sc.editPart
+  if (!part) return undefined
+  return {
+    get: () => t.textContent ?? '',
+    set(v) {
+      if (v === t.textContent) return
+      t.textContent = v
+      sc.pkg.doc.touch(part)
+    },
+  }
+}
+
+/** 빈 문단(비어 있는 제목·본문 틀 등)에 a:r을 새로 만들어 글자를 넣는 손잡이 */
+function emptyParaSlot(p: Element, sc: Scope): TextSlot | undefined {
+  const part = sc.editPart
+  if (!part) return undefined
+  let t: Element | null = null
+  return {
+    get: () => t?.textContent ?? '',
+    set(v) {
+      if (!t) {
+        if (!v) return
+        const r = createLike(p, 'r')
+        const end = kid(p, 'endParaRPr')
+        const rPr = createLike(p, 'rPr')
+        // 문단 끝 글자 모양(endParaRPr)을 그대로 이어받는다
+        if (end) {
+          for (const a of Array.from(end.attributes)) rPr.setAttributeNS(a.namespaceURI, a.name, a.value)
+          for (const c of Array.from(end.childNodes)) rPr.appendChild(c.cloneNode(true))
+        }
+        t = createLike(p, 't')
+        r.append(rPr, t)
+        p.insertBefore(r, end)
+      }
+      t.textContent = v
+      sc.pkg.doc.touch(part)
+    },
+  }
 }
 
 function colorOf(el: Element | null | undefined, sc: Scope): string | undefined {
@@ -493,8 +537,10 @@ function parseTextBody(
         styleColor
       const u = def((d) => attr(d, 'u'))
       const strike = def((d) => attr(d, 'strike'))
+      const tEl = kid(r, 't')
       runs.push({
-        text: kid(r, 't')?.textContent ?? '',
+        text: tEl?.textContent ?? '',
+        slot: tEl && r.localName === 'r' ? runSlot(tEl, sc) : undefined,
         sizePt: sizeOf(rPr),
         bold: def((d) => attr(d, 'b')) === '1',
         italic: def((d) => attr(d, 'i')) === '1',
@@ -504,6 +550,11 @@ function parseTextBody(
         font: fontFace(rPr, sc) ?? getP((e) => fontFace(kid(e, 'defRPr'), sc)),
         baseline: num(rPr, 'baseline'),
       })
+    }
+
+    if (!runs.some((r) => !r.br)) {
+      const slot = emptyParaSlot(p, sc)
+      if (slot) runs.push({ text: '', sizePt: sizeOf(kid(p, 'endParaRPr')), slot })
     }
 
     const buNone = getP((e) => (kid(e, 'buNone') ? true : kid(e, 'buChar') || kid(e, 'buAutoNum') ? false : undefined))
@@ -551,8 +602,8 @@ async function parseTree(
   out: SlideElement[],
 ) {
   if (!tree) return
-  const sc: Scope = ctx
   const part = layer === 'slide' ? ctx.part : layer === 'layout' ? ctx.layout.part : ctx.master.part
+  const sc: Scope = layer === 'slide' ? { ...ctx, editPart: part } : ctx
 
   for (const el of Array.from(tree.children)) {
     const name = el.localName
@@ -621,7 +672,7 @@ async function parseTree(
         geom,
         fill: fill ?? undefined,
         line: line ?? undefined,
-        text: text && text.paragraphs.some((p) => p.runs.some((r) => r.text)) ? text : undefined,
+        text: text && text.paragraphs.some((p) => p.runs.some((r) => r.text || r.slot)) ? text : undefined,
         adj: Number.isFinite(adjVal) ? adjVal : undefined,
       })
     } else if (name === 'pic') {
@@ -635,7 +686,7 @@ async function parseTree(
       const data = path(el, 'graphic', 'graphicData')
       const tbl = kid(data, 'tbl')
       if (tbl) {
-        out.push({ kind: 'table', ...tf(fb), ...parseTable(tbl, ctx) })
+        out.push({ kind: 'table', ...tf(fb), ...parseTable(tbl, ctx, sc) })
       } else {
         const uri = attr(data, 'uri') ?? ''
         out.push({
@@ -648,8 +699,7 @@ async function parseTree(
   }
 }
 
-function parseTable(tbl: Element, ctx: SlideCtx) {
-  const sc: Scope = ctx
+function parseTable(tbl: Element, ctx: SlideCtx, sc: Scope) {
   const tblPr = kid(tbl, 'tblPr')
   const firstRow = bool(tblPr, 'firstRow') ?? false
   const bandRow = bool(tblPr, 'bandRow') ?? false
@@ -736,8 +786,7 @@ async function loadTheme(pkg: Pkg, masterPart: string): Promise<Theme> {
 }
 
 export async function parsePptx(data: ArrayBuffer | Uint8Array): Promise<PptxDocument> {
-  const zip = await JSZip.loadAsync(data)
-  const pkg = new Pkg(zip)
+  const pkg = new Pkg(await ZipDoc.load(data))
   const presPart = 'ppt/presentation.xml'
   const pres = await pkg.xml(presPart)
   if (!pres) throw new Error('presentation.xml이 없는 PPTX 파일입니다')
@@ -810,5 +859,5 @@ export async function parsePptx(data: ArrayBuffer | Uint8Array): Promise<PptxDoc
     slides.push({ index: index + 1, background, elements, notes })
   }
 
-  return { width, height, slides, objectUrls: pkg.objectUrls }
+  return { width, height, slides, objectUrls: pkg.objectUrls, zip: pkg.doc }
 }

@@ -2,8 +2,8 @@
 // ZIP 안의 Contents/header.xml(글자·문단·테두리 모양)과 Contents/sectionN.xml(본문)을 읽어
 // 화면에 그리기 쉬운 모델로 바꾼다. 단위는 모두 HWPUNIT(1/7200 inch)이다.
 
-import JSZip from 'jszip'
-import { all, attr, kid, kids, num, parseXml, path } from './xml'
+import { all, attr, kid, kids, num, path } from './xml'
+import { createLike, ZipDoc, type TextSlot } from './zipdoc'
 
 export interface CharStyle {
   sizePt: number
@@ -44,7 +44,7 @@ export interface BorderFill {
 }
 
 export type Inline =
-  | { type: 'text'; text: string; style: CharStyle }
+  | { type: 'text'; text: string; style: CharStyle; slot?: TextSlot }
   | { type: 'tab' }
   | { type: 'br' }
   | { type: 'table'; table: Table }
@@ -101,6 +101,8 @@ export interface HwpxDocument {
   sections: Section[]
   /** 그림에 쓰인 blob: URL. 화면을 닫을 때 해제해야 한다 */
   objectUrls: string[]
+  /** 고친 글자를 원본에 반영해 저장한다 */
+  zip: ZipDoc
 }
 
 const A4: PageSetup = { width: 59528, height: 84188, left: 8504, right: 8504, top: 5668, bottom: 4252 }
@@ -213,34 +215,69 @@ function parseHeader(doc: Document): Header {
 interface Ctx {
   header: Header
   images: Map<string, string>
+  zip: ZipDoc
+  /** 지금 읽고 있는 본문 파트 (Contents/section0.xml) */
+  part: string
 }
 
-function textItems(t: Element, style: CharStyle, out: Inline[]) {
-  let buf = ''
-  const flush = () => {
-    if (buf) out.push({ type: 'text', text: buf, style })
-    buf = ''
+/**
+ * 글자를 고친 문단과 그 문단을 품은 바깥 문단(표가 들어 있는 문단)의 줄 배치 정보(linesegarray)를 지운다.
+ * 남겨 두면 한글이 옛 배치대로 그려 글자가 겹친다. 지우면 한글이 열 때 다시 계산한다.
+ */
+function dropLineSegs(node: Node) {
+  for (let el = node.parentElement; el; el = el.parentElement) {
+    if (el.localName === 'p') kid(el, 'linesegarray')?.remove()
   }
+}
+
+function slotFor(node: Text, ctx: Ctx): TextSlot {
+  const { zip, part } = ctx
+  return {
+    get: () => node.nodeValue ?? '',
+    set(v) {
+      if (v === node.nodeValue) return
+      node.nodeValue = v
+      dropLineSegs(node)
+      zip.touch(part)
+    },
+  }
+}
+
+/** 글자가 없는 문단(빈 표 칸 등)에 글자를 넣을 수 있게 첫 run 안에 hp:t를 만들어 주는 손잡이 */
+function emptySlot(run: Element, ctx: Ctx): TextSlot {
+  const { zip, part } = ctx
+  let node: Text | null = null
+  return {
+    get: () => node?.nodeValue ?? '',
+    set(v) {
+      if (!node) {
+        if (!v) return
+        const t = createLike(run, 't')
+        node = run.ownerDocument.createTextNode('')
+        t.appendChild(node)
+        run.appendChild(t)
+      }
+      node.nodeValue = v
+      dropLineSegs(node)
+      zip.touch(part)
+    },
+  }
+}
+
+function textItems(t: Element, style: CharStyle, out: Inline[], ctx: Ctx) {
   for (const node of Array.from(t.childNodes)) {
     if (node.nodeType === 3) {
-      buf += node.nodeValue ?? ''
+      // 글자 노드 하나가 화면의 글자 조각 하나가 되어, 고친 내용을 정확히 그 자리에 되돌려 놓는다
+      if (node.nodeValue) out.push({ type: 'text', text: node.nodeValue, style, slot: slotFor(node as Text, ctx) })
       continue
     }
     if (node.nodeType !== 1) continue
     const name = (node as Element).localName
-    if (name === 'tab') {
-      flush()
-      out.push({ type: 'tab' })
-    } else if (name === 'lineBreak') {
-      flush()
-      out.push({ type: 'br' })
-    } else if (name === 'nbSpace' || name === 'fwSpace') {
-      buf += ' '
-    } else if (name === 'hyphen') {
-      buf += '-'
-    }
+    if (name === 'tab') out.push({ type: 'tab' })
+    else if (name === 'lineBreak') out.push({ type: 'br' })
+    else if (name === 'nbSpace' || name === 'fwSpace') out.push({ type: 'text', text: '\u00a0', style })
+    else if (name === 'hyphen') out.push({ type: 'text', text: '-', style })
   }
-  flush()
 }
 
 function parseSubList(el: Element | null, ctx: Ctx): Para[] {
@@ -330,7 +367,7 @@ function parsePara(p: Element, ctx: Ctx): Para {
     for (const child of Array.from(run.children)) {
       switch (child.localName) {
         case 't':
-          textItems(child, cs, items)
+          textItems(child, cs, items, ctx)
           break
         case 'tbl':
           items.push({ type: 'table', table: parseTable(child, ctx) })
@@ -363,6 +400,10 @@ function parsePara(p: Element, ctx: Ctx): Para {
         }
       }
     }
+  }
+  if (items.length === 0 && runs[0]) {
+    const cs = ctx.header.chars.get(attr(runs[0], 'charPrIDRef') ?? '') ?? DEFAULT_CHAR
+    items.push({ type: 'text', text: '', style: cs, slot: emptySlot(runs[0], ctx) })
   }
   return { style, items, pageBreakBefore: attr(p, 'pageBreak') === '1', baseSizePt }
 }
@@ -417,14 +458,9 @@ const MIME: Record<string, string> = {
 }
 
 export async function parseHwpx(data: ArrayBuffer | Uint8Array): Promise<HwpxDocument> {
-  const zip = await JSZip.loadAsync(data)
-  const read = async (name: string) => {
-    const f = zip.file(name)
-    return f ? f.async('string') : null
-  }
-
-  const hpfText = await read('Contents/content.hpf')
-  const hpf = hpfText ? parseXml(hpfText) : null
+  const zipDoc = await ZipDoc.load(data)
+  const zip = zipDoc.zip
+  const hpf = await zipDoc.xml('Contents/content.hpf')
   const manifest = new Map<string, { href: string; type: string }>()
   for (const item of all(hpf, 'item')) {
     manifest.set(attr(item, 'id') ?? '', { href: attr(item, 'href') ?? '', type: attr(item, 'media-type') ?? '' })
@@ -441,8 +477,8 @@ export async function parseHwpx(data: ArrayBuffer | Uint8Array): Promise<HwpxDoc
   }
   if (sectionFiles.length === 0) throw new Error('본문(section)이 없는 HWPX 파일입니다')
 
-  const headerText = await read('Contents/header.xml')
-  const header = headerText ? parseHeader(parseXml(headerText)) : { chars: new Map(), paras: new Map(), borders: new Map() }
+  const headerDoc = await zipDoc.xml('Contents/header.xml')
+  const header = headerDoc ? parseHeader(headerDoc) : { chars: new Map(), paras: new Map(), borders: new Map() }
 
   const objectUrls: string[] = []
   const images = new Map<string, string>()
@@ -456,15 +492,14 @@ export async function parseHwpx(data: ArrayBuffer | Uint8Array): Promise<HwpxDoc
     images.set(id, url)
   }
 
-  const ctx: Ctx = { header, images }
   const sections: Section[] = []
   for (const name of sectionFiles) {
-    const text = await read(name)
-    if (text) sections.push(parseSection(parseXml(text), ctx))
+    const doc = await zipDoc.xml(name)
+    if (doc) sections.push(parseSection(doc, { header, images, zip: zipDoc, part: name }))
   }
 
   const title = path(hpf?.documentElement, 'metadata', 'title')?.textContent?.trim() || undefined
-  return { title, sections, objectUrls }
+  return { title, sections, objectUrls, zip: zipDoc }
 }
 
 /** 미리보기·검색용: 문단의 글자만 이어 붙인다 */

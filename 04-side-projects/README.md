@@ -14,17 +14,19 @@
 <img src="https://raw.githubusercontent.com/MeowMeowEngineer/Courtside-Coach/main/docs/hero.png" width="640" alt="코트사이드 코치 화면">
 
 ## 📄 [포켓 문서 뷰어](pocket-doc-viewer/README.md)
-휴대폰에서 워드·엑셀·피피티·PDF·한글(HWP/HWPX) 문서를 바로 여는 무료 문서 뷰어입니다. React로 만든 웹 앱(PWA)과 안드로이드 앱 두 가지로 배포합니다.
+휴대폰에서 워드·엑셀·피피티·PDF·한글(HWP/HWPX) 문서를 열고, 고쳐서 원래 형식 그대로 저장하는 무료 문서 앱입니다. 저장한 파일은 Word·Excel·PowerPoint·한글에서 그대로 열립니다. React로 만든 웹 앱(PWA)과 안드로이드 앱 두 가지로 배포합니다.
 
 - 문서는 기기 안에서만 처리합니다. 안드로이드 앱은 인터넷 권한과 저장소 권한을 요청하지 않고, 다른 앱의 '열기/공유'로 넘어온 문서를 바로 엽니다.
 - PowerPoint(.pptx)와 한글(.hwpx) 렌더러는 직접 만들었습니다. 슬라이드·레이아웃·마스터 상속과 테마 색 변형을 풀고, 병합 셀이 많은 공공기관 HWPX 서식도 표가 깨지지 않게 열 너비를 역산합니다. 한글이 저장한 줄 배치 정보로 쪽을 나눕니다.
+- **편집**: 한글 서식의 빈 칸 채우기, Word·PowerPoint 글자 고치기, Excel 값·수식 입력, PDF 필기·글자·쪽 회전·삭제. 문서를 새로 만들지 않고 원본 XML에서 고친 부분만 바꿔 쓰므로 이 앱이 모르는 서식도 그대로 남습니다. 한글은 줄 배치 캐시를 지워 다시 계산하게 하고, Excel은 수식을 바꾸면 계산 순서표를 정리해 '복구' 창이 뜨지 않게 했습니다.
 - 확장자 대신 파일 내용(매직 바이트)으로 형식을 판별해, 이름 없이 넘어온 파일도 엽니다. CSV·텍스트는 UTF-8과 EUC-KR을 자동 구분합니다.
 - 보안: 콘텐츠 보안 정책(CSP)으로 문서 속 스크립트 실행과 외부 통신을 막았습니다. 취약점이 있는 PPTX 라이브러리 대신 렌더러를 직접 만들었고, pdf.js는 취약점이 고쳐진 버전을 씁니다.
-- 검증: 단위 테스트 13개(형식 판별, HWPX·PPTX 해석)와 휴대폰 화면 크기 자동 스모크 테스트(형식별 화면 촬영, 콘솔 오류 검사)를 만들었습니다. 실제 공공기관 서식(국가연구개발 계획서 HWPX 양식)과 HWP 5.0 문서로도 확인했습니다.
-- **걸린 시간**: 아이디어부터 다섯 가지 형식이 모두 열리는 웹 앱까지 약 30분, 안드로이드 프로젝트·자동 빌드·문서 정리까지 약 40분 (2026-10-20)
-- **기술**: `React` `TypeScript` `Vite` `PWA` `Capacitor (Android)` `pdf.js` `SheetJS` `docx-preview` `hwp.js` `Vitest` `Playwright`
+- 검증: 단위 테스트 19개(형식 판별, 해석, 편집 왕복), 휴대폰 화면 크기에서 형식별로 편집·저장하는 자동 테스트, 저장한 파일을 python-hwpx·LibreOffice 등으로 다시 여는 호환성 검사를 만들었습니다. 이 검사로 크롬에서만 XML 선언이 두 번 들어가 Word·한글이 파일을 못 여는 버그를 찾아 고쳤습니다. 실제 공공기관 서식(국가연구개발 계획서 HWPX 양식)과 HWP 5.0 문서로도 확인했습니다.
+- **걸린 시간**: 아이디어부터 다섯 가지 형식이 모두 열리는 웹 앱까지 약 30분, 안드로이드 프로젝트·자동 빌드·문서 정리까지 약 40분, 편집·호환 저장 기능과 검증까지 약 1시간 추가 (2026-10-20)
+- **기술**: `React` `TypeScript` `Vite` `PWA` `Capacitor (Android)` `pdf.js` `pdf-lib` `SheetJS` `docx-preview` `hwp.js` `Vitest` `Playwright` `LibreOffice (검증)`
 
 <img src="pocket-doc-viewer/docs/hero.png" width="640" alt="포켓 문서 뷰어 화면: 첫 화면, PDF, Word, Excel, PowerPoint, 한글">
+<img src="pocket-doc-viewer/docs/edit.png" width="640" alt="편집 화면: 한글 서식 빈칸 채우기, Word 글자 고치기, Excel 값·수식, PDF 필기·회전, 저장">
 
 ## 🗜️ 압축풀기
 광고와 데이터 수집 없이 압축 파일을 기기 안에서 바로 푸는 안드로이드 앱입니다.
