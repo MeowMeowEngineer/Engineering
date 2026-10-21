@@ -1,0 +1,113 @@
+{
+  "adult_male": {
+    "anchors_mm": {
+      "y_front_face": 35.1,
+      "y_front_chest": 63.4,
+      "y_front_abdomen": 62.9,
+      "y_front_toes": 0.0
+    },
+    "mesh_vs_voxel_volume_diff_pct": -5.82,
+    "age_years": 30.0,
+    "weight_slider": 0.9999,
+    "height_mm": 1720.0,
+    "width_mm": 612.4,
+    "depth_mm": 318.8,
+    "volume_L": 68.52,
+    "mass_kg_at_1050": 71.95,
+    "surface_m2": 1.852,
+    "watertight": true,
+    "triangles": 26756,
+    "eyes": {
+      "l": {
+        "center_mm": [
+          31.0,
+          73.2,
+          1605.8
+        ],
+        "vitreous_radius_mm": 12.0
+      },
+      "r": {
+        "center_mm": [
+          -31.0,
+          73.2,
+          1605.8
+        ],
+        "vitreous_radius_mm": 12.0
+      }
+    }
+  },
+  "child_7y": {
+    "anchors_mm": {
+      "y_front_face": 3.9,
+      "y_front_chest": 30.6,
+      "y_front_abdomen": 33.9,
+      "y_front_toes": 0.0
+    },
+    "mesh_vs_voxel_volume_diff_pct": -8.64,
+    "age_years": 7.0,
+    "weight_slider": 0.0001,
+    "height_mm": 1220.0,
+    "width_mm": 417.2,
+    "depth_mm": 216.9,
+    "volume_L": 23.36,
+    "mass_kg_at_1050": 24.53,
+    "surface_m2": 0.91,
+    "watertight": true,
+    "triangles": 26756,
+    "eyes": {
+      "l": {
+        "center_mm": [
+          26.8,
+          39.0,
+          1121.4
+        ],
+        "vitreous_radius_mm": 11.2
+      },
+      "r": {
+        "center_mm": [
+          -26.8,
+          39.0,
+          1121.4
+        ],
+        "vitreous_radius_mm": 11.2
+      }
+    }
+  },
+  "child_3y": {
+    "anchors_mm": {
+      "y_front_face": 0.0,
+      "y_front_chest": 25.9,
+      "y_front_abdomen": 21.8,
+      "y_front_toes": 12.5
+    },
+    "mesh_vs_voxel_volume_diff_pct": -10.03,
+    "age_years": 3.0,
+    "weight_slider": 0.0001,
+    "height_mm": 960.0,
+    "width_mm": 330.1,
+    "depth_mm": 186.9,
+    "volume_L": 13.86,
+    "mass_kg_at_1050": 14.55,
+    "surface_m2": 0.625,
+    "watertight": true,
+    "triangles": 26756,
+    "eyes": {
+      "l": {
+        "center_mm": [
+          25.3,
+          37.8,
+          863.6
+        ],
+        "vitreous_radius_mm": 10.5
+      },
+      "r": {
+        "center_mm": [
+          -25.3,
+          37.8,
+          863.6
+        ],
+        "vitreous_radius_mm": 10.5
+      }
+    }
+  }
+}
