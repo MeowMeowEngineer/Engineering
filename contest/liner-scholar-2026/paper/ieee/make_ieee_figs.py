@@ -31,7 +31,7 @@ DIST = [30, 50, 100]
 # 전신 평균 SAR 기준 도달 배수: (v2 몸앞평균, v1 몸앞최대)
 MULT_WB = {30: (1456, 117), 50: (2572, 247), 100: (7358, 834)}
 # 해부학 모형(Gustav) 국부 1 g 기준 도달 배수: (v1 몸앞평균, v1 몸앞최대)
-MULT_LOC = {30: (267, 62), 50: (402, 130), 100: (951, 438)}
+MULT_LOC = {30: (233, 54), 50: (351, 113), 100: (830, 382)}  # 해부학·실체형 최댓값(MakeHuman 성인 0.226) 기준
 # 국부(피부) 최대 온도 상승, 시나리오 A (degC): 부록 B.8
 DT_LOCAL_A = {30: (0.000091, 0.0011), 50: (0.000051, 0.00054), 100: (0.000018, 0.00016)}
 
@@ -80,7 +80,7 @@ def fig_sar_margin():
 
     # (b) 기준 도달 배수
     rows = [(f"전신 평균, {d} cm", *MULT_WB[d][::-1]) for d in DIST] + \
-           [(f"국부 1 g (해부학), {d} cm", *MULT_LOC[d][::-1]) for d in DIST]
+           [(f"국부 1 g, {d} cm", *MULT_LOC[d][::-1]) for d in DIST]
     for i, (lab, lo, hi) in enumerate(rows):
         y = len(rows) - 1 - i
         b.plot([lo, hi], [y, y], color="#555555", lw=4.5, solid_capstyle="butt", zorder=3)
