@@ -284,6 +284,52 @@ function gridSolutions(fn, v, L) {
   return out; // 단위: π/6
 }
 
+// 구간별 함수: rows = [[식, 조건], ...]
+const cases = rows => T`\begin{cases}` + rows.map(([e, c]) => T`${e} & (${c})`).join(T` \\ `) + T`\end{cases}`;
+const linX = c => (c === 0 ? 'x' : c > 0 ? `x+${c}` : `x-${-c}`);
+const prod2 = (p, q) => (q === 0 ? fx(q) + fx(p) : fx(p) + fx(q)); // 0인 근을 앞에
+function fracSqrt3(n, d) {
+  const g = gcd(n, d) || 1; n /= g; d /= g;
+  const top = n === 1 ? T`\sqrt{3}` : T`${n}\sqrt{3}`;
+  return d === 1 ? top : T`\frac{${top}}{${d}}`;
+}
+const AB_T = T`\overline{\mathrm{AB}}`, AC_T = T`\overline{\mathrm{AC}}`, BC_T = T`\overline{\mathrm{BC}}`, ANG_A = T`\angle\mathrm{A}`;
+// jπ/6 의 사인 값(TeX). 코사인은 j+3 칸 뒤의 사인 값
+const SIN_T = ['0', T`\frac{1}{2}`, T`\frac{\sqrt{3}}{2}`, '1', T`\frac{\sqrt{3}}{2}`, T`\frac{1}{2}`, '0', T`-\frac{1}{2}`, T`-\frac{\sqrt{3}}{2}`, '-1', T`-\frac{\sqrt{3}}{2}`, T`-\frac{1}{2}`];
+const COS_T = SIN_T.map((_, j) => SIN_T[(j + 3) % 12]);
+
+// 수열의 귀납적 정의: 짝수면 2로 나누고, 홀수면 a_n+p 또는 3a_n+1
+const RULES = [{ p: 1 }, { p: 3 }, { p: 5 }, { t: 3 }];
+const stepR = (r, x) => (x % 2 === 0 ? x / 2 : r.t ? 3 * x + 1 : x + r.p);
+const oddT = r => (r.t ? '3a_n+1' : `a_n+${r.p}`);
+const ruleT = r => cases([[T`\dfrac{a_n}{2}`, T`a_n\text{이 짝수}`], [oddT(r), T`a_n\text{이 홀수}`]]);
+const preds = (r, y) => { const out = []; for (let x = 1; x <= 2 * y; x++) if (stepR(r, x) === y) out.push(x); return out; };
+function predWhy(r, y) {
+  const ox = r.t ? (y - 1) / 3 : y - r.p;
+  const verdict = !Number.isInteger(ox) || ox < 1 ? '자연수가 아니라 불가' : ox % 2 ? '홀수 ✓' : '홀수가 아니라 불가';
+  return T`앞 항이 짝수였다면 $\dfrac{a}{2}=${y}$에서 $a=${2 * y}$ (짝수 ✓), 홀수였다면 $${r.t ? '3a+1' : 'a+' + r.p}=${y}$에서 $a=${r.t ? frac(y - 1, 3) : ox}$ (${verdict})`;
+}
+// y 에서 depth 단계 거슬러 올라간 첫째항 후보와 풀이 줄
+function backTree(r, y, top, depth) {
+  const lines = []; let level = [y];
+  for (let d = 0; d < depth; d++) {
+    const next = [];
+    level.forEach(v => {
+      const ps = preds(r, v);
+      lines.push(T`$a_{${top - d}}=${v}$ → $a_{${top - d - 1}}$: ${ps.length ? `$${ps.join(', ')}$` : '없음'}`);
+      next.push(...ps);
+    });
+    level = next;
+  }
+  return { vals: level, lines };
+}
+// 극값을 갖는 x 가 p<q 인 최고차항 계수 1 삼차식 x^3+ax^2+bx (p+q 짝수)
+const cubicPQ = (p, q) => [0, 3 * p * q, (-3 * (p + q)) / 2, 1];
+// 로그 밑 TeX (inv 이면 1/b)
+const logB = (b, inv) => (inv ? T`\log_{\frac{1}{${b}}}` : T`\log_{${b}}`);
+const logArg = (B, c) => (c === 0 ? `${B} x` : `${B}(${linX(c)})`);
+const sumRange = (lo, hi) => (hi < lo ? 0 : ((lo + hi) * (hi - lo + 1)) / 2);
+
 const CONCEPTS = {
   d_deriv: {
     name: '미분계수 계산', unit: '수학Ⅱ · 미분', sec: 40, prereq: [],
@@ -568,6 +614,320 @@ const CONCEPTS = {
       };
     },
   },
+  c_limit: {
+    name: '좌극한과 우극한', unit: '수학Ⅱ · 극한과 연속', sec: 45, prereq: [],
+    card: T`구간별로 정의된 함수는 경계 $x=k$의 왼쪽($x\to k-$)과 오른쪽($x\to k+$)에서 쓰는 식이 다릅니다. 각각 그 쪽 식에 $x=k$를 대입하면 극한값입니다.`,
+    gen() {
+      const k = pick([-1, 1, 2, 3]), a = pick([1, 2, -1, 3]), b = rnd(-4, 5), d = rnd(-5, 5);
+      const L = a * k + b, R = k * k + d, sum = Math.random() < 0.5;
+      const g = cases([[polyTeX([b, a]), `x<${k}`], [polyTeX([d, 0, 1]), T`x\ge ${k}`]]);
+      return {
+        q: T`함수 $g(x)=${g}$에 대하여 $\displaystyle\lim_{x\to ${k}-}g(x)${sum ? '+' : '-'}\lim_{x\to ${k}+}g(x)$의 값을 구하시오.`, a: sum ? L + R : L - R,
+        sol: T`$x\to ${k}-$이면 $x<${k}$ 쪽 식을 써서 $${substTeX([b, a], k)}=${L}$<br>$x\to ${k}+$이면 $x\ge ${k}$ 쪽 식을 써서 $${substTeX([d, 0, 1], k)}=${R}$<br>따라서 $${L}${sum ? '+' : '-'}${paren(R)}=${sum ? L + R : L - R}$`,
+      };
+    },
+  },
+  c_cont: {
+    name: '구간별 함수의 연속', unit: '수학Ⅱ · 극한과 연속', sec: 50, prereq: ['c_limit'],
+    card: T`$x=k$에서 연속이려면 좌극한, 우극한, 함숫값 $f(k)$가 모두 같아야 합니다. 구간별 함수는 경계에서 두 식의 값이 같다는 식 하나를 세우면 됩니다.`,
+    gen() {
+      const k = pick([1, 2, -1, 3]), a = rnd(-4, 4), b = pick([-3, -2, -1, 1, 2, 3, 4]), c = k * k + a * k - b * k, v = b * k + c;
+      const f = cases([['x^2+ax', `x<${k}`], [polyTeX([c, b]), T`x\ge ${k}`]]);
+      return {
+        q: T`함수 $f(x)=${f}$가 실수 전체의 집합에서 연속일 때, 상수 $a$의 값을 구하시오.`, a,
+        sol: T`$x=${k}$에서 연속이어야 하므로 $\displaystyle\lim_{x\to ${k}-}f(x)=f(${k})$<br>$${paren(k)}^2+${paren(k)}a=${v}$, 즉 $${termsTeX([[k * k, ''], [k, 'a']])}=${v}$에서 $a=${a}$`,
+      };
+    },
+  },
+  c_prod: {
+    name: '곱의 연속', unit: '수학Ⅱ · 극한과 연속', sec: 60, prereq: ['c_cont'],
+    card: T`$g(x)$가 $x=k$에서 끊어져 있어도 $f(k)=0$이면 $f(x)g(x)$는 $x=k$에서 연속이 됩니다. 좌극한 $f(k)L$과 우극한 $f(k)R$이 $L\ne R$일 때 같아지려면 $f(k)=0$이어야 하기 때문입니다.`,
+    gen() {
+      const k = pick([1, 2, -1, 3]); let p, q, r;
+      do { p = rnd(-3, 4); q = rnd(-3, 4); } while (p === q);
+      do r = rnd(-3, 4); while (r === k);
+      const a = -(k + r), b = k * r;
+      const g = cases([[linX(p), `x<${k}`], [linX(q), T`x\ge ${k}`]]);
+      return {
+        q: T`두 함수 $f(x)=${termsTeX([[1, 'x^2'], [1, 'ax'], [b, '']])}$, $g(x)=${g}$에 대하여 함수 $f(x)g(x)$가 실수 전체의 집합에서 연속일 때, 상수 $a$의 값을 구하시오.`, a,
+        sol: T`$g(x)$는 $x=${k}$에서 좌극한 $${k + p}$, 우극한 $${k + q}$이 달라 끊어져 있습니다.<br>$f(x)g(x)$가 연속이려면 $${k + p}f(${k})=${k + q}f(${k})$, 즉 $f(${k})=0$<br>$${termsTeX([[k * k, ''], [k, 'a'], [b, '']])}=0$에서 $a=${a}$`,
+      };
+    },
+  },
+  alg_factor: {
+    name: '근으로 다항식 세우기', unit: '수학Ⅱ · 극한과 연속', sec: 45, prereq: [],
+    card: T`$f(k)=0$이면 $f(x)$는 $(x-k)$를 인수로 가집니다. 최고차항의 계수가 $1$인 이차함수라면 $f(x)=(x-k)(x-c)$로 두고, 다른 조건으로 $c$를 구합니다.`,
+    gen() {
+      const k = pick([-2, -1, 1, 2, 3]); let r, t;
+      do r = rnd(-4, 5); while (r === k);
+      do t = rnd(-2, 6); while (t === k || t === r);
+      const m = k * r, ans = (t - k) * (t - r);
+      return {
+        q: T`최고차항의 계수가 $1$인 이차함수 $f(x)$가 $f(${k})=0,\ f(0)=${m}$을 만족시킬 때, $f(${t})$의 값을 구하시오.`, a: ans,
+        sol: T`$f(${k})=0$이므로 $f(x)=${fx(k)}(x-c)$<br>$f(0)=${paren(-k)}\cdot(-c)=${k}c=${m}$에서 $c=${r}$<br>$f(${t})=${paren(t - k)}\cdot${paren(t - r)}=${ans}$`,
+      };
+    },
+  },
+  r_forward: {
+    name: '귀납적 정의 따라가기', unit: '수학Ⅰ · 수열', sec: 50, prereq: [],
+    card: T`$a_n$이 짝수인지 홀수인지 먼저 확인하고, 그에 맞는 식으로 다음 항을 구합니다. 한 항씩 적어 가며 계산합니다.`,
+    gen() {
+      const r = pick(RULES), a1 = rnd(3, 40), k = rnd(4, 6), seq = [a1];
+      for (let i = 1; i < k; i++) seq.push(stepR(r, seq[i - 1]));
+      return {
+        q: T`수열 $\{a_n\}$이 $a_1=${a1}$이고, 모든 자연수 $n$에 대하여 $a_{n+1}=${ruleT(r)}$를 만족시킬 때, $a_{${k}}$의 값을 구하시오.`, a: seq[k - 1],
+        sol: T`${seq.map((v, i) => `$a_{${i + 1}}=${v}$`).join(' → ')}<br>짝수이면 $2$로 나누고, 홀수이면 $${oddT(r)}$를 적용했습니다.`,
+      };
+    },
+  },
+  r_back: {
+    name: '앞 항 거꾸로 찾기', unit: '수학Ⅰ · 수열', sec: 60, prereq: ['r_forward'],
+    card: T`$a_{n+1}$을 알 때 $a_n$은 "짝수였던 경우"와 "홀수였던 경우"로 나눠 구합니다. 각각 구한 값이 그 경우의 조건(짝수·홀수, 자연수)을 실제로 만족하는지 꼭 확인합니다.`,
+    gen() {
+      const r = pick(RULES), y = rnd(2, 30), ps = preds(r, y), s = ps.reduce((a, b) => a + b, 0);
+      return {
+        q: T`모든 항이 자연수인 수열 $\{a_n\}$이 모든 자연수 $n$에 대하여 $a_{n+1}=${ruleT(r)}$를 만족시킨다. $a_2=${y}$일 때, 가능한 모든 $a_1$의 값의 합을 구하시오.`, a: s,
+        sol: T`${predWhy(r, y)}<br>가능한 $a_1$은 $${ps.join(', ')}$이고 합은 $${s}$`,
+      };
+    },
+  },
+  r_tree: {
+    name: '경우의 가지 빠짐없이 세기', unit: '수학Ⅰ · 수열', sec: 90, prereq: ['r_back'],
+    card: T`거꾸로 올라갈 때마다 후보가 1개 또는 2개로 갈라집니다. 단계별로 가지를 그려, 마지막 줄의 후보를 모두 모읍니다.`,
+    gen() {
+      let r, y, t;
+      do { r = pick(RULES); y = rnd(2, 24); t = backTree(r, y, 3, 2); } while (t.vals.length < 2);
+      const s = t.vals.reduce((a, b) => a + b, 0);
+      return {
+        q: T`모든 항이 자연수인 수열 $\{a_n\}$이 모든 자연수 $n$에 대하여 $a_{n+1}=${ruleT(r)}$를 만족시킨다. $a_3=${y}$일 때, 가능한 모든 $a_1$의 값의 합을 구하시오.`, a: s,
+        sol: T`${t.lines.join('<br>')}<br>가능한 $a_1$: $${t.vals.join(', ')}$, 합 $${s}$`,
+      };
+    },
+  },
+  q_zero: {
+    name: '위끝과 아래끝이 같으면 0', unit: '수학Ⅱ · 적분', sec: 45, prereq: [],
+    card: T`$\displaystyle\int_k^k f(t)\,dt=0$입니다. $\displaystyle\int_k^x f(t)\,dt$가 들어 있는 등식에는 $x=k$를 대입해 미지수를 구합니다.`,
+    gen() {
+      const k = pick([1, 2, -1]), a = rnd(-4, 4), b = rnd(-5, 5), c = -(k ** 3 + a * k * k + b * k);
+      return {
+        q: T`다항함수 $f(x)$가 모든 실수 $x$에 대하여 $\displaystyle\int_{${k}}^{x}f(t)\,dt=${termsTeX([[1, 'x^3'], [1, 'ax^2'], [b, 'x'], [c, '']])}$을 만족시킬 때, 상수 $a$의 값을 구하시오.`, a,
+        sol: T`$x=${k}$을 대입하면 좌변은 $0$입니다.<br>$${paren(k)}^3+a\cdot${paren(k)}^2${b < 0 ? '' : '+'}${b}\cdot${paren(k)}${c < 0 ? '' : '+'}${c}=0$, 즉 $${termsTeX([[k * k, 'a'], [k ** 3 + b * k + c, '']])}=0$에서 $a=${a}$`,
+      };
+    },
+  },
+  q_diff: {
+    name: '정적분으로 정의된 함수의 미분', unit: '수학Ⅱ · 적분', sec: 45, prereq: ['d_deriv'],
+    card: T`$\dfrac{d}{dx}\displaystyle\int_a^x f(t)\,dt=f(x)$입니다. 식에 $\displaystyle\int_a^x$가 보이면 양변을 $x$로 미분합니다.`,
+    gen() {
+      const k = pick([1, 2, -1, 0]), A = pick([1, 2, -1]), B = rnd(-4, 4), C = rnd(-5, 5), m = pick([-1, 1, 2, 3]);
+      const P = [0, C, B, A]; P[0] = -evalPoly(P, k);
+      const fp = deriv(P), ans = evalPoly(fp, m);
+      return {
+        q: T`다항함수 $f(x)$가 모든 실수 $x$에 대하여 $\displaystyle\int_{${k}}^{x}f(t)\,dt=${polyTeX(P)}$을 만족시킬 때, $f(${m})$의 값을 구하시오.`, a: ans,
+        sol: T`양변을 $x$로 미분하면 $f(x)=${polyTeX(fp)}$<br>$f(${m})=${substTeX(fp, m)}=${ans}$`,
+      };
+    },
+  },
+  d_product: {
+    name: '곱의 미분법', unit: '수학Ⅱ · 미분', sec: 50, prereq: ['d_deriv'],
+    card: T`$\{f(x)g(x)\}'=f'(x)g(x)+f(x)g'(x)$입니다. 특히 $\{xf(x)\}'=f(x)+xf'(x)$는 자주 나옵니다.`,
+    gen() {
+      if (Math.random() < 0.5) {
+        const k = pick([1, 2, -1, 3]), u = rnd(-5, 6), v = rnd(-4, 4), h = pick([[0, 1], [0, 0, 1], [rnd(-3, 3) || 1, 1]]);
+        const hk = evalPoly(h, k), hpk = evalPoly(deriv(h), k), ans = hpk * u + hk * v;
+        const wrap = t => (t === '1' ? '' : /[+-]/.test(t.slice(1)) ? `(${t})` : t);
+        return {
+          q: T`미분가능한 함수 $f(x)$가 $f(${k})=${u},\ f'(${k})=${v}$를 만족시킨다. $g(x)=${wrap(polyTeX(h))}f(x)$일 때, $g'(${k})$의 값을 구하시오.`, a: ans,
+          sol: T`$g'(x)=${wrap(polyTeX(deriv(h)))}f(x)+${wrap(polyTeX(h))}f'(x)$<br>$g'(${k})=${hpk}\cdot${paren(u)}+${paren(hk)}\cdot${paren(v)}=${ans}$`,
+        };
+      }
+      const a = rnd(-4, 4), b = rnd(-3, 3), m = pick([-1, 1, 2]);
+      const ans = 2 * m * (m + b) + (m * m + a);
+      return {
+        q: T`함수 $f(x)=(${polyTeX([a, 0, 1])})(${linX(b)})$에 대하여 $f'(${m})$의 값을 구하시오.`, a: ans,
+        sol: T`$f'(x)=2x(${linX(b)})+(${polyTeX([a, 0, 1])})\cdot 1$<br>$f'(${m})=${2 * m}\cdot${paren(m + b)}+${paren(m * m + a)}=${ans}$`,
+      };
+    },
+  },
+  q_anti: {
+    name: '도함수에서 함수 되찾기', unit: '수학Ⅱ · 적분', sec: 50, prereq: [],
+    card: T`$f'(x)$를 알면 $f(x)$는 부정적분에 적분상수 $C$를 붙인 식입니다. $C$는 함숫값 조건 하나로 정합니다.`,
+    gen() {
+      const A = pick([3, 6, 0]), B = pick([-6, -4, -2, 2, 4, 6]), Cc = rnd(-4, 4), k = pick([0, 1, -1, 2]), q = rnd(-6, 8), m = pick([1, 2, 3, -1]);
+      const fp = [Cc, B, A], F = [0, Cc, B / 2, A / 3];
+      const K = q - evalPoly(F, k); F[0] = K;
+      const ans = evalPoly(F, m);
+      return {
+        q: T`함수 $f(x)$에 대하여 $f'(x)=${polyTeX(fp)}$이고 $f(${k})=${q}$일 때, $f(${m})$의 값을 구하시오.`, a: ans,
+        sol: T`$f(x)=${polyTeX([0, Cc, B / 2, A / 3])}+C$<br>$f(${k})=${q}$에서 $C=${K}$, $f(x)=${polyTeX(F)}$<br>$f(${m})=${ans}$`,
+      };
+    },
+  },
+  d_crit: {
+    name: '극값을 갖는 x 찾기', unit: '수학Ⅱ · 미분', sec: 45, prereq: ['d_deriv'],
+    card: T`$f'(x)=0$인 $x$에서 $f'(x)$의 부호가 바뀌면 극값입니다. 최고차항의 계수가 양수인 삼차함수는 작은 근에서 극대, 큰 근에서 극소입니다.`,
+    gen() {
+      const p = rnd(-3, 3), q = p + pick([2, 4]), f = cubicPQ(p, q); f[0] = rnd(-5, 5);
+      const max = Math.random() < 0.5;
+      return {
+        q: T`함수 $f(x)=${polyTeX(f)}$이 $x=\alpha$에서 극${max ? '대' : '소'}일 때, $\alpha$의 값을 구하시오.`, a: max ? p : q,
+        sol: T`$f'(x)=${polyTeX(deriv(f))}=3${prod2(p, q)}$<br>$f'(x)$의 부호가 $+\to-$로 바뀌는 $x=${p}$에서 극대, $-\to+$로 바뀌는 $x=${q}$에서 극소입니다. 답 $${max ? p : q}$`,
+      };
+    },
+  },
+  d_extremum: {
+    name: '극댓값·극솟값 계산', unit: '수학Ⅱ · 미분', sec: 60, prereq: ['d_crit'],
+    card: T`극값을 갖는 $x$를 찾은 뒤 원래 함수 $f(x)$에 대입합니다(도함수에 대입하지 않습니다). 상수 $k$가 있으면 극값을 $k$가 들어간 식으로 둡니다.`,
+    gen() {
+      const p = rnd(-3, 3), q = p + pick([2, 4]), f = cubicPQ(p, q); f[0] = rnd(-5, 5);
+      const M = evalPoly(f, p), m = evalPoly(f, q), t = rnd(0, 2);
+      const ans = t === 0 ? M : t === 1 ? m : M - m;
+      return {
+        q: T`함수 $f(x)=${polyTeX(f)}$의 ${t === 0 ? '극댓값' : t === 1 ? '극솟값' : '극댓값과 극솟값의 차'}을 구하시오.`, a: ans,
+        sol: T`$f'(x)=3${prod2(p, q)}$이므로 $x=${p}$에서 극대, $x=${q}$에서 극소<br>극댓값 $f(${p})=${M}$, 극솟값 $f(${q})=${m}$${t === 2 ? T`<br>차는 $${M}-${paren(m)}=${ans}$` : ''}`,
+      };
+    },
+  },
+  d_roots: {
+    name: '극값의 부호로 실근 개수 세기', unit: '수학Ⅱ · 미분', sec: 75, prereq: ['d_extremum'],
+    card: T`삼차방정식 $f(x)=0$의 서로 다른 실근은 (극댓값)$\times$(극솟값)$<0$이면 3개, $=0$이면 2개(그래프가 $x$축에 접함), $>0$이면 1개입니다.`,
+    gen() {
+      const p = rnd(-3, 2), q = p + pick([2, 4]), f = cubicPQ(p, q), M = evalPoly(f, p), m = evalPoly(f, q);
+      const cnt = Math.random() < 0.5;
+      const ft = polyTeX(f) + '+k';
+      return {
+        q: cnt ? T`방정식 $${ft}=0$의 서로 다른 실근의 개수가 $3$이 되도록 하는 정수 $k$의 개수를 구하시오.`
+          : T`방정식 $${ft}=0$의 서로 다른 실근의 개수가 $2$가 되도록 하는 모든 실수 $k$의 값의 합을 구하시오.`,
+        a: cnt ? M - m - 1 : -(M + m),
+        sol: T`극댓값은 $${termsTeX([[1, 'k'], [M, '']])}$ ($x=${p}$), 극솟값은 $${termsTeX([[1, 'k'], [m, '']])}$ ($x=${q}$)<br>${cnt
+          ? T`실근 3개: 극댓값 $>0$, 극솟값 $<0$이므로 $${-M}<k<${-m}$, 정수 $k$는 $${M - m - 1}$개`
+          : T`실근 2개: 극댓값 $=0$ 또는 극솟값 $=0$이므로 $k=${-M}$ 또는 $k=${-m}$, 합 $${-(M + m)}$`}`,
+      };
+    },
+  },
+  l_domain: {
+    name: '진수 조건', unit: '수학Ⅰ · 지수·로그', sec: 40, prereq: [],
+    card: T`$\log_a A$가 정의되려면 진수 $A>0$이어야 합니다. 로그가 여러 개면 진수 조건을 모두 만족하는 범위만 남깁니다. 부등식을 풀기 전에 먼저 적어 둡니다.`,
+    gen() {
+      if (Math.random() < 0.5) {
+        const p = rnd(-3, 3), q = p + rnd(2, 7);
+        return {
+          q: T`$\log_2 (${linX(-p)})+\log_2 (${q}-x)$가 정의되도록 하는 정수 $x$의 개수를 구하시오.`, a: q - p - 1,
+          sol: T`$${linX(-p)}>0$, $${q}-x>0$이므로 $${p}<x<${q}$, 정수는 $${q - p - 1}$개`,
+        };
+      }
+      let p, q; do { p = rnd(-4, 4); q = rnd(-4, 4); } while (-p === q);
+      const c = Math.max(-p, q);
+      return {
+        q: T`$\log_3 (${linX(p)})+\log_3 (${linX(-q)})$가 정의되는 $x$의 값의 범위가 $x>c$일 때, $c$의 값을 구하시오.`, a: c,
+        sol: T`$${linX(p)}>0$에서 $x>${-p}$, $${linX(-q)}>0$에서 $x>${q}$. 둘 다 만족하려면 $x>${c}$`,
+      };
+    },
+  },
+  l_merge: {
+    name: '로그 합치기', unit: '수학Ⅰ · 지수·로그', sec: 40, prereq: ['e_value'],
+    card: T`$\log_a M+\log_a N=\log_a MN$, $\log_a M-\log_a N=\log_a \dfrac{M}{N}$입니다. 로그 두 개를 하나로 합친 뒤 진수를 비교합니다.`,
+    gen() {
+      const b = pick([2, 3, 6, 10]), sub = Math.random() < 0.4, n = sub ? pick([1, 2]) : pick([2, 3]);
+      const P = b ** n, divs = []; for (let d = 2; d < P; d++) if (P % d === 0) divs.push(d);
+      const u = sub ? rnd(2, 9) : pick(divs);
+      if (sub) return {
+        q: T`$\log_{${b}} ${P * u}-\log_{${b}} ${u}$의 값을 구하시오.`, a: n,
+        sol: T`$\log_{${b}}\dfrac{${P * u}}{${u}}=\log_{${b}} ${P}=${n}$`,
+      };
+      return {
+        q: T`$\log_{${b}} ${u}+\log_{${b}} ${P / u}$의 값을 구하시오.`, a: n,
+        sol: T`$\log_{${b}}(${u}\times${P / u})=\log_{${b}} ${P}=${n}$`,
+      };
+    },
+  },
+  l_ineq: {
+    name: '밑과 부등호 방향', unit: '수학Ⅰ · 지수·로그', sec: 50, prereq: ['l_domain'],
+    card: T`밑이 $1$보다 크면 $\log_a A\le\log_a B \Leftrightarrow A\le B$, 밑이 $0$과 $1$ 사이면 부등호 방향이 바뀌어 $A\ge B$입니다. 상수도 $n=\log_a a^n$으로 바꿔 같은 밑끼리 비교합니다.`,
+    gen() {
+      const b = pick([2, 3]), n = b === 2 ? rnd(1, 4) : rnd(1, 3), inv = Math.random() < 0.6, strict = Math.random() < 0.4, p = rnd(-3, 3), P = b ** n;
+      const B = logB(b, inv), lhs = logArg(B, -p);
+      const ineq = inv ? `${lhs}${strict ? '>' : T`\ge`}${-n}` : `${lhs}${strict ? '<' : T`\le`}${n}`;
+      const ans = strict ? P - 1 : P;
+      return {
+        q: T`부등식 $${ineq}$를 만족시키는 정수 $x$의 개수를 구하시오.`, a: ans,
+        sol: T`진수 조건: $x>${p}$<br>${inv ? T`$${-n}=${B} ${P}$이고 밑이 $1$보다 작으므로 부등호 방향이 바뀝니다.` : T`$${n}=${B} ${P}$이고 밑이 $1$보다 큽니다.`} $${linX(-p)}${strict ? '<' : T`\le`}${P}$<br>$${p}<x${strict ? '<' : T`\le`}${p + P}$, 정수 $x$는 $${ans}$개`,
+      };
+    },
+  },
+  alg_ineq: {
+    name: '이차부등식', unit: '수학Ⅰ · 지수·로그', sec: 45, prereq: [],
+    card: T`$(x-\alpha)(x-\beta)\le 0$ ($\alpha<\beta$)이면 $\alpha\le x\le\beta$, $\ge 0$이면 $x\le\alpha$ 또는 $x\ge\beta$입니다. 인수분해부터 합니다.`,
+    gen() {
+      const r1 = rnd(-5, 3), r2 = r1 + rnd(2, 6), strict = Math.random() < 0.4, cnt = Math.random() < 0.5;
+      const lo = strict ? r1 + 1 : r1, hi = strict ? r2 - 1 : r2;
+      const ans = cnt ? hi - lo + 1 : sumRange(lo, hi);
+      return {
+        q: T`부등식 $${polyTeX([r1 * r2, -(r1 + r2), 1])}${strict ? '<' : T`\le`}0$을 만족시키는 ${cnt ? '정수 $x$의 개수' : '모든 정수 $x$의 값의 합'}를 구하시오.`, a: ans,
+        sol: T`$${prod2(r1, r2)}${strict ? '<' : T`\le`}0$이므로 $${r1}${strict ? '<' : T`\le`}x${strict ? '<' : T`\le`}${r2}$<br>정수 $x$는 $${lo}$부터 $${hi}$까지, ${cnt ? `$${ans}$개` : `합 $${ans}$`}`,
+      };
+    },
+  },
+  t_special: {
+    name: '특수각의 삼각비', unit: '수학Ⅰ · 삼각함수', sec: 30, prereq: [],
+    card: T`$\dfrac{\pi}{6},\ \dfrac{\pi}{3},\ \dfrac{\pi}{2}$의 사인·코사인 값을 외우고, 나머지 각은 단위원에서 사분면의 부호를 붙여 구합니다. 예: $\cos\dfrac{2}{3}\pi=-\dfrac12$`,
+    gen() {
+      const t = rnd(0, 3), cosT = t === 0 || t === 2;
+      const okJ = t === 0 ? [0, 2, 3, 4, 6, 8, 9, 10] : t === 1 ? [0, 1, 3, 5, 6, 7, 9, 11] : [...Array(12).keys()];
+      const j = pick(okJ), x = (j * Math.PI) / 6, v = cosT ? Math.cos(x) : Math.sin(x);
+      const ans = Math.round(t < 2 ? 2 * v : 4 * v * v);
+      const fn = cosT ? T`\cos` : T`\sin`, th = j === 0 ? '0' : piTeX(j, 6);
+      return {
+        q: T`$${t < 2 ? '2' : '4'}${fn}${t < 2 ? '' : '^2'}${j === 0 ? ' ' : ''}${th}$의 값을 구하시오.`, a: ans,
+        sol: T`$${fn} ${th}=${cosT ? COS_T[j] : SIN_T[j]}$이므로 답은 $${ans}$`,
+      };
+    },
+  },
+  tri_area: {
+    name: '넓이로 각 구하기', unit: '수학Ⅰ · 삼각함수', sec: 60, prereq: ['t_special'],
+    card: T`삼각형의 넓이는 $\dfrac12 bc\sin A$입니다. 넓이로 $\sin A$를 구하면 각 $A$는 예각과 둔각 두 후보가 나오므로, 문제의 조건으로 하나를 고릅니다.`,
+    gen() {
+      const j = pick([1, 2, 3, 4, 5]), b = rnd(2, 9); let c; do c = rnd(2, 9); while (c === b);
+      const S = j === 3 ? frac(b * c, 2) : j === 2 || j === 4 ? fracSqrt3(b * c, 4) : frac(b * c, 4);
+      const cond = j === 3 ? '' : T`$${ANG_A}${j < 3 ? '<' : '>'}\dfrac{\pi}{2}$이고 `;
+      return {
+        q: T`삼각형 $\mathrm{ABC}$에서 $${AB_T}=${c},\ ${AC_T}=${b}$이고 넓이가 $${S}$이다. ${cond}$${ANG_A}=\dfrac{n}{6}\pi$일 때, $n$의 값을 구하시오.`, a: j,
+        sol: T`$\dfrac12\cdot${b}\cdot${c}\cdot\sin A=${S}$에서 $\sin A=${SIN_T[j]}$<br>${j === 3 ? T`$\sin A=1$인 각은 $\dfrac{\pi}{2}$ 하나입니다.` : T`후보는 $${piTeX(Math.min(j, 6 - j), 6)}$와 $${piTeX(Math.max(j, 6 - j), 6)}$이고, ${j < 3 ? '예각' : '둔각'}인 $${piTeX(j, 6)}$을 고릅니다.`} $n=${j}$`,
+      };
+    },
+  },
+  tri_cos: {
+    name: '코사인법칙', unit: '수학Ⅰ · 삼각함수', sec: 50, prereq: ['t_special'],
+    card: T`두 변과 끼인각을 알면 $a^2=b^2+c^2-2bc\cos A$로 나머지 변을 구합니다. 둔각이면 $\cos A<0$이라 $-2bc\cos A$가 더해집니다.`,
+    gen() {
+      const j = pick([2, 3, 4]), b = rnd(2, 9); let c; do c = rnd(2, 9); while (c === b);
+      const ans = b * b + c * c + (j === 2 ? -b * c : j === 4 ? b * c : 0);
+      return {
+        q: T`삼각형 $\mathrm{ABC}$에서 $${AB_T}=${c},\ ${AC_T}=${b},\ ${ANG_A}=${piTeX(j, 6)}$일 때, $${BC_T}^{\,2}$의 값을 구하시오.`, a: ans,
+        sol: T`$${BC_T}^{\,2}=${b}^2+${c}^2-2\cdot${b}\cdot${c}\cdot\cos ${piTeX(j, 6)}=${b * b + c * c}-${2 * b * c}\cdot${j === 2 ? T`\frac12` : j === 4 ? T`\left(-\frac12\right)` : '0'}=${ans}$`,
+      };
+    },
+  },
+  tri_sin: {
+    name: '사인법칙과 외접원', unit: '수학Ⅰ · 삼각함수', sec: 50, prereq: ['t_special'],
+    card: T`$\dfrac{a}{\sin A}=2R$ ($R$는 외접원의 반지름)입니다. 한 변과 그 맞은편 각만 알면 외접원이 정해집니다.`,
+    gen() {
+      const cs = [
+        { th: T`\frac{\pi}{6}`, s: T`\frac12`, as: [2, 3, 4, 5, 6, 7], R2: a => a * a },
+        { th: T`\frac{5}{6}\pi`, s: T`\frac12`, as: [2, 3, 4, 5, 6, 7], R2: a => a * a },
+        { th: T`\frac{\pi}{2}`, s: '1', as: [2, 4, 6, 8, 10], R2: a => (a * a) / 4 },
+        { th: T`\frac{\pi}{3}`, s: T`\frac{\sqrt{3}}{2}`, as: [3, 6, 9], R2: a => (a * a) / 3 },
+        { th: T`\frac{2}{3}\pi`, s: T`\frac{\sqrt{3}}{2}`, as: [3, 6, 9], R2: a => (a * a) / 3 },
+        { th: T`\frac{\pi}{4}`, s: T`\frac{\sqrt{2}}{2}`, as: [2, 4, 6, 8], R2: a => (a * a) / 2 },
+        { th: T`\frac{3}{4}\pi`, s: T`\frac{\sqrt{2}}{2}`, as: [2, 4, 6, 8], R2: a => (a * a) / 2 },
+      ];
+      const k = pick(cs), a = pick(k.as), ans = k.R2(a);
+      return {
+        q: T`삼각형 $\mathrm{ABC}$에서 $${BC_T}=${a},\ ${ANG_A}=${k.th}$일 때, 삼각형 $\mathrm{ABC}$의 외접원의 반지름의 길이를 $R$라 하자. $R^2$의 값을 구하시오.`, a: ans,
+        sol: T`$\dfrac{${a}}{\sin ${k.th}}=2R$, $\sin ${k.th}=${k.s}$이므로 $R=\dfrac{${a}}{2\times ${k.s}}$<br>$R^2=${ans}$`,
+      };
+    },
+  },
 };
 
 const TARGETS = [
@@ -707,6 +1067,179 @@ const TARGETS = [
       };
     },
   },
+  {
+    subject: '수학', id: 'cont-product', unit: '수학Ⅱ · 함수의 극한과 연속', title: '곱의 연속', no: 14, answer: 8,
+    problem: T`함수 $g(x)=${cases([['x+3', 'x<1'], ['x-2', T`x\ge 1`]])}$와 최고차항의 계수가 $1$인 이차함수 $f(x)$에 대하여 함수 $f(x)g(x)$가 실수 전체의 집합에서 연속이고 $f(0)=3$일 때, $f(5)$의 값을 구하시오.`,
+    solution: T`$g(x)$는 $x=1$에서 좌극한 $4$, 우극한과 함숫값 $-1$로 끊어져 있습니다.<br>$f(x)g(x)$가 $x=1$에서 연속이려면 $4f(1)=-f(1)$, 즉 $f(1)=0$<br>$f(x)=(x-1)(x-c)$, $f(0)=c=3$이므로 $f(x)=(x-1)(x-3)$, $f(5)=4\times2=8$`,
+    concepts: [
+      { id: 'c_limit', cue: 'g(x)는 x = 1의 양쪽에서 식이 다르다', role: T`$x=1$에서 좌극한과 우극한을 따로 구한다` },
+      { id: 'c_cont', cue: '실수 전체의 집합에서 연속', role: '좌극한, 우극한, 함숫값이 모두 같다는 식을 세운다' },
+      { id: 'c_prod', cue: '함수 f(x)g(x)', role: T`$g$가 끊어진 $x=1$에서 $f(1)=0$이어야 한다` },
+      { id: 'alg_factor', cue: '최고차항의 계수가 1인 이차함수, f(0) = 3', role: T`$f(x)=(x-1)(x-c)$로 두고 $c$를 구한다` },
+    ],
+    steps: [
+      { c: 'c_limit', q: T`$\displaystyle\lim_{x\to 1-}g(x)$의 값을 구하시오.`, a: 4, hint: T`$x<1$ 쪽 식 $x+3$에 $x=1$을 대입합니다.`, sol: T`$1+3=4$` },
+      { c: 'c_limit', q: T`$\displaystyle\lim_{x\to 1+}g(x)$의 값을 구하시오. (이 값은 $g(1)$과 같다.)`, a: -1, hint: T`$x\ge 1$ 쪽 식 $x-2$를 씁니다.`, sol: T`$1-2=-1$` },
+      { c: 'c_prod', q: T`$f(x)g(x)$가 $x=1$에서 연속이려면 $\displaystyle\lim_{x\to 1-}f(x)g(x)=\lim_{x\to 1+}f(x)g(x)$, 즉 $4f(1)=-f(1)$이어야 한다. $f(1)$의 값을 구하시오.`, a: 0, hint: T`$5f(1)=0$입니다.`, sol: T`$5f(1)=0$이므로 $f(1)=0$` },
+      { c: 'alg_factor', q: T`$f(1)=0$이므로 $f(x)=(x-1)(x-c)$이다. $f(0)=3$일 때 $c$의 값을 구하시오.`, a: 3, hint: T`$f(0)=(-1)(-c)$입니다.`, sol: T`$f(0)=c=3$` },
+      { c: 'alg_factor', q: T`$f(x)=(x-1)(x-3)$일 때 $f(5)$의 값을 구하시오.`, a: 8, hint: T`$4\times 2$입니다.`, sol: T`$f(5)=4\times2=8$` },
+    ],
+    twin() {
+      const k = pick([-2, -1, 1, 2, 3]); let p, q, r, t;
+      do { p = rnd(-3, 4); q = rnd(-3, 4); } while (p === q);
+      do r = rnd(-3, 5); while (r === k);
+      do t = rnd(-1, 6); while (t === k || t === r);
+      if (k === 1 && r === 3 && t === 5) return this.twin();
+      const m = k * r, ans = (t - k) * (t - r);
+      return {
+        q: T`함수 $g(x)=${cases([[linX(p), `x<${k}`], [linX(q), T`x\ge ${k}`]])}$와 최고차항의 계수가 $1$인 이차함수 $f(x)$에 대하여 함수 $f(x)g(x)$가 실수 전체의 집합에서 연속이고 $f(0)=${m}$일 때, $f(${t})$의 값을 구하시오.`, a: ans,
+        sol: T`$g(x)$는 $x=${k}$에서 좌극한 $${k + p}$, 우극한 $${k + q}$로 끊어져 있으므로 $f(${k})=0$<br>$f(x)=${fx(k)}(x-c)$, $f(0)=${k}c=${m}$에서 $c=${r}$<br>$f(${t})=${paren(t - k)}\cdot${paren(t - r)}=${ans}$`,
+      };
+    },
+  },
+  {
+    subject: '수학', id: 'recursive-back', unit: '수학Ⅰ · 수열', title: '귀납적 정의 거꾸로 풀기', no: 12, answer: 71,
+    problem: T`모든 항이 자연수인 수열 $\{a_n\}$이 모든 자연수 $n$에 대하여 $a_{n+1}=${ruleT({ p: 3 })}$를 만족시킨다. $a_4=5$일 때, 가능한 모든 $a_1$의 값의 합을 구하시오.`,
+    solution: T`$a_4=5$ → $a_3$: $10$ (홀수였다면 $a_3=2$인데 짝수라 불가)<br>$a_3=10$ → $a_2$: $20$, $7$<br>$a_2=20$ → $a_1$: $40$, $17$ / $a_2=7$ → $a_1$: $14$ (홀수였다면 $4$, 불가)<br>합 $40+17+14=71$`,
+    concepts: [
+      { id: 'r_forward', cue: '짝수일 때와 홀수일 때 식이 다르다', role: '규칙을 정확히 적용해 다음 항을 구한다' },
+      { id: 'r_back', cue: 'a₄ = 5에서 출발', role: '앞 항을 두 경우로 구하고, 짝·홀 조건에 맞는지 확인한다' },
+      { id: 'r_tree', cue: '가능한 모든 a₁', role: '갈라지는 가지를 빠짐없이 그려 모은다' },
+    ],
+    steps: [
+      { c: 'r_forward', q: T`규칙부터 확인하자. $a_1=14$이면 $a_4$의 값은?`, a: 5, hint: T`$14\to 7\to\ ?$`, sol: T`$14\to7\to10\to5$이므로 $a_4=5$. $a_1=14$는 답 후보 중 하나입니다.` },
+      { c: 'r_back', q: T`$a_4=5$일 때 가능한 $a_3$의 값을 구하시오.`, a: 10, hint: T`$a_3$이 홀수였다면 $a_3+3=5$입니다. 그 값이 홀수인지 확인하세요.`, sol: T`짝수였다면 $a_3=10$ (✓). 홀수였다면 $a_3=2$인데 짝수라 불가. 따라서 $a_3=10$` },
+      { c: 'r_back', q: T`$a_3=10$일 때 가능한 모든 $a_2$의 값의 합을 구하시오.`, a: 27, hint: T`짝수 경우 $20$, 홀수 경우 $10-3$을 확인합니다.`, sol: T`$a_2=20$ (짝수 ✓) 또는 $a_2=7$ (홀수 ✓), 합 $27$` },
+      { c: 'r_tree', q: T`$a_2=20$일 때 가능한 모든 $a_1$의 값의 합을 구하시오.`, a: 57, hint: T`$40$과 $17$이 모두 조건에 맞는지 확인합니다.`, sol: T`$a_1=40$ (짝수 ✓) 또는 $a_1=17$ (홀수 ✓), 합 $57$` },
+      { c: 'r_tree', q: T`$a_2=7$일 때 가능한 $a_1$까지 모으면, 가능한 모든 $a_1$의 값의 합은?`, a: 71, hint: T`$a_2=7$이면 $a_1=14$만 됩니다($4$는 짝수라 불가).`, sol: T`$a_1$: $40,\ 17,\ 14$, 합 $71$` },
+    ],
+    twin() {
+      let r, y, t;
+      do { r = pick(RULES); y = rnd(2, 20); t = backTree(r, y, 4, 3); }
+      while (t.vals.length < 2 || t.vals.reduce((a, b) => a + b, 0) > 300 || (r.p === 3 && y === 5));
+      const s = t.vals.reduce((a, b) => a + b, 0);
+      return {
+        q: T`모든 항이 자연수인 수열 $\{a_n\}$이 모든 자연수 $n$에 대하여 $a_{n+1}=${ruleT(r)}$를 만족시킨다. $a_4=${y}$일 때, 가능한 모든 $a_1$의 값의 합을 구하시오.`, a: s,
+        sol: T`${t.lines.join('<br>')}<br>가능한 $a_1$: $${t.vals.join(', ')}$, 합 $${s}$`,
+      };
+    },
+  },
+  {
+    subject: '수학', id: 'integral-defined', unit: '수학Ⅱ · 적분', title: '정적분으로 정의된 함수', no: 20, answer: 11,
+    problem: T`다항함수 $f(x)$가 모든 실수 $x$에 대하여 $\displaystyle\int_{1}^{x}f(t)\,dt=xf(x)-2x^3+3x^2$을 만족시킬 때, $f(3)$의 값을 구하시오.`,
+    solution: T`양변을 미분하면 $f(x)=f(x)+xf'(x)-6x^2+6x$, 즉 $f'(x)=6x-6$<br>$f(x)=3x^2-6x+C$. $x=1$을 대입하면 $0=f(1)-2+3$, $f(1)=-1$이므로 $C=2$<br>$f(3)=27-18+2=11$`,
+    concepts: [
+      { id: 'q_diff', cue: '∫₁ˣ f(t)dt', role: T`양변을 $x$로 미분하면 좌변은 $f(x)$가 된다` },
+      { id: 'd_product', cue: 'xf(x)', role: T`$\{xf(x)\}'=f(x)+xf'(x)$로 미분한다` },
+      { id: 'q_anti', cue: "f'(x)를 얻은 뒤", role: T`$f(x)=3x^2-6x+C$로 되돌리고 $C$는 남겨 둔다` },
+      { id: 'q_zero', cue: '아래끝 1', role: T`$x=1$을 대입하면 좌변이 $0$이 되어 $C$가 정해진다` },
+    ],
+    steps: [
+      { c: 'd_product', q: T`양변을 $x$로 미분하면 좌변은 $f(x)$, 우변은 $\{xf(x)\}'-6x^2+6x$이다. $\{xf(x)\}'=f(x)+xf'(x)$를 써서 정리한 $xf'(x)=6x^2+kx$에서 $k$의 값을 구하시오.`, a: -6,
+        hint: T`$f(x)=f(x)+xf'(x)-6x^2+6x$에서 $f(x)$가 지워집니다.`, sol: T`$xf'(x)=6x^2-6x$이므로 $k=-6$, $f'(x)=6x-6$` },
+      { c: 'q_anti', q: T`$f'(x)=6x-6$이므로 $f(x)=3x^2-6x+C$이다. $f(1)=C+m$일 때 $m$의 값을 구하시오.`, a: -3, hint: T`$3-6$입니다.`, sol: T`$f(1)=3-6+C=C-3$` },
+      { c: 'q_zero', q: T`주어진 등식에 $x=1$을 대입하면 좌변은 $\displaystyle\int_1^1 f(t)\,dt=0$이다. $f(1)$의 값을 구하시오.`, a: -1, hint: T`우변은 $1\cdot f(1)-2+3$입니다.`, sol: T`$0=f(1)+1$이므로 $f(1)=-1$` },
+      { c: 'q_anti', q: T`$f(1)=C-3=-1$일 때 $C$의 값을 구하시오.`, a: 2, hint: T`$C=-1+3$`, sol: T`$C=2$, $f(x)=3x^2-6x+2$` },
+      { c: 'q_anti', q: T`$f(3)$의 값을 구하시오.`, a: 11, hint: T`$27-18+2$`, sol: T`$f(3)=11$` },
+    ],
+    twin() {
+      const A = pick([3, 3, 6]), B = pick([-6, -4, -2, 0, 2, 4]), C = rnd(-4, 5), k = pick([1, 2, -1]), m = pick([2, 3, 4, -1]);
+      if (A === 3 && B === -6 && C === 2 && k === 1 && m === 3) return this.twin();
+      const p = (-2 * A) / 3, q = -B / 2, Fk = (A * k ** 3) / 3 + (B * k * k) / 2 + C * k, r = -Fk;
+      const f = [C, B, A], ans = evalPoly(f, m);
+      const rhs = termsTeX([[1, 'xf(x)'], [p, 'x^3'], [q, 'x^2'], [r, '']]);
+      return {
+        q: T`다항함수 $f(x)$가 모든 실수 $x$에 대하여 $\displaystyle\int_{${k}}^{x}f(t)\,dt=${rhs}$을 만족시킬 때, $f(${m})$의 값을 구하시오.`, a: ans,
+        sol: T`양변을 미분하면 $f(x)=f(x)+xf'(x)${termsTeX([[3 * p, 'x^2'], [2 * q, 'x']]).replace(/^(?!-)/, '+')}$, 즉 $f'(x)=${polyTeX([B, 2 * A])}$<br>$f(x)=${polyTeX([0, B, A])}+C$. $x=${k}$을 대입하면 $0=${k === 1 ? '' : k === -1 ? '-' : k}f(${k})${termsTeX([[p * k ** 3 + q * k * k + r, '']]).replace(/^(?!-)/, '+')}$에서 $C=${C}$<br>$f(${m})=${substTeX(f, m)}=${ans}$`,
+      };
+    },
+  },
+  {
+    subject: '수학', id: 'cubic-roots', unit: '수학Ⅱ · 미분', title: '삼차방정식의 실근 개수', no: 13, answer: 22,
+    problem: T`방정식 $x^3-3x^2-9x+k=0$의 서로 다른 실근의 개수가 $2$가 되도록 하는 모든 실수 $k$의 값의 합을 구하시오.`,
+    solution: T`$f(x)=x^3-3x^2-9x+k$, $f'(x)=3(x+1)(x-3)$<br>극댓값 $f(-1)=k+5$, 극솟값 $f(3)=k-27$<br>서로 다른 실근이 2개이면 그래프가 $x$축에 접하므로 $k+5=0$ 또는 $k-27=0$, 합 $-5+27=22$`,
+    concepts: [
+      { id: 'd_crit', cue: '삼차식 x³−3x²−9x+k', role: T`$f'(x)=0$에서 극값을 갖는 $x=-1,\ 3$을 찾는다` },
+      { id: 'd_extremum', cue: '상수 k가 들어 있다', role: T`극댓값 $k+5$, 극솟값 $k-27$을 $k$로 나타낸다` },
+      { id: 'd_roots', cue: '서로 다른 실근의 개수가 2', role: '극댓값 또는 극솟값이 0일 때, 그래프가 x축에 접한다' },
+    ],
+    steps: [
+      { c: 'd_crit', q: T`$f(x)=x^3-3x^2-9x+k$가 극대가 되는 $x$의 값을 구하시오.`, a: -1, hint: T`$f'(x)=3x^2-6x-9=3(x+1)(x-3)$`, sol: T`작은 근 $x=-1$에서 극대, $x=3$에서 극소` },
+      { c: 'd_extremum', q: T`극댓값을 $k+m$이라 할 때, $m$의 값을 구하시오.`, a: 5, hint: T`$f(-1)=-1-3+9+k$`, sol: T`$f(-1)=k+5$` },
+      { c: 'd_extremum', q: T`극솟값을 $k+n$이라 할 때, $n$의 값을 구하시오.`, a: -27, hint: T`$f(3)=27-27-27+k$`, sol: T`$f(3)=k-27$` },
+      { c: 'd_roots', q: T`서로 다른 실근이 $2$개가 되는 것은 극댓값 또는 극솟값이 $0$일 때이다. 이런 $k$ 중 큰 값을 구하시오.`, a: 27, hint: T`$k+5=0$ 또는 $k-27=0$`, sol: T`$k=-5$ 또는 $k=27$, 큰 값은 $27$` },
+      { c: 'd_roots', q: T`조건을 만족시키는 모든 실수 $k$의 값의 합을 구하시오.`, a: 22, hint: T`$-5+27$`, sol: T`$22$` },
+    ],
+    twin() {
+      let p, q; do { p = rnd(-3, 2); q = p + pick([2, 4]); } while (p === -1 && q === 3);
+      const f = cubicPQ(p, q), M = evalPoly(f, p), m = evalPoly(f, q), cnt = Math.random() < 0.5;
+      return {
+        q: cnt ? T`방정식 $${polyTeX(f)}+k=0$의 서로 다른 실근의 개수가 $3$이 되도록 하는 정수 $k$의 개수를 구하시오.`
+          : T`방정식 $${polyTeX(f)}+k=0$의 서로 다른 실근의 개수가 $2$가 되도록 하는 모든 실수 $k$의 값의 합을 구하시오.`,
+        a: cnt ? M - m - 1 : -(M + m),
+        sol: T`$f'(x)=3${prod2(p, q)}$이므로 극댓값 $${termsTeX([[1, 'k'], [M, '']])}$, 극솟값 $${termsTeX([[1, 'k'], [m, '']])}$<br>${cnt
+          ? T`실근 3개: $${termsTeX([[1, 'k'], [M, '']])}>0$이고 $${termsTeX([[1, 'k'], [m, '']])}<0$, 즉 $${-M}<k<${-m}$. 정수 $k$는 $${M - m - 1}$개`
+          : T`실근 2개: 극댓값 또는 극솟값이 $0$, $k=${-M}$ 또는 $k=${-m}$, 합 $${-(M + m)}$`}`,
+      };
+    },
+  },
+  {
+    subject: '수학', id: 'log-ineq', unit: '수학Ⅰ · 지수함수와 로그함수', title: '밑이 1보다 작은 로그 부등식', no: 9, pts: 3, answer: 9,
+    problem: T`부등식 $\log_{\frac{1}{3}}(x-1)+\log_{\frac{1}{3}}(x+5)\ge -3$을 만족시키는 모든 정수 $x$의 값의 합을 구하시오.`,
+    solution: T`진수 조건: $x>1$<br>$\log_{\frac13}\{(x-1)(x+5)\}\ge\log_{\frac13}27$, 밑이 $1$보다 작으므로 $(x-1)(x+5)\le 27$<br>$x^2+4x-32\le0$, $(x+8)(x-4)\le0$, $-8\le x\le4$. 진수 조건과 합치면 $1<x\le4$, 정수 $2,\ 3,\ 4$의 합 $9$`,
+    concepts: [
+      { id: 'l_domain', cue: 'log(x−1), log(x+5)', role: T`진수 조건 $x>1$을 먼저 적어 둔다` },
+      { id: 'l_merge', cue: '두 로그의 합', role: T`$\log_{\frac13}\{(x-1)(x+5)\}$ 하나로 합친다` },
+      { id: 'l_ineq', cue: '밑이 1/3', role: '밑이 1보다 작으면 진수끼리 비교할 때 부등호 방향이 바뀐다' },
+      { id: 'alg_ineq', cue: '(x−1)(x+5) ≤ 27', role: '이차부등식을 풀고 진수 조건과 겹치는 정수만 고른다' },
+    ],
+    steps: [
+      { c: 'l_domain', q: T`진수 조건을 모두 만족시키는 $x$의 값의 범위가 $x>c$일 때, $c$의 값을 구하시오.`, a: 1, hint: T`$x-1>0$, $x+5>0$`, sol: T`$x>1$이고 $x>-5$이므로 $x>1$` },
+      { c: 'l_ineq', q: T`로그를 합치면 $\log_{\frac13}\{(x-1)(x+5)\}\ge\log_{\frac13}N$이다. $-3=\log_{\frac13}N$인 $N$의 값을 구하시오.`, a: 27, hint: T`$\left(\frac13\right)^{-3}$입니다.`, sol: T`$N=\left(\frac13\right)^{-3}=27$. 밑이 $1$보다 작으므로 $(x-1)(x+5)\le27$` },
+      { c: 'alg_ineq', q: T`$(x-1)(x+5)\le 27$을 정리하면 $(x+8)(x-4)\le0$이다. 이 부등식과 진수 조건을 함께 만족시키는 가장 큰 정수 $x$를 구하시오.`, a: 4, hint: T`$-8\le x\le 4$와 $x>1$을 겹칩니다.`, sol: T`$1<x\le4$이므로 $4$` },
+      { c: 'alg_ineq', q: T`조건을 만족시키는 모든 정수 $x$의 값의 합을 구하시오.`, a: 9, hint: T`$x=2,\ 3,\ 4$`, sol: T`$2+3+4=9$` },
+    ],
+    twin() {
+      let b, n, d, e, p, q;
+      do {
+        b = pick([2, 3]); n = b === 2 ? rnd(3, 6) : rnd(2, 4);
+        const P = b ** n, divs = []; for (let x = 1; x * x < P; x++) if (P % x === 0) divs.push(x);
+        d = pick(divs); e = P / d; p = rnd(-2, 3); q = e - d - p;
+      } while (d > 6 || q > 9 || (b === 3 && n === 3 && p === 1 && q === 5));
+      const inv = Math.random() < 0.6, B = logB(b, inv), P = b ** n, r = p + d;
+      const lhs = `${logArg(B, -p)}+${logArg(B, q)}`, ans = sumRange(p + 1, r);
+      return {
+        q: T`부등식 $${lhs}${inv ? T`\ge ${-n}` : T`\le ${n}`}$을 만족시키는 모든 정수 $x$의 값의 합을 구하시오.`, a: ans,
+        sol: T`진수 조건: $x>${p}$<br>${inv ? T`밑이 $1$보다 작으므로 부등호 방향이 바뀌어` : '밑이 $1$보다 크므로'} $(${linX(-p)})(${linX(q)})\le ${P}$<br>$${polyTeX([-p * q - P, q - p, 1])}\le 0$, $${prod2(-q - d, r)}\le0$이므로 $${-q - d}\le x\le ${r}$<br>진수 조건과 합치면 $${p}<x\le ${r}$, 정수의 합은 $${ans}$`,
+      };
+    },
+  },
+  {
+    subject: '수학', id: 'sine-cosine', unit: '수학Ⅰ · 삼각함수', title: '넓이에서 외접원까지', no: 11, answer: 49,
+    problem: T`삼각형 $\mathrm{ABC}$에서 $${AB_T}=5,\ ${AC_T}=3$이고 삼각형 $\mathrm{ABC}$의 넓이는 $\dfrac{15\sqrt{3}}{4}$이다. $${ANG_A}>\dfrac{\pi}{2}$일 때, 삼각형 $\mathrm{ABC}$의 외접원의 넓이를 $k\pi$라 하자. $3k$의 값을 구하시오.`,
+    solution: T`$\dfrac12\cdot5\cdot3\cdot\sin A=\dfrac{15\sqrt3}{4}$에서 $\sin A=\dfrac{\sqrt3}{2}$, 둔각이므로 $A=\dfrac23\pi$<br>$${BC_T}^{\,2}=25+9-2\cdot5\cdot3\cdot\left(-\dfrac12\right)=49$, $${BC_T}=7$<br>$2R=\dfrac{7}{\sin A}=\dfrac{14}{\sqrt3}$, $R^2=\dfrac{49}{3}$이므로 $k=\dfrac{49}{3}$, $3k=49$`,
+    concepts: [
+      { id: 'tri_area', cue: '넓이가 15√3/4', role: T`$\dfrac12 bc\sin A$로 $\sin A$를 구한다` },
+      { id: 't_special', cue: '∠A > π/2', role: T`$\sin A=\dfrac{\sqrt3}{2}$인 두 각 중 둔각 $\dfrac23\pi$를 고르고 $\cos A=-\dfrac12$을 쓴다` },
+      { id: 'tri_cos', cue: '두 변 5, 3과 끼인각 A', role: '코사인법칙으로 BC를 구한다' },
+      { id: 'tri_sin', cue: '외접원의 넓이', role: T`사인법칙 $\dfrac{a}{\sin A}=2R$로 반지름을 구한다` },
+    ],
+    steps: [
+      { c: 'tri_area', q: T`$\dfrac12\cdot5\cdot3\cdot\sin A=\dfrac{15\sqrt3}{4}$일 때, $4\sin^2 A$의 값을 구하시오.`, a: 3, hint: T`$\sin A=\dfrac{\sqrt3}{2}$입니다.`, sol: T`$\sin A=\dfrac{\sqrt3}{2}$, $4\sin^2A=3$` },
+      { c: 't_special', q: T`$${ANG_A}>\dfrac{\pi}{2}$이므로 $A=\dfrac{n}{6}\pi$이다. $n$의 값을 구하시오.`, a: 4, hint: T`$\sin A=\dfrac{\sqrt3}{2}$인 각은 $\dfrac{\pi}{3}$과 $\dfrac23\pi$입니다.`, sol: T`둔각인 $\dfrac23\pi=\dfrac46\pi$, $\cos A=-\dfrac12$` },
+      { c: 'tri_cos', q: T`$${BC_T}^{\,2}$의 값을 구하시오.`, a: 49, hint: T`$25+9-2\cdot5\cdot3\cdot\left(-\dfrac12\right)$`, sol: T`$34+15=49$, $${BC_T}=7$` },
+      { c: 'tri_sin', q: T`외접원의 반지름을 $R$라 하면 $\dfrac{7}{\sin A}=2R$이다. 외접원의 넓이가 $k\pi$일 때 $3k$의 값을 구하시오.`, a: 49, hint: T`$R=\dfrac{7}{\sqrt3}$, $k=R^2$입니다.`, sol: T`$R^2=\dfrac{49}{3}$, $3k=49$` },
+    ],
+    twin() {
+      let b, c, obt;
+      do { b = rnd(2, 8); c = rnd(2, 8); obt = Math.random() < 0.6; } while (b === c || (obt && b === 3 && c === 5));
+      const a2 = b * b + c * c + (obt ? b * c : -b * c);
+      return {
+        q: T`삼각형 $\mathrm{ABC}$에서 $${AB_T}=${c},\ ${AC_T}=${b}$이고 삼각형 $\mathrm{ABC}$의 넓이는 $${fracSqrt3(b * c, 4)}$이다. $${ANG_A}${obt ? '>' : '<'}\dfrac{\pi}{2}$일 때, 삼각형 $\mathrm{ABC}$의 외접원의 넓이를 $k\pi$라 하자. $3k$의 값을 구하시오.`, a: a2,
+        sol: T`$\dfrac12\cdot${b}\cdot${c}\cdot\sin A=${fracSqrt3(b * c, 4)}$에서 $\sin A=\dfrac{\sqrt3}{2}$, ${obt ? '둔각' : '예각'}이므로 $A=${obt ? T`\dfrac23\pi` : T`\dfrac{\pi}{3}`}$<br>$${BC_T}^{\,2}=${b * b}+${c * c}${obt ? '+' : '-'}${b * c}=${a2}$<br>$2R=\dfrac{${BC_T}}{\sin A}$에서 $R^2=\dfrac{${a2}}{3}$, $3k=${a2}$`,
+      };
+    },
+  },
 ];
 // ==CONTENT END==
 
@@ -720,7 +1253,7 @@ const ts = id => (P.t[id] ||= { diag: null, steps: false, twinBest: null, origMs
 const TG = Object.fromEntries(TARGETS.map(t => [t.id, t]));
 // 목표 문제가 아직 없는 과목은 확장 계획만 보여 준다
 const SUBJECTS = [
-  { id: '수학', what: '4점 문제' },
+  { id: '수학', what: '문제' },
   { id: '국어', what: '고난도 문항', plan: '문법(음운 변동, 문장 성분)은 수학처럼 단어만 바꾼 반복 문제로 훈련합니다. 독서의 &lt;보기&gt; 적용 문항은 지문 속 단서 문장을 짚고, 문단 핵심 정리 · 인과와 조건 관계 · 지문 개념과 &lt;보기&gt; 사례 대응 같은 읽기 단계로 쪼갭니다.' },
   { id: '영어', what: '고난도 문항', plan: '빈칸 추론 · 글의 순서 · 문장 삽입 문항을 핵심 구문 해석, 연결사와 논리 흐름, 대명사가 가리키는 대상, 주제문 찾기로 쪼갭니다. 구문과 어법은 문장 단위 반복 문제로 훈련합니다.' },
   { id: '탐구', what: '고난도 문항', plan: '화학Ⅰ 양적 관계, 물리학Ⅰ 역학, 생명과학Ⅰ 유전, 사회·문화 도표 분석처럼 계산이 들어가는 문항부터 만듭니다. 수학과 같은 방식으로 숫자를 바꾼 반복 문제와 쌍둥이 문제를 자동으로 만듭니다.' },
