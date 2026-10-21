@@ -15,8 +15,20 @@ from matplotlib.patches import FancyBboxPatch, Rectangle, Circle
 from matplotlib.ticker import FuncFormatter, LogLocator
 
 
+def dec(v):
+    """과학 표기 없이 유효숫자 2자리 소수로 (예: 0.000014)"""
+    if v >= 1:
+        return f"{v:g}"
+    from math import floor, log10
+    d = -int(floor(log10(v))) + 1
+    return f"{v:.{d}f}"
+
+
 def plain(v, _):
-    return f"{v:g}"
+    if v >= 1:
+        return f"{v:g}"
+    from math import floor, log10
+    return f"{v:.{-int(floor(log10(v) + 1e-9))}f}"
 
 plt.rcParams.update({
     "font.family": "Noto Sans CJK KR", "axes.unicode_minus": False, "font.size": 11,
@@ -167,3 +179,55 @@ if __name__ == "__main__":
     fig1_ladder()
     fig2_distance()
     fig3_margin()
+
+
+# ---------------------------------------------------------------------------
+# F4 체온 변화: 심부 체온 상승을 두 방법으로 어림 (성인, 30 cm)
+#   (1) 단열 상한: 몸이 열을 전혀 내보내지 못한다고 보고 30분 노출. dT = SAR * t / c
+#   (2) 기준 비례: ICNIRP 문턱 "전신 SAR 4 W/kg ~ 심부 체온 +1 C"에 비례
+# ---------------------------------------------------------------------------
+C_TISSUE = 3500.0     # 인체 조직 평균 비열 J/(kg K) [근사, 확인 필요]
+T_EXPOSE = 1800.0     # 30분 (ICNIRP 전신 평균 시간)
+
+
+def dT_adiabatic(sar):
+    return sar * T_EXPOSE / C_TISSUE
+
+
+def dT_icnirp(sar):
+    return sar / THRESH * 1.0
+
+
+def fig4_temperature():
+    fig, ax = plt.subplots(figsize=(8.6, 5.0))
+    ax.set_xscale("log")
+    ax.set_xlim(5e-6, 5)
+    ax.xaxis.set_major_formatter(FuncFormatter(plain))
+    ax.grid(axis="x", color=GRID, lw=0.8)
+    rows = []
+    for scen, col, name in (("A", A_COL, "정상 제품"), ("B", B_COL, "누설이 법정 상한인 제품")):
+        lo, hi = sar_range(30, scen)
+        rows.append((f"{name}\n(기준 비례 어림)", dT_icnirp(lo), dT_icnirp(hi), col))
+        rows.append((f"{name}\n(열을 전혀 못 내보낸다고 본 30분 상한)", dT_adiabatic(lo), dT_adiabatic(hi), col))
+    for i, (lab, lo, hi, col) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax.barh(y, hi - lo, left=lo, height=0.5, color=col, zorder=3)
+        ax.text(hi * 1.15, y, f"{dec(lo)}–{dec(hi)} °C", va="center", fontsize=9.5, color=INK)
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=9.5)
+    ax.set_ylim(-0.8, len(rows) + 0.4)
+    for x, lab, ls in ((1.0, "건강 영향 문턱\n심부 체온 +1 °C", "--"), (0.1, "체온계 눈금\n0.1 °C", ":")):
+        ax.axvline(x, color=INK if ls == "--" else MUTED, lw=1.5, ls=ls, zorder=2)
+        ax.text(x, len(rows) - 0.35, lab, ha="center", va="bottom", fontsize=9, color=INK,
+                bbox=dict(fc="white", ec="none", pad=1.5))
+    ax.set_xlabel("심부 체온 상승 (°C, 로그 눈금)")
+    ax.set_title("전자레인지 30 cm 앞 30분: 체온은 얼마나 오를까?", loc="left", fontsize=13, color=INK)
+    fig.text(0.01, 0.01, f"성인. 기준 비례: 전신 SAR 4 W/kg ≈ +1 °C(ICNIRP)에 비례. 30분 상한: 조직 비열 {C_TISSUE:.0f} J/(kg·K), 열 손실 0으로 가정한 최대치.",
+             fontsize=8.5, color=INK2)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.savefig(os.path.join(OUT, "temperature_core.png"), dpi=200)
+    plt.close(fig)
+
+
+if __name__ == "__main__":
+    fig4_temperature()
