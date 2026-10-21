@@ -1,0 +1,611 @@
+<title>생성형 AI 긱 보드</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 공고 게시판. 좁은 머리글과 키워드 검색 → 회사가 하는 일 → 분야별 공고 카드 → 플랫폼 표 → 내 지원 목록 */
+:root {
+  --bg: #EEF2F4;
+  --surface: #FFFFFF;
+  --ink: #14202B;
+  --muted: #566774;
+  --line: #D3DCE2;
+  --accent: #0B7A69;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D9EFEA;
+  --fit: #9A5700;
+  --fit-soft: #FBEBD2;
+  --danger: #B4232C;
+  --font-display: "Black Han Sans", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1519; --surface: #172027; --ink: #E3EBEF; --muted: #94A5B1; --line: #2A3741;
+    --accent: #48C8B1; --accent-ink: #062520; --accent-soft: #15332E; --fit: #F0B35A; --fit-soft: #392A13; --danger: #FF7A80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1519; --surface: #172027; --ink: #E3EBEF; --muted: #94A5B1; --line: #2A3741;
+  --accent: #48C8B1; --accent-ink: #062520; --accent-soft: #15332E; --fit: #F0B35A; --fit-soft: #392A13; --danger: #FF7A80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 44px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h2 { font-size: 21px; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 700; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 16px; }
+.section-head { display: grid; gap: 4px; max-width: 68ch; }
+
+/* 머리글 */
+header { display: grid; gap: 18px; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 6vw, 54px); line-height: 1.1; letter-spacing: -.01em; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { max-width: 64ch; font-size: 16px; }
+.search { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.search-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.search-row input { flex: 1 1 240px; min-width: 0; }
+input, select, textarea {
+  font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+}
+button {
+  font: inherit; font-weight: 500; cursor: pointer; border-radius: 6px; padding: 8px 14px;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+}
+button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+button.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+.links { display: flex; flex-wrap: wrap; gap: 6px; }
+.links a {
+  display: inline-flex; align-items: center; gap: 4px; text-decoration: none;
+  font-size: 13px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--ink); background: var(--surface);
+}
+.links a:hover { border-color: var(--accent); color: var(--accent); }
+.links a .tag { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+/* 회사 */
+.products { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.product { border-top: 3px solid var(--ink); padding-top: 10px; display: grid; gap: 6px; align-content: start; }
+.product .name { font-weight: 700; font-size: 16px; }
+.product .to { font-size: 13px; color: var(--accent); font-weight: 500; }
+.company-note { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 14px; }
+
+/* 분야 카드 */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 12px; font-size: 13px;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card-top { display: flex; justify-content: space-between; gap: 8px; align-items: start; flex-wrap: wrap; }
+.forms { display: flex; gap: 4px; flex-wrap: wrap; }
+.form { font-family: var(--font-mono); font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+.fit { background: var(--fit-soft); color: var(--fit); border-radius: 6px; padding: 8px 10px; font-size: 13px; }
+.fit b { font-weight: 700; }
+.from { font-size: 13px; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 4.5em 1fr; gap: 4px 10px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+.sub { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* 플랫폼 표 */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .04em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td.group { background: var(--bg); font-weight: 700; font-size: 13px; }
+
+/* 지원 목록 */
+.tracker { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .tracker { grid-template-columns: 1fr; } }
+form.add { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; }
+form.add label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+form.add .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.store-note { font-size: 12px; color: var(--muted); }
+.jobs { display: grid; gap: 8px; min-width: 0; }
+.job { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+.job[data-status="지원함"] { border-left-color: var(--accent); }
+.job[data-status="면접"] { border-left-color: var(--fit); }
+.job[data-status="합격"] { border-left-color: var(--accent); background: var(--accent-soft); }
+.job[data-status="불합격"] { opacity: .65; }
+.job-title { font-weight: 700; overflow-wrap: anywhere; }
+.job-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.job-meta .due-soon { color: var(--danger); font-weight: 500; }
+.job-memo { font-size: 13px; overflow-wrap: anywhere; }
+.job-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.job-actions select, .job-actions button { font-size: 13px; padding: 4px 8px; }
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 24px; display: grid; gap: 6px; color: var(--muted); }
+.empty strong { color: var(--ink); }
+.caution { border-left: 3px solid var(--fit); padding: 4px 0 4px 12px; font-size: 14px; max-width: 72ch; }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 16px; }
+footer ol { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
+footer a { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { .links a, .chip { transition: border-color .15s, color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">프리랜서 · 파트타임 · 원격</p>
+    <h1>생성형 AI <em>긱 보드</em></h1>
+    <p class="lede">AI오투오(o2osolution.ai)가 만드는 협상 AI, 마케팅 자동화, AI 콘텐츠 생성과 같은 종류의 일을 프리랜서나 파트타임으로 찾을 수 있게 정리했습니다. 각 링크는 해당 사이트의 실제 검색 결과를 엽니다. 마음에 드는 공고는 아래 <a href="#tracker">내 지원 목록</a>에 저장해 마감일과 진행 상태를 관리하세요.</p>
+    <div class="search">
+      <label for="kw" class="sub">검색어를 넣으면 주요 사이트의 검색 링크를 만들어 드립니다</label>
+      <div class="search-row">
+        <input id="kw" type="search" value="AI 에이전트" placeholder="예: 프롬프트 엔지니어, 카드뉴스, n8n" autocomplete="off">
+      </div>
+      <div class="links" id="kw-links"></div>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-company">
+    <div class="section-head">
+      <p class="eyebrow">회사가 하는 일</p>
+      <h2 id="h-company">AI오투오의 제품과 연결되는 일자리</h2>
+      <p class="muted">2017년 대구에서 설립된 AI 소프트웨어 회사입니다. 기업 구매 협상, 소상공인 마케팅, 고객 맞춤 메시지 작성을 AI로 자동화하는 제품을 만듭니다.</p>
+    </div>
+    <div class="products" id="products"></div>
+    <div class="company-note">
+      <span class="muted">회사 공고를 직접 확인하려면</span>
+      <div class="links">
+        <a href="https://www.saramin.co.kr/zf_user/company-info/view/csn/N2dDSnA5ZURMYTBlUXVWT2V2Wk1sQT09/company_nm/(%EC%A3%BC)%EC%97%90%EC%9D%B4%EC%95%84%EC%9D%B4%EC%98%A4%ED%88%AC%EC%98%A4" target="_blank" rel="noopener">사람인 기업정보 <span class="tag">에이아이오투오</span></a>
+        <a href="https://www.wanted.co.kr/search?query=%EC%97%90%EC%9D%B4%EC%95%84%EC%9D%B4%EC%98%A4%ED%88%AC%EC%98%A4&tab=position" target="_blank" rel="noopener">원티드 검색 <span class="tag">에이아이오투오</span></a>
+        <a href="https://www.o2osolution.ai/" target="_blank" rel="noopener">공식 사이트</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-fields">
+    <div class="section-head">
+      <p class="eyebrow">분야별 공고 찾기</p>
+      <h2 id="h-fields">어떤 일을 찾을까요</h2>
+      <p class="muted">주황색 상자는 RF 레이다 연구, Claude Code 개발, 연구 문서 자동화 경력과 겹치는 부분입니다.</p>
+    </div>
+    <div class="filters" role="group" aria-label="근무 형태로 거르기" id="filters"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section aria-labelledby="h-platforms">
+    <div class="section-head">
+      <p class="eyebrow">공고가 올라오는 곳</p>
+      <h2 id="h-platforms">플랫폼 목록</h2>
+      <p class="muted">국내 채용 사이트는 검색 후 고용 형태 필터에서 '프리랜서', '계약직', '아르바이트'를 고르면 정규직 공고가 빠집니다.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>플랫폼</th><th>일하는 방식</th><th>특징</th><th>바로 가기</th></tr></thead>
+        <tbody id="platforms"></tbody>
+      </table>
+    </div>
+    <p class="caution">대학원 재학 중이라면 지원 전에 연구실과 학교 규정을 확인하세요. 장학금이나 사업 참여인력 조건에 겸업 제한이 있을 수 있습니다. 해외 플랫폼은 대부분 개인 사업자 계약(1099 contractor)으로 PayPal 등으로 지급하므로, 받은 소득은 종합소득세 신고 대상인지 확인해야 합니다.</p>
+  </section>
+
+  <section aria-labelledby="h-tracker" id="tracker">
+    <div class="section-head">
+      <p class="eyebrow">내 지원 목록</p>
+      <h2 id="h-tracker">저장한 공고</h2>
+      <p class="muted">공고 링크와 마감일을 적어 두면 마감이 가까운 순서로 정렬됩니다. 7일 안에 마감되는 공고는 빨간 글씨로 표시됩니다.</p>
+    </div>
+    <div class="tracker">
+      <form class="add" id="add-form" autocomplete="off">
+        <label>공고 제목
+          <input id="f-title" required maxlength="120" placeholder="예: LLM 상담 챗봇 개발 (3개월)">
+        </label>
+        <label>공고 링크
+          <input id="f-url" type="url" maxlength="500" placeholder="https://">
+        </label>
+        <div class="row">
+          <label>플랫폼
+            <select id="f-platform"></select>
+          </label>
+          <label>분야
+            <select id="f-field"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label>마감일
+            <input id="f-due" type="date">
+          </label>
+          <label>상태
+            <select id="f-status"></select>
+          </label>
+        </div>
+        <label>메모
+          <input id="f-memo" maxlength="300" placeholder="예: 시급 3만 원, 주 10시간, 포트폴리오 필요">
+        </label>
+        <button type="submit">목록에 저장</button>
+        <p class="store-note" id="store-note">저장 공간을 확인하는 중입니다.</p>
+      </form>
+      <div class="jobs" id="jobs"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>회사 정보와 시급은 2026년 10월 21일 기준 공개 자료에서 가져왔습니다. 조건은 자주 바뀌니 지원 전에 각 공고 원문을 확인하세요.</p>
+    <ol>
+      <li><a href="https://magazine.hankyung.com/job-joy/article/202602057465d" target="_blank" rel="noopener">한경 잡앤조이, 안성민 AI오투오 대표 인터뷰</a></li>
+      <li><a href="https://tlo.korea.ac.kr/en/partnership/1103" target="_blank" rel="noopener">고려대 기술사업화 파트너 소개, AI오투오</a></li>
+      <li><a href="https://ko.wikipedia.org/wiki/AI%EC%98%A4%ED%88%AC%EC%98%A4" target="_blank" rel="noopener">위키백과, AI오투오</a></li>
+      <li><a href="http://press.jetoday.net/newsRead.php?no=1036566" target="_blank" rel="noopener">정읍투데이, 새로세로 공급기업 선정</a></li>
+      <li><a href="https://seenthis.kr/newspageeng/4561" target="_blank" rel="noopener">씬디스, KT와 마케팅 자동화 MOU</a></li>
+      <li><a href="https://outlier.ai/languages/ko-kr-sujung" target="_blank" rel="noopener">Outlier 한국어 AI 트레이너 모집 페이지</a></li>
+      <li><a href="https://www.wanted.co.kr/gigs/experts" target="_blank" rel="noopener">원티드 긱스 프리랜서 안내</a></li>
+    </ol>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var enc = encodeURIComponent;
+
+  // 키워드를 넣어 실제 검색 결과를 여는 사이트들
+  var SEARCH = {
+    wanted:   { name: "원티드",   lang: "ko", url: function (k) { return "https://www.wanted.co.kr/search?query=" + enc(k) + "&tab=position"; } },
+    saramin:  { name: "사람인",   lang: "ko", url: function (k) { return "https://www.saramin.co.kr/zf_user/search?searchword=" + enc(k); } },
+    jobkorea: { name: "잡코리아", lang: "ko", url: function (k) { return "https://www.jobkorea.co.kr/Search/?stext=" + enc(k); } },
+    kmong:    { name: "크몽",     lang: "ko", url: function (k) { return "https://kmong.com/search?keyword=" + enc(k); } },
+    upwork:   { name: "Upwork",   lang: "en", url: function (k) { return "https://www.upwork.com/nx/search/jobs/?q=" + enc(k); } },
+    linkedin: { name: "LinkedIn 원격", lang: "en", url: function (k) { return "https://www.linkedin.com/jobs/search/?keywords=" + enc(k) + "&f_WT=2"; } }
+  };
+
+  var PRODUCTS = [
+    { name: "네고 위즈 (Nego-Wiz)", what: "기업 간 거래에서 AI가 24시간 가격 협상을 대신합니다. KT커머스에 도입되어 연간 수만 건을 처리했고, 2025년 ITU AI for Good 상을 받았습니다.", to: "→ LLM·AI 에이전트 개발" },
+    { name: "ADO2", what: "가게 URL만 넣으면 약 5분 안에 홍보 영상과 글을 만들고, 검색·AI 답변 노출(SEO/AEO)에 맞춰 여러 채널에 배포합니다.", to: "→ 업무 자동화, AI 콘텐츠, SEO·AEO" },
+    { name: "새로세로", what: "가로형 PDF를 휴대폰에서 읽기 좋은 세로형 콘텐츠로 바꿉니다. 2026 '모두의 창업 프로젝트' 공급 솔루션입니다.", to: "→ 생성형 AI 콘텐츠 제작" },
+    { name: "맞춤형 카드뉴스", what: "금융·보험사 고객 데이터를 분석해 고객마다 다른 안내 메시지와 카드뉴스를 대량으로 만듭니다.", to: "→ 업무 자동화, AI 콘텐츠" }
+  ];
+
+  var FORMS = ["프리랜서", "파트타임", "해외 원격"];
+
+  var FIELDS = [
+    {
+      id: "agent", title: "LLM·AI 에이전트 개발", from: "네고 위즈처럼 사람 대신 판단하고 대화하는 AI",
+      forms: ["프리랜서", "해외 원격"],
+      work: "LLM API로 상담·협상·문서 처리 에이전트를 만들고, 사내 문서를 검색해 답하는 RAG 챗봇을 개발합니다.",
+      skills: "Python, LLM API, RAG, 에이전트 프레임워크, 웹 API 연동",
+      type: "외주 프로젝트 1~6개월",
+      fit: "Claude Code로 연구 도구와 안드로이드 앱을 직접 만들었고, EM Simulator에 LLM을 연동해 말로 3D 모델을 그리게 했습니다. 이 경험을 포트폴리오로 내세울 수 있습니다.",
+      ko: ["AI 에이전트", "LLM", "RAG 챗봇"], en: ["LLM agent developer", "AI agent", "RAG"],
+      extra: [["원티드 긱스", "https://www.wanted.co.kr/gigs/projects"], ["위시켓", "https://www.wishket.com/project/"], ["프리모아", "https://www.freemoa.net/"]]
+    },
+    {
+      id: "auto", title: "업무 자동화·프롬프트 설계", from: "ADO2의 'URL → 콘텐츠 → 배포' 파이프라인",
+      forms: ["프리랜서", "파트타임", "해외 원격"],
+      work: "n8n, Make, Zapier나 Python 스크립트로 반복 업무를 자동화하고, 회사 업무에 맞는 GPT·Claude 프롬프트를 설계합니다.",
+      skills: "n8n·Make, Python, 프롬프트 작성, 스프레드시트·API 연결",
+      type: "건당 외주, 주 10~20시간 파트타임",
+      fit: "연구 문서 자동화와 VBA·Python 스크립트 경험이 있고, 제안서 5건을 AI로 1~2일 만에 작성했습니다.",
+      ko: ["업무 자동화", "n8n", "프롬프트 엔지니어"], en: ["AI workflow automation", "n8n", "prompt engineer"],
+      extra: [["원티드 긱스", "https://www.wanted.co.kr/gigs/projects"], ["이랜서", "https://www.elancer.co.kr/"]]
+    },
+    {
+      id: "content", title: "생성형 AI 콘텐츠 제작", from: "ADO2 홍보 영상, 새로세로, 맞춤형 카드뉴스",
+      forms: ["프리랜서", "파트타임"],
+      work: "AI 도구로 숏폼 홍보 영상, 카드뉴스, 상세페이지, 휴대폰용 세로형 자료를 만들어 납품합니다.",
+      skills: "영상·이미지 생성 AI, Canva·Figma, 영상 편집, 카피 작성",
+      type: "건당 외주, 재택 파트타임",
+      fit: null,
+      ko: ["AI 영상 제작", "카드뉴스", "숏폼 편집"], en: ["AI video creator", "short form video editor", "carousel design"],
+      extra: [["알바몬", "https://www.albamon.com/"]]
+    },
+    {
+      id: "seo", title: "SEO·AEO 콘텐츠 마케팅", from: "ADO2의 검색·AI 답변 노출 최적화",
+      forms: ["파트타임", "프리랜서"],
+      work: "네이버·구글 검색과 ChatGPT, Perplexity 같은 AI 답변에 가게가 나오도록 키워드를 분석하고 블로그·플레이스 글을 씁니다.",
+      skills: "키워드 분석, 블로그 글쓰기, 검색 노출 도구, 성과 보고",
+      type: "월 단위 운영 대행, 파트타임",
+      fit: null,
+      ko: ["AEO", "SEO 콘텐츠", "블로그 마케팅"], en: ["AEO GEO", "SEO content writer", "AI search optimization"],
+      extra: []
+    },
+    {
+      id: "trainer", title: "AI 학습데이터·응답 평가", from: "회사 제품과 직접 겹치지 않습니다. AI오투오 같은 회사가 쓰는 언어 모델을 사람이 검수하는 일입니다.",
+      forms: ["파트타임", "해외 원격"],
+      work: "AI 답변의 정확도를 채점하고, 한국어 문장이 자연스러운지 평가하고, 전공 문제를 출제해 AI 풀이를 검수합니다.",
+      skills: "한국어 원어민 수준, 전공 지식, 꼼꼼한 검수, 영어 지시문 이해",
+      type: "원격 시간제, 주 5~40시간. Outlier 한국어 최대 시급 $31",
+      fit: "전자공학 석박통합과정이라 일반 한국어 트랙보다 단가가 높은 전공 전문가(STEM) 트랙에 지원할 수 있습니다.",
+      ko: ["AI 데이터 라벨링", "AI 트레이너", "데이터 검수"], en: ["Korean AI trainer", "electrical engineering AI trainer", "STEM expert AI training"],
+      extra: [["Outlier", "https://outlier.ai/"], ["Alignerr", "https://www.alignerr.com/"], ["Mercor", "https://www.mercor.com/"], ["크라우드웍스", "https://www.crowdworks.kr/"]]
+    }
+  ];
+
+  var PLATFORMS = [
+    ["국내 IT 외주", [
+      ["원티드 긱스", "프리랜서", "원티드 긱스가 기업, 프리랜서와 각각 계약하는 중간 계약 구조입니다. LLM 에이전트 개발 공고가 자주 올라옵니다.", "https://www.wanted.co.kr/gigs/projects"],
+      ["위시켓", "프리랜서", "공개된 외주 프로젝트에 견적과 포트폴리오를 내고 지원합니다. 2026년 2월부터 생성형 AI 같은 중·대형 프로젝트용 엔터프라이즈 서비스를 운영합니다.", "https://www.wishket.com/project/"],
+      ["프리모아", "프리랜서", "개발·디자인 외주 프로젝트 공고를 보고 지원합니다.", "https://www.freemoa.net/"],
+      ["이랜서", "프리랜서·상주", "IT 프리랜서 공고가 많고, 기업에 일정 기간 나가서 일하는 상주 공고도 있습니다.", "https://www.elancer.co.kr/"],
+      ["크몽", "건당 판매", "공고에 지원하는 대신 내가 'AI 자동화 구축', 'AI 영상 제작' 같은 서비스 상품을 올려 주문을 받습니다.", "https://kmong.com/"]
+    ]],
+    ["국내 채용·아르바이트", [
+      ["원티드", "계약직·인턴", "AI 스타트업 공고가 많습니다. 검색 후 경력·고용 형태로 거릅니다.", "https://www.wanted.co.kr/"],
+      ["사람인", "프리랜서·아르바이트", "고용 형태 필터에 프리랜서와 아르바이트가 따로 있습니다.", "https://www.saramin.co.kr/"],
+      ["잡코리아", "계약직·아르바이트", "검색 결과를 고용 형태로 거를 수 있습니다.", "https://www.jobkorea.co.kr/"],
+      ["알바몬", "아르바이트", "'재택', '콘텐츠 제작'으로 검색하면 재택 파트타임이 나옵니다.", "https://www.albamon.com/"]
+    ]],
+    ["AI 학습데이터·평가", [
+      ["크라우드웍스", "작업 단위", "국내 AI 학습데이터 회사로, 라벨링·검수 작업을 건별로 합니다.", "https://www.crowdworks.kr/"],
+      ["Outlier", "시간제 원격", "한국어 AI 트레이너를 시급 최대 $31로 모집합니다. 대부분 주 5~10시간 일하고, 매주 PayPal 등으로 받습니다.", "https://outlier.ai/"],
+      ["Alignerr", "시간제 계약", "한국어 전문가 공고 기준 주 10~40시간, AI가 쓴 한국어의 정확도와 자연스러움을 검토합니다.", "https://www.alignerr.com/"],
+      ["Mercor", "전문가 계약", "전공 분야 전문가를 AI 평가 프로젝트에 연결합니다. 한국어 공고 조건은 확인하지 못했습니다.", "https://www.mercor.com/"],
+      ["DataAnnotation", "시간제 원격", "가입 시험을 통과하면 AI 답변 평가·작성 작업을 받습니다.", "https://www.dataannotation.tech/"]
+    ]],
+    ["해외 원격", [
+      ["Upwork", "프리랜서", "영어로 제안서를 내고 해외 클라이언트의 AI 자동화·에이전트 프로젝트를 따냅니다.", "https://www.upwork.com/"],
+      ["LinkedIn 채용", "계약직·원격", "검색 후 '원격', '계약직', '파트타임' 필터를 켭니다.", "https://www.linkedin.com/jobs/"]
+    ]]
+  ];
+
+  var STATUSES = ["관심", "지원함", "면접", "합격", "불합격"];
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "class") n.className = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function link(label, href, tag) {
+    return el("a", { href: href, target: "_blank", rel: "noopener" }, [label, tag ? el("span", { class: "tag", text: tag }) : null]);
+  }
+
+  // 키워드 검색창
+  var kw = document.getElementById("kw");
+  var kwLinks = document.getElementById("kw-links");
+  function renderKw() {
+    var k = kw.value.trim() || "AI 에이전트";
+    kwLinks.replaceChildren();
+    Object.keys(SEARCH).forEach(function (id) {
+      kwLinks.appendChild(link(SEARCH[id].name, SEARCH[id].url(k)));
+    });
+  }
+  kw.addEventListener("input", renderKw);
+  renderKw();
+
+  // 회사 제품
+  var products = document.getElementById("products");
+  PRODUCTS.forEach(function (p) {
+    products.appendChild(el("div", { class: "product" }, [
+      el("span", { class: "name", text: p.name }),
+      el("p", { text: p.what }),
+      el("span", { class: "to", text: p.to })
+    ]));
+  });
+
+  // 분야 카드와 필터
+  var active = "전체";
+  try { active = localStorage.getItem("gig-filter") || "전체"; } catch (e) {}
+  var filters = document.getElementById("filters");
+  var cards = document.getElementById("cards");
+  ["전체", "내 경력과 가까운 일"].concat(FORMS).forEach(function (f) {
+    var b = el("button", { type: "button", class: "chip", "aria-pressed": String(f === active), text: f });
+    b.addEventListener("click", function () {
+      active = f;
+      try { localStorage.setItem("gig-filter", f); } catch (e) {}
+      Array.prototype.forEach.call(filters.children, function (c) { c.setAttribute("aria-pressed", String(c === b)); });
+      renderCards();
+    });
+    filters.appendChild(b);
+  });
+
+  function renderCards() {
+    cards.replaceChildren();
+    FIELDS.filter(function (f) {
+      if (active === "전체") return true;
+      if (active === "내 경력과 가까운 일") return !!f.fit;
+      return f.forms.indexOf(active) >= 0;
+    }).forEach(function (f) {
+      var koLinks = el("div", { class: "links" });
+      f.ko.forEach(function (k) {
+        koLinks.appendChild(link(SEARCH.wanted.name, SEARCH.wanted.url(k), k));
+      });
+      koLinks.appendChild(link(SEARCH.saramin.name, SEARCH.saramin.url(f.ko[0]), f.ko[0]));
+      koLinks.appendChild(link(SEARCH.kmong.name, SEARCH.kmong.url(f.ko[0]), f.ko[0]));
+      var enLinks = el("div", { class: "links" });
+      f.en.forEach(function (k, i) {
+        var s = i === 0 ? SEARCH.upwork : SEARCH.linkedin;
+        enLinks.appendChild(link(s.name, s.url(k), k));
+      });
+      var extra = null;
+      if (f.extra.length) {
+        extra = el("div", { class: "links" });
+        f.extra.forEach(function (x) { extra.appendChild(link(x[0], x[1])); });
+      }
+      cards.appendChild(el("article", { class: "card" }, [
+        el("div", { class: "card-top" }, [
+          el("h3", { text: f.title }),
+          el("div", { class: "forms" }, f.forms.map(function (x) { return el("span", { class: "form", text: x }); }))
+        ]),
+        el("p", { class: "from", text: "연결 제품: " + f.from }),
+        el("dl", { class: "kv" }, [
+          el("dt", { text: "하는 일" }), el("dd", { text: f.work }),
+          el("dt", { text: "필요 기술" }), el("dd", { text: f.skills }),
+          el("dt", { text: "근무 형태" }), el("dd", { text: f.type })
+        ]),
+        f.fit ? el("p", { class: "fit" }, [el("b", { text: "내 경력과 겹치는 점 " }), f.fit]) : null,
+        el("span", { class: "sub", text: "국내 공고 검색" }), koLinks,
+        el("span", { class: "sub", text: "해외 공고 검색" }), enLinks,
+        extra ? el("span", { class: "sub", text: "이 분야 전문 플랫폼" }) : null, extra
+      ]));
+    });
+  }
+  renderCards();
+
+  // 플랫폼 표
+  var tbody = document.getElementById("platforms");
+  PLATFORMS.forEach(function (g) {
+    tbody.appendChild(el("tr", null, [el("td", { class: "group", colspan: "4", text: g[0] })]));
+    g[1].forEach(function (p) {
+      tbody.appendChild(el("tr", null, [
+        el("td", null, [el("b", { text: p[0] })]),
+        el("td", { text: p[1] }),
+        el("td", { text: p[2] }),
+        el("td", null, [el("a", { href: p[3], target: "_blank", rel: "noopener", text: "열기" })])
+      ]));
+    });
+  });
+
+  // 내 지원 목록: claude.ai에서는 계정별 비공개 저장소(db), 그 밖에서는 이 브라우저(localStorage)에 저장
+  var form = document.getElementById("add-form");
+  var jobsBox = document.getElementById("jobs");
+  var note = document.getElementById("store-note");
+  var fPlatform = document.getElementById("f-platform");
+  var fField = document.getElementById("f-field");
+  var fStatus = document.getElementById("f-status");
+  var platformNames = [];
+  PLATFORMS.forEach(function (g) { g[1].forEach(function (p) { platformNames.push(p[0]); }); });
+  platformNames.concat(["기타"]).forEach(function (n) { fPlatform.appendChild(el("option", { text: n })); });
+  FIELDS.map(function (f) { return f.title; }).concat(["기타"]).forEach(function (n) { fField.appendChild(el("option", { text: n })); });
+  STATUSES.forEach(function (s) { fStatus.appendChild(el("option", { text: s })); });
+
+  var LS_KEY = "gig-jobs-v1";
+  var store = null;   // { list(cb), add(job), update(id, patch), remove(id) }
+  var jobs = [];
+  var pendingDelete = null;
+
+  function localStore() {
+    function read() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch (e) { return []; } }
+    function write(a) { try { localStorage.setItem(LS_KEY, JSON.stringify(a)); } catch (e) {} }
+    var cb = function () {};
+    return {
+      list: function (fn) { cb = fn; fn(read()); },
+      add: function (j) { var a = read(); j.id = "j" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); a.push(j); write(a); cb(a); return Promise.resolve(); },
+      update: function (id, patch) { var a = read().map(function (j) { return j.id === id ? Object.assign({}, j, patch) : j; }); write(a); cb(a); return Promise.resolve(); },
+      remove: function (id) { var a = read().filter(function (j) { return j.id !== id; }); write(a); cb(a); return Promise.resolve(); }
+    };
+  }
+
+  function dbStore(db, uid) {
+    var col = db.collection("data/users/" + uid + "/jobs");
+    return {
+      list: function (fn) {
+        col.onSnapshot(function (snap) {
+          fn(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }));
+        }, function () { note.textContent = "저장 목록을 불러오지 못했습니다. 페이지를 새로 고쳐 보세요."; });
+      },
+      add: function (j) { return col.add(j); },
+      update: function (id, patch) { return col.doc(id).update(patch); },
+      remove: function (id) { return col.doc(id).delete(); }
+    };
+  }
+
+  function daysLeft(due) {
+    if (!due) return null;
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    var d = new Date(due + "T00:00:00");
+    return Math.round((d - t) / 86400000);
+  }
+
+  function renderJobs() {
+    jobsBox.replaceChildren();
+    if (!jobs.length) {
+      jobsBox.appendChild(el("div", { class: "empty" }, [
+        el("strong", { text: "아직 저장한 공고가 없습니다" }),
+        el("p", { text: "위 검색 링크에서 공고를 찾은 뒤, 왼쪽 칸에 제목과 링크, 마감일을 넣고 '목록에 저장'을 누르세요." })
+      ]));
+      return;
+    }
+    jobs.slice().sort(function (a, b) {
+      var da = a.due || "9999-12-31", dbb = b.due || "9999-12-31";
+      return da < dbb ? -1 : da > dbb ? 1 : (a.createdAt || 0) - (b.createdAt || 0);
+    }).forEach(function (j) {
+      var left = daysLeft(j.due);
+      var dueText = j.due ? (j.due + (left < 0 ? " · 마감됨" : left === 0 ? " · 오늘 마감" : " · " + left + "일 남음")) : "마감일 없음";
+      var dueSpan = el("span", { text: dueText });
+      if (left !== null && left >= 0 && left <= 7 && j.status !== "합격" && j.status !== "불합격") dueSpan.className = "due-soon";
+
+      var title = /^https?:\/\//i.test(j.url || "")
+        ? el("a", { class: "job-title", href: j.url, target: "_blank", rel: "noopener", text: j.title })
+        : el("span", { class: "job-title", text: j.title });
+
+      var sel = el("select", { "aria-label": "진행 상태" });
+      STATUSES.forEach(function (s) { var o = el("option", { text: s }); if (s === j.status) o.selected = true; sel.appendChild(o); });
+      sel.addEventListener("change", function () {
+        store.update(j.id, { status: sel.value }).catch(function () { note.textContent = "상태를 바꾸지 못했습니다. 다시 시도해 주세요."; });
+      });
+
+      var del = el("button", { type: "button", class: pendingDelete === j.id ? "danger" : "ghost", text: pendingDelete === j.id ? "정말 삭제" : "삭제" });
+      del.addEventListener("click", function () {
+        if (pendingDelete !== j.id) { pendingDelete = j.id; renderJobs(); return; }
+        pendingDelete = null;
+        store.remove(j.id).catch(function () { note.textContent = "삭제하지 못했습니다. 다시 시도해 주세요."; });
+      });
+      var cancel = pendingDelete === j.id ? el("button", { type: "button", class: "ghost", text: "취소" }) : null;
+      if (cancel) cancel.addEventListener("click", function () { pendingDelete = null; renderJobs(); });
+
+      jobsBox.appendChild(el("div", { class: "job", "data-status": j.status }, [
+        title,
+        el("div", { class: "job-meta" }, [el("span", { text: j.platform }), el("span", { text: j.field }), dueSpan]),
+        j.memo ? el("p", { class: "job-memo", text: j.memo }) : null,
+        el("div", { class: "job-actions" }, [sel, del, cancel])
+      ]));
+    });
+  }
+
+  function useStore(s, label) {
+    store = s;
+    note.textContent = label;
+    store.list(function (a) { jobs = a; renderJobs(); });
+  }
+
+  renderJobs();
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!store) return;
+    var job = {
+      title: document.getElementById("f-title").value.trim(),
+      url: document.getElementById("f-url").value.trim(),
+      platform: fPlatform.value, field: fField.value,
+      due: document.getElementById("f-due").value, status: fStatus.value,
+      memo: document.getElementById("f-memo").value.trim(),
+      createdAt: Date.now()
+    };
+    if (!job.title) return;
+    store.add(job).then(function () {
+      form.reset();
+      document.getElementById("f-title").focus();
+    }).catch(function (err) {
+      note.textContent = err && err.code === "quota_exceeded"
+        ? "저장 공간이 가득 찼습니다. 끝난 공고를 삭제한 뒤 다시 저장하세요."
+        : "저장하지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.";
+    });
+  });
+
+  if (window.claude && typeof window.claude.use === "function") {
+    Promise.all([window.claude.use("db"), window.claude.use("user")]).then(function (r) {
+      var db = r[0], user = r[1];
+      if (!db || !user) { useStore(localStore(), "이 브라우저에만 저장됩니다. 로그인하면 계정에 저장됩니다."); return; }
+      return user.id().then(function (uid) {
+        if (!uid) { useStore(localStore(), "이 브라우저에만 저장됩니다."); return; }
+        useStore(dbStore(db, uid), "내 계정에 저장되며 다른 사람에게는 보이지 않습니다.");
+      });
+    }).catch(function () { useStore(localStore(), "이 브라우저에만 저장됩니다."); });
+  } else {
+    useStore(localStore(), "이 브라우저에만 저장됩니다.");
+  }
+})();
+</script>
