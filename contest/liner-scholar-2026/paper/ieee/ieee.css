@@ -1,0 +1,36 @@
+/* IEEE 저널 유사 2단 양식 (A4) */
+@page { size: A4; margin: 19mm 15mm 22mm 15mm;
+  @bottom-center { content: counter(page); font-size: 8pt; } }
+html { font-family: "Noto Serif CJK KR", serif; font-size: 9.2pt; line-height: 1.38; color: #000; }
+body { margin: 0; }
+p { margin: 0 0 0.35em 0; text-align: justify; text-indent: 1em; word-break: keep-all; }
+.titleblock p, .tcap, .tnote, figcaption, .refs p { text-indent: 0; }
+.titleblock { text-align: center; margin-bottom: 10pt; }
+.ptitle { font-size: 17pt; line-height: 1.25; margin: 4pt 0 4pt; text-align: center; font-weight: 700; }
+.etitle { font-size: 10.5pt; font-style: italic; text-align: center; margin-bottom: 8pt; }
+.author { font-size: 11pt; text-align: center; margin: 0; }
+.affil { font-size: 8.5pt; text-align: center; margin-bottom: 10pt; }
+.abstract, .keywords { font-size: 8.6pt; text-align: justify; margin: 0 0 5pt; font-weight: 400; line-height: 1.35; }
+.cols { column-count: 2; column-gap: 6mm; }
+h1 { font-size: 9.6pt; font-weight: 400; font-variant: small-caps; text-align: center; letter-spacing: 0.04em;
+     margin: 10pt 0 4pt; break-after: avoid; }
+h2 { font-size: 9.2pt; font-weight: 400; font-style: italic; margin: 7pt 0 3pt; break-after: avoid; }
+figure { margin: 6pt 0 8pt; break-inside: avoid; text-align: center; }
+figure.wide { column-span: all; }
+figure img { max-width: 100%; }
+figure.wide img { width: 100%; }
+figcaption { font-size: 8pt; text-align: justify; margin-top: 3pt; line-height: 1.3; }
+.tcap { font-size: 8pt; text-align: center; margin: 8pt 0 3pt; font-variant: small-caps; letter-spacing: 0.03em;
+        break-after: avoid; line-height: 1.3; }
+.tnote { font-size: 7.4pt; margin: 2pt 0 8pt; line-height: 1.3; }
+table { border-collapse: collapse; width: 100%; font-size: 7.4pt; line-height: 1.25; break-inside: avoid;
+        border-top: 1.2pt solid #000; border-bottom: 1.2pt solid #000; margin: 0 0 4pt; }
+thead th { border-bottom: 0.6pt solid #000; font-weight: 400; }
+th, td { padding: 1.6pt 3pt; text-align: center; vertical-align: middle; }
+td:first-child, th:first-child { text-align: left; }
+math[display="block"] { margin: 4pt 0; font-size: 9.5pt; }
+.refs { column-count: 2; column-gap: 6mm; font-size: 7.6pt; line-height: 1.3; margin-top: 6pt; }
+.refs h1 { column-span: all; }
+.refs p { text-align: left; padding-left: 2.2em; text-indent: -2.2em; margin-bottom: 2pt; word-break: normal; }
+.widetab { column-span: all; margin: 4pt 0 6pt; }
+figure.wide img { width: auto; max-width: 100%; max-height: 82mm; }
