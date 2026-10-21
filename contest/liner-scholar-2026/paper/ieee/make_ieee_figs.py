@@ -25,15 +25,15 @@ OUT = os.path.dirname(os.path.abspath(__file__))
 A_COL, B_COL, REF = "#1f5fbf", "#d1495b", "#333333"
 W2 = 7.16  # IEEE 두 단 폭 (in)
 
-LIMIT, THRESH, MASS, BMR_W = 0.08, 4.0, 74.16, 80.0
+LIMIT, THRESH, MASS, BMR_W = 0.08, 4.0, 73.97, 80.0
 C_TISSUE, T_EXP = 3500.0, 1800.0
 DIST = [30, 50, 100]
 # 전신 평균 SAR 기준 도달 배수: (v2 몸앞평균, v1 몸앞최대)
-MULT_WB = {30: (1456, 117), 50: (2572, 247), 100: (7358, 834)}
+MULT_WB = {30: (1385, 112), 50: (2447, 235), 100: (6999, 793)}  # Gustav, voxbundle
 # 해부학 모형(Gustav) 국부 1 g 기준 도달 배수: (v1 몸앞평균, v1 몸앞최대)
-MULT_LOC = {30: (234, 54), 50: (352, 114), 100: (832, 383)}  # 해부학·실체형 최댓값(MakeHuman 성인 0.226) 기준
+MULT_LOC = {30: (766, 62), 50: (1353, 130), 100: (3870, 438)}  # Gustav 머리·몸통 1 g, voxbundle
 # 국부(피부) 최대 온도 상승, 시나리오 A (degC): 부록 B.8
-DT_LOCAL_A = {30: (0.000091, 0.0011), 50: (0.000051, 0.00054), 100: (0.000018, 0.00016)}
+DT_LOCAL_A = {30: (0.00019, 0.0024), 50: (0.00011, 0.0011), 100: (0.000038, 0.00034)}  # Gustav 코 피부
 
 
 def sar_rng(d, f):
@@ -80,7 +80,7 @@ def fig_sar_margin():
 
     # (b) 기준 도달 배수
     rows = [(f"전신 평균, {d} cm", *MULT_WB[d][::-1]) for d in DIST] + \
-           [(f"국부 1 g, {d} cm", *MULT_LOC[d][::-1]) for d in DIST]
+           [(f"머리·몸통 1 g, {d} cm", *MULT_LOC[d][::-1]) for d in DIST]
     for i, (lab, lo, hi) in enumerate(rows):
         y = len(rows) - 1 - i
         b.plot([lo, hi], [y, y], color="#555555", lw=4.5, solid_capstyle="butt", zorder=3)
