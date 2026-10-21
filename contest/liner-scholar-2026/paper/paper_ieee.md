@@ -66,7 +66,7 @@
 
 <figure class="wide">
 <img src="ieee/fig_geometry.png" alt="Fig. 1">
-<figcaption>그림 1. 해석 모델. 전자레인지(도파관 급전, 물 부하, 문 간극)와 성인(문에서 몸통 전면까지 d), 아동(문에서 안면까지 d) 인체 모델의 배치.</figcaption>
+<figcaption>그림 1. 해석 모델. (a) 인체 해석에 사용한 단순 문 모델(v1)의 시상 단면(x = 0): 조리실 330 × 220 × 330 mm, 1 mm 간극을 둔 20 mm 금속 문, 물 부하 275 mL, 보정 평면(문 외면 5 cm, 점선). (b) 실제 문 구조 모델(v2)의 문 상단 단면: 강판 문틀, 외부 유리, 0.8 mm 간극, 입구 3 mm·직선 깊이 17.75 mm·8 × 4 mm 절곡부를 갖는 λ/4 초크. (c) 인체 배치: 아동은 안면이 문에서 50 mm(및 100 mm), 성인은 몸통 전면이 300 mm(파선: 500, 1000 mm).</figcaption>
 </figure>
 
 ## B. 누설 크기의 보정
@@ -126,7 +126,7 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 <figure class="wide">
 <img src="ieee/fig_leakage.png" alt="Fig. 2">
-<figcaption>그림 2. 실제 문 구조(v2)의 누설장. (a) 문 외면 5 cm 평면의 전계 분포(최댓값 기준 dB, +는 최댓값). (b) 평면 최댓값의 거리 감쇠(5 cm 값 대비). 회색 구간은 측정 기반 보고값(30 cm에서 5–10%) [7].</figcaption>
+<figcaption>그림 2. 누설장. (a) v2 문 외면 5 cm 평면의 전계 크기(최댓값 기준 dB, +는 최댓값). 누설은 조작부 측 간극에 인접한 문 우상단에 집중된다. (b) 평면 최댓값 $E_{\mathrm{rms}}^2/377$의 거리 감쇠(5 cm 값 대비). 파선과 점선은 5 cm에서 출발한 1/r, 1/r², 회색 구간은 측정 기반 보고값(30 cm에서 5–10%) [7].</figcaption>
 </figure>
 
 ## B. 비흡수율
@@ -135,7 +135,7 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 <figure class="wide">
 <img src="ieee/fig_sar_maps.png" alt="Fig. 3">
-<figcaption>그림 3. 성인 모델의 SAR 분포(입사 1 W/m²당, 로그 척도). (a), (b) 인체 중심의 시상 단면, (c), (d) 문 중심 높이의 수평 단면. 좌: 수직 편파, 우: 수평 편파.</figcaption>
+<figcaption>그림 3. 오븐 측에서 입사하는 1 W/m² 평면파에 대한 성인 모델의 점 SAR(로그 척도). (a), (b) 시상 단면(x = 0), (c), (d) 수평 단면(z = 1025 mm, 문 중심 높이). (a), (c) 전계 z 방향, (b), (d) 전계 x 방향. 오븐은 (a), (b)에서 좌측, (c), (d)에서 상측에 있다.</figcaption>
 </figure>
 
 ::: {.widetab}
@@ -193,7 +193,7 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 <figure class="wide">
 <img src="ieee/fig_bioheat_maps.png" alt="Fig. 6">
-<figcaption>그림 6. 입사 1 W/m²당 온도 상승 분포(mK). (a) 성인 두부·흉부 시상 단면, (b) 아동 안구 높이 수평 단면.</figcaption>
+<figcaption>그림 6. 입사 1 W/m²당 정상상태 온도 상승(CST 손실 밀도를 열원으로 한 Pennes 해석, 2차원 단면, 상한). (a) 성인 두부·흉부 시상 단면(x = 0, 전계 z 방향), (b) 아동 안구 높이 수평 단면(전계 x 방향, 오븐은 상측).</figcaption>
 </figure>
 
 ## E. 아동
