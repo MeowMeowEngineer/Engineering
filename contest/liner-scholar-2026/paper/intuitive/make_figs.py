@@ -58,7 +58,7 @@ def sar_range(dist, scen):
     return LIMIT * f / v2m, LIMIT * f / v1x
 
 
-def fig1_ladder():
+def fig1_ladder(empty=False):
     fig, ax = plt.subplots(figsize=(8.6, 6.4))
     ax.set_yscale("log")
     ax.set_ylim(2e-5, 20)
@@ -77,18 +77,22 @@ def fig1_ladder():
     ref_line(BMR_W / MASS, f"우리 몸이 가만히 있어도 내는 열: 약 {BMR_W/MASS:.1f} W/kg", f"기초대사 약 {BMR_W:.0f} W", MUTED, ":")
     ref_line(LIMIT, "일반인 기준: 0.08 W/kg", f"문턱의 1/50 · 몸 전체 약 {LIMIT*MASS:.1f} W", LIMIT_COL)
 
-    for x, scen, col, title in ((3.2, "A", A_COL, "정상 제품"), (6.8, "B", B_COL, "누설이 법정 상한인 제품")):
+    if empty:
+        ax.text(5.0, 0.004, "전자레인지 앞에 선 사람은\n이 사다리의 어디쯤일까?", ha="center", va="center",
+                fontsize=15, color=INK2, fontweight="bold")
+    for x, scen, col, title in (() if empty else ((3.2, "A", A_COL, "정상 제품"), (6.8, "B", B_COL, "누설이 법정 상한인 제품"))):
         lo, hi = sar_range(30, scen)
         ax.bar(x, hi - lo, bottom=lo, width=0.9, color=col, zorder=3)
         ax.text(x + 0.62, (lo * hi) ** 0.5, f"{title}\n30 cm 앞 성인\n{lo:.5f}–{hi:.4f} W/kg\n= 기준의 {lo/LIMIT*100:.2g}–{hi/LIMIT*100:.2g}%\n몸 전체 흡수 {lo*MASS*1000:.0f}–{hi*MASS*1000:.0f} mW" if scen == "A"
                 else f"{title}\n30 cm 앞 성인\n{lo:.4f}–{hi:.3f} W/kg\n= 기준의 {lo/LIMIT*100:.2g}–{hi/LIMIT*100:.2g}%\n몸 전체 흡수 {lo*MASS:.1f}–{hi*MASS:.1f} W",
                 color=INK, fontsize=9.5, va="center")
     ax.yaxis.set_major_formatter(FuncFormatter(plain))
-    fig.text(0.01, 0.01, "막대 아래 끝: 실제 문 구조, 몸 앞 평균 노출 / 위 끝: 단순 문, 몸 앞 최댓값 노출(가장 보수적). 기준·문턱: ICNIRP, 국내 인체보호기준.",
+    fig.text(0.01, 0.01, "기준·문턱: ICNIRP, 국내 인체보호기준." if empty else "막대 아래 끝: 실제 문 구조, 몸 앞 평균 노출 / 위 끝: 단순 문, 몸 앞 최댓값 노출(가장 보수적). 기준·문턱: ICNIRP, 국내 인체보호기준.",
              fontsize=8.5, color=INK2)
-    ax.set_title("전자레인지 30 cm 앞에 선 성인이 흡수하는 전자파, 어느 정도일까?", loc="left", fontsize=13, color=INK, pad=12)
+    ax.set_title("'해롭다'의 기준: 몸이 얼마나 데워지느냐" if empty else "전자레인지 30 cm 앞에 선 성인이 흡수하는 전자파, 어느 정도일까?",
+                 loc="left", fontsize=13, color=INK, pad=12)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
-    fig.savefig(os.path.join(OUT, "safety_ladder.png"), dpi=200)
+    fig.savefig(os.path.join(OUT, "safety_ladder_empty.png" if empty else "safety_ladder.png"), dpi=200)
     plt.close(fig)
 
 
@@ -177,6 +181,7 @@ def fig3_margin():
 
 if __name__ == "__main__":
     fig1_ladder()
+    fig1_ladder(empty=True)
     fig2_distance()
     fig3_margin()
 
