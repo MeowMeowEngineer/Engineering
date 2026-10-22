@@ -13,6 +13,17 @@
 
 <img src="https://raw.githubusercontent.com/MeowMeowEngineer/Courtside-Coach/main/docs/hero.png" width="640" alt="코트사이드 코치 화면">
 
+## 📡 [일감 레이더](https://github.com/MeowMeowEngineer/gig-radar)
+전파·안테나·레이다 전공과 생성형 AI 기술로 할 수 있는 프리랜서·파트타임 일을 분야별로 모은 웹사이트와 안드로이드 앱입니다.
+
+- RF 전공 일감 8개 분야(AI 학습용 전공 문제 평가, 안테나 설계 외주, 레이다 신호처리, RF 측정, R&D 제안서, 특허 검토, 전문가 자문, 과외)를 'VNA·무향실 측정', 'FMCW 레이다' 같은 내 기술로 거릅니다.
+- 분야마다 원티드·사람인·크몽·Upwork·LinkedIn의 실제 검색 결과로 연결하고, 공개 공고에서 확인한 보수와 출처를 함께 적었습니다.
+- 찾은 공고를 저장하면 마감일 순으로 정렬하고, 7일 안에 마감되는 공고를 표시합니다.
+- 페이지 원본 하나로 웹(PWA, 오프라인 지원)과 안드로이드 앱(WebView)을 함께 만듭니다. 앱은 Gradle 없이 Ubuntu 패키지만으로 빌드합니다.
+- **걸린 시간**: 첫 요청부터 RF 페이지와 안드로이드 앱까지 약 20분 (2026-10-22 01:29 → 01:48 KST, 저장소 커밋 기준)
+- **주소**: https://gig-radar.vercel.app
+- **기술**: `JavaScript` `Python` `PWA` `Android WebView` `Vercel`
+
 ## 🗜️ 압축풀기
 광고와 데이터 수집 없이 압축 파일을 기기 안에서 바로 푸는 안드로이드 앱입니다.
 
