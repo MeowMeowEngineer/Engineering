@@ -41,7 +41,8 @@ PER_DT = {"adult": 0.0183, "child": 0.0104}      # 국부 최대 온도 상승 (
 # 성인: 몸통 앞 |x| ≤ 170 mm, z 850–1450 mm (표 VI의 배수와 같은 값)
 PD_A = {
     "adult": {30: (0.010502, 0.129870), 50: (0.0059442, 0.061896), 100: (0.0020782, 0.018342)},
-    "child": None,  # 아동 몸통 앞 영역, mw 후처리 값으로 채움
+    # 아동: 몸통 앞 |x| ≤ 105 mm, z 590–940 mm (몸통 470–940 중 오븐 단독 평면이 덮는 74 %), mw child_front.json
+    "child": {30: (0.0060, 0.128), 50: (0.0034, 0.0625), 100: (0.0013, 0.0183)},
 }
 # 성인 기준 도달 배수 (v2 몸앞평균, v1 몸앞최대): 표 VI·본문과 같은 원자료 값 (voxbundle)
 MULT_WB_ADULT = {30: (1385, 112), 50: (2447, 235), 100: (6999, 793)}
@@ -129,7 +130,7 @@ def ref_lines(ax, lines):
 
 
 def fig_sar_margin():
-    fig, (a, b) = plt.subplots(1, 2, figsize=(W2, 3.9), gridspec_kw={"width_ratios": [1, 1.0]})
+    fig, (a, b) = plt.subplots(1, 2, figsize=(W2, 3.45), gridspec_kw={"width_ratios": [1, 1.0]})
     # (a) 전신 평균 SAR
     plot_ranges(a, lambda s, d, f: tuple(PER_WB[s] * p for p in pd_rng(s, d, f)))
     plot_near(a, NF_WB_B)
@@ -181,7 +182,7 @@ def fig_sar_margin():
     b.tick_params(axis="y", which="both", right=False)
     panel(b, "(b)", -0.17)
     fig.tight_layout(w_pad=1.5)
-    fig.subplots_adjust(bottom=0.19, top=0.86)
+    fig.subplots_adjust(bottom=0.2, top=0.85)
     for ext in ("pdf", "png"):
         fig.savefig(os.path.join(OUT, f"fig_sar_margin.{ext}"), dpi=300)
     plt.close(fig)
