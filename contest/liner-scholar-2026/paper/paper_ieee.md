@@ -75,7 +75,7 @@
 
 ## C. 인체 모델과 노출 해석
 
-인체 모델로는 CST Voxel Family의 해부학적 모델 Gustav(성인 남성, 조직 질량 73.97 kg)와 Child(7세, 23.85 kg) [확인 필요: 원자료의 나이·신장]를 사용하였다 [18]. voxel 해상도는 Gustav 2.08 × 2.08 × 2 mm, Child 1.54 × 1.54 × 1.6 mm이며, 인체를 덮는 영역의 격자 간격은 각각 2.5 mm, 2.0 mm 이하로 두었다. 각 조직의 유전 상수는 Gabriel 4-Cole-Cole 매개변수 모델로 2.45 GHz 값을 계산하여 고정하였다 [23](표 III). 결과의 모델 의존성을 확인하기 위해 피부·지방·근육·뼈·뇌·안구로 구성된 층상 기하 모델(성인 1.72 m, 74.2 kg; 아동 1.13 m, 22.3 kg)과 MakeHuman [24] 기반의 실제 체형 균질 모델(성인, 7세, 3세)을 같은 조건으로 해석하였다(Ⅳ-F). 표면적을 일치시킨 단순 형상 모델은 GHz 대역 전신 평균 SAR을 보수적으로 평가하는 것으로 알려져 있다 [25].
+인체 모델로는 CST Voxel Family의 해부학적 모델 Gustav(38세 남성, 신장 176 cm, 체중 69 kg)와 Child(7세 여아, 신장 115 cm, 체중 21.7 kg)를 사용하였다 [18]. 전신 평균 SAR은 CST 조직 밀도로 계산한 조직 질량(Gustav 73.97 kg, Child 23.85 kg)으로 나누었으며, 원자료 체중으로 나누면 각각 7%, 10% 커진다. voxel 해상도는 Gustav 2.08 × 2.08 × 2 mm, Child 1.54 × 1.54 × 1.6 mm이며, 인체를 덮는 영역의 격자 간격은 각각 2.5 mm, 2.0 mm 이하로 두었다. 각 조직의 유전 상수는 Gabriel 4-Cole-Cole 매개변수 모델로 2.45 GHz 값을 계산하여 고정하였다 [23](표 III). 결과의 모델 의존성을 확인하기 위해 피부·지방·근육·뼈·뇌·안구로 구성된 층상 기하 모델(성인 1.72 m, 74.2 kg; 아동 1.13 m, 22.3 kg)과 MakeHuman [24] 기반의 실제 체형 균질 모델(성인, 7세, 3세)을 같은 조건으로 해석하였다(Ⅳ-F). 표면적을 일치시킨 단순 형상 모델은 GHz 대역 전신 평균 SAR을 보수적으로 평가하는 것으로 알려져 있다 [25].
 
 성인은 문 외면에서 몸통 전면까지의 거리 d = 30, 50, 100 cm에 정면으로 선 상황을 가정하였다. 오븐 단독 해석에서 이 영역은 포인팅 벡터와 $E_{\mathrm{rms}}^2/377$의 차이가 4% 이내인 방사장이었으므로, 인체 모델에 정면 평면파(수직 및 수평 편파)를 조사하여 입사 전력밀도 1 W/m²당 SAR을 구하고, 오븐 단독 해석의 거리별 신체 전면 전력밀도를 곱하였다. 신체 전면 전력밀도로는 몸통 투영 영역의 평균과 최댓값을 사용하였으며, 하한은 v2 모델의 평균, 상한은 v1 모델의 최댓값(전신이 최댓값으로 조사된다는 가정)으로 두었다. 지표마다 두 편파 중 큰 값을 취하였다. 문에 안면을 근접시킨 아동(안면 5, 10 cm)은 반응성 근역장 안에 있으므로 v1 오븐과 Child 모델을 함께 해석하였다. 격자 수를 GPU 메모리 안에 두기 위해 Child 모델은 머리끝부터 눈 아래 300 mm까지(9.94 kg, 뇌·안구·폐·심장 전체 포함)만 사용하였고, 누설 크기에는 오븐 단독 해석의 보정 계수를 그대로 적용하였다. 안면 최전방점과 문 외면 사이 거리는 52 mm와 102 mm(설계 50, 100 mm), 눈 높이는 문 중심보다 20 mm 위였으며, 모델 절단 과정에서 안면 중심이 문 중심에서 수평으로 14 mm 벗어났다. 이 해석의 전신 평균 SAR은 절단 모델의 흡수 전력을 아동 전체 질량(23.85 kg)으로 나눈 값으로, 하반신 흡수가 빠진 하한이다.
 
@@ -299,7 +299,7 @@ Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 
 
 [17] FAO/WHO/UNU, *Human Energy Requirements: Report of a Joint FAO/WHO/UNU Expert Consultation*, FAO Food and Nutrition Technical Report Series 1. Rome, Italy: FAO, 2004.
 
-[18] Dassault Systèmes, *CST Studio Suite 2019*, Version 2019.7, 2019.
+[18] Dassault Systèmes, *CST Studio Suite 2019*, Version 2019.7, 2019; Online Help, "Biological Data: CST Voxel Family."
 
 [19] Samsung MS23K3513AW product specifications (housing and cavity dimensions, output power), retailer listings Coolblue (coolblue.be) and DCS (dcs.dk). Accessed: Oct. 22, 2026.
 
