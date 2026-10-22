@@ -1,4 +1,0 @@
-build/
-*.keystore
-*.jks
-__pycache__/
