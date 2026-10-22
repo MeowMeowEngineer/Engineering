@@ -1,5 +1,5 @@
 // 브라우저 QA: node qa.js [스크린샷 폴더]
-// playwright가 필요하다. index.html을 문서 골격으로 감싼 임시 페이지를 만들어 시나리오 17개를 돌린다.
+// playwright가 필요하다. 엔진 단위 검사 뒤, index.html을 문서 골격으로 감싼 임시 페이지에서 브라우저 시나리오를 돌린다.
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const E = require('./engine.js');
@@ -10,6 +10,25 @@ fs.writeFileSync(path.join(SP, 'web', 'index.html'), '<!doctype html><html><head
 const url = 'file://' + path.join(SP, 'web', 'index.html');
 const results = [];
 const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + name + (detail ? ' — ' + detail : '')); };
+// 엔진 단위 검사 (브라우저 없이)
+{
+  const s = E.newGame(); s.rng = 7;
+  E.COLLECTION.quotes.items.forEach((_, i) => { if (i !== 15) s.col.quotes[i] = 1; });
+  s.col.pity = { quotes: E.PITY };
+  let got = null;
+  for (let i = 0; i < 20 && !got; i++) { const d = E.profReward(s).drop; if (d) got = d; }
+  ok('중복 보정: ' + E.PITY + '번 중복 뒤에는 없는 항목(전설 1개)이 확정', got && got.idx === 15);
+  const next = E.newGame(s);
+  ok('재입학해도 도감 유지', E.colCount(next, 'quotes') === 16 && next.col === s.col);
+  const p = E.newGame(); for (let t = 1; t <= E.LAST; t++) p.col.photos[t] = true;
+  const p2 = E.newGame(p);
+  ok('기념사진 세트 완성 시 커피 머신 10대·학부연구생 5대로 시작', p2.gens.coffee === 10 && p2.gens.intern === 5);
+  const sum = Object.keys(E.COLLECTION).filter((k) => E.COLLECTION[k].items).every((k) => Math.abs(E.COLLECTION[k].items.reduce((a, _, i) => a + E.dropRate(k, i), 0) - E.COLLECTION[k].chance * 100) < 1e-9);
+  ok('공개 확률 합계 = 드롭 확률', sum);
+  const old = E.migrate({ v: 1, data: 1, total: 1, taps: 0, tapLv: 0, gens: {}, papers: 3, paperTitles: [], tier: 4, time: 10, skills: { night: 0, deadline: 0 }, buffs: [], medals: 0, century: false, promotedAt: [{ tier: 1, time: 0 }, { tier: 2, time: 5 }, { tier: 4, time: 9 }], rng: 1, ended: false });
+  ok('v1 세이브 변환 시 지나온 직급 기념사진 복원', old.col.photos[2] && old.col.photos[5] && !old.col.photos[4]);
+}
+
 (async () => {
   const browser = await chromium.launch();
   const errors = [];
@@ -80,10 +99,22 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   p = await page({ viewport: { width: 1200, height: 900 }, colorScheme: 'dark' }, JSON.stringify({ st: s10, at: Date.now() }));
   await clickModal(p, '받기');
   await p.click('#centuryBtn'); await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(500);
-  ok('아인슈타인급 엔딩', (await modalText(p)).includes('인류의 지성'));
+  ok('살아있는 교과서 엔딩', (await modalText(p)).includes('살아있는 교과서') && (await modalText(p)).includes('인류의 지성'));
+  ok('마지막 캐릭터는 월계관 (흰 머리 뭉치 없음)', await p.evaluate(() => { const svg = document.querySelector('#dialog svg'); return svg.querySelectorAll('ellipse[fill="#d4a72c"]').length >= 13 && svg.querySelectorAll('circle[r="16"]').length === 0; }));
   await p.screenshot({ path: SP + '/qa-ending.png' });
   await clickModal(p, '재입학'); await p.waitForTimeout(300);
   ok('재입학 후 석사과정·쿠폰(77+출석5+첫 도달10)·야옹 유지', (await p.textContent('#tierName')) === '석사과정' && (await p.textContent('#coupons')) === '92' && (await p.$('.cat')) !== null, '쿠폰 ' + (await p.textContent('#coupons')));
+  // 12. 도감 탭: 주입한 수집 상태가 그대로 보인다
+  const s12 = E.newGame(); s12.daily.claimed = 'x';
+  s12.col = { quotes: { 0: 1, 13: 2 }, goods: { 10: 1 }, topics: { 0: 4, 3: 10 }, photos: { 1: true, 2: true }, cats: {}, pity: { quotes: 2 } };
+  p = await page(undefined, JSON.stringify({ st: s12, at: Date.now() }));
+  await clickModal(p, '받기');
+  await p.click('#tab-col'); await p.waitForTimeout(200);
+  const colText = await p.textContent('#panel-col');
+  ok('도감: 어록 2/16, 전설 어록 표시, 중복 2/4', colText.includes('2/16') && colText.includes('이번 결과 좋다') && colText.includes('중복 2/4'));
+  ok('도감: 연구 주제 별 5개(★★ + ★★★)', colText.includes('5/30') && colText.includes('★★★'));
+  ok('도감: 확률 공개 (일반 어록 5.5%)', colText.includes('일반 · 5.5%'));
+  await p.screenshot({ path: SP + '/qa-collection.png', fullPage: true });
   // 11. 폰 너비
   const p11 = await page();
   ok('폰 너비 가로 스크롤 없음', (await p11.evaluate(() => document.documentElement.scrollWidth)) <= 400);

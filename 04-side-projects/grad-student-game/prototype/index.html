@@ -131,6 +131,21 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .tier.now { border: 2px solid var(--accent); }
 .tier .meta { font-size: 0.82rem; color: var(--muted); }
 
+.colhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.colhead b { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; }
+.colmeta { font-size: 0.82rem; color: var(--muted); }
+.colmeta .done { color: var(--good); font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; margin-top: 8px; }
+.item { border: 1px solid var(--line); padding: 6px 8px; font-size: 0.85rem; background: var(--card); display: grid; gap: 2px; min-width: 0; }
+.item .rar { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; }
+.item .rar.c { color: var(--muted); } .item .rar.r { color: var(--accent); } .item .rar.l { color: var(--gold); }
+.item.l.owned { border: 2px solid var(--gold); }
+.item.missing { background: var(--soft); color: var(--muted); }
+.item .q { font-family: var(--font-hand); font-size: 1.15rem; line-height: 1.15; }
+.item svg { width: 54px; height: 60px; }
+.stars { color: var(--gold); letter-spacing: 2px; }
+.toast { position: absolute; left: 8px; right: 8px; top: 8px; background: var(--card); border: 2px solid var(--gold); padding: 6px 10px; font-size: 0.85rem; font-weight: 600; z-index: 3; pointer-events: none; animation: toast 2.8s ease-out forwards; }
+@keyframes toast { 0% { opacity: 0; transform: translateY(-8px); } 10%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 .log { display: grid; gap: 4px; font-size: 0.9rem; max-height: 260px; overflow-y: auto; }
 .log ol { margin: 0; padding: 0; }
 .log li { list-style: none; border-bottom: 1px dashed var(--line); padding: 4px 0; }
@@ -154,7 +169,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 <div class="wrap">
   <header class="top">
-    <h1 class="brand">대학원생 키우기 <small>석사 입학부터 아인슈타인급까지</small></h1>
+    <h1 class="brand">대학원생 키우기 <small>석사 입학부터 살아있는 교과서까지</small></h1>
     <div class="topright">
       <button class="coupon num" id="couponBtn" aria-label="커피 쿠폰, 상점 열기">☕ <span id="coupons">0</span></button>
       <div class="badge"><b id="tierName">석사과정</b><span id="tierTitle">랩실 막내</span></div>
@@ -190,12 +205,14 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       <nav class="tabs" role="tablist">
         <button role="tab" id="tab-gens" aria-selected="true" data-tab="gens">동료·장비</button>
         <button role="tab" id="tab-tap" aria-selected="false" data-tab="tap">탭 강화</button>
+        <button role="tab" id="tab-col" aria-selected="false" data-tab="col">도감</button>
         <button role="tab" id="tab-shop" aria-selected="false" data-tab="shop">상점</button>
         <button role="tab" id="tab-tree" aria-selected="false" data-tab="tree">전직 트리</button>
         <button role="tab" id="tab-rec" aria-selected="false" data-tab="rec">기록</button>
       </nav>
       <div id="panel-gens" class="list"></div>
       <div id="panel-tap" class="list" hidden></div>
+      <div id="panel-col" class="list" hidden></div>
       <div id="panel-shop" class="list" hidden></div>
       <div id="panel-tree" class="tree" hidden></div>
       <div id="panel-rec" class="list" hidden></div>
@@ -234,7 +251,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     { hair: 'partGrey', outfit: 'suit2', glasses: true, tired: false },
     { hair: 'grey', outfit: 'suit3', glasses: true, tired: false },
     { hair: 'white', outfit: 'gown', glasses: true, tired: false },
-    { hair: 'einstein', outfit: 'sweater', glasses: true, tired: false, mustache: true },
+    { hair: 'sage', outfit: 'robe', glasses: true, tired: false, beard: true },
   ];
   function hair(kind) {
     const cap = (c) => '<path d="M52 98 Q52 50 100 47 Q148 50 148 98 Q138 72 100 70 Q62 72 52 98 Z" fill="' + c + '"/>';
@@ -248,8 +265,13 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       case 'grey': return cap(HAIR.grey);
       case 'white': return '<ellipse cx="54" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><ellipse cx="146" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><path d="M70 60 Q100 50 130 60" stroke="' + HAIR.white + '" stroke-width="6" fill="none" stroke-linecap="round"/>';
       default: {
-        const puffs = [[52, 70, 16], [44, 96, 14], [48, 122, 12], [148, 70, 16], [156, 96, 14], [152, 122, 12], [70, 50, 16], [92, 42, 17], [114, 42, 17], [134, 52, 16], [38, 80, 10], [162, 80, 10], [100, 34, 12]];
-        return puffs.map((p) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" fill="' + HAIR.white + '" stroke="#c9ced6" stroke-width="1.5"/>').join('');
+        // 살아있는 교과서: 옆머리만 남은 흰 머리에 황금 월계관
+        let leaves = '';
+        for (let i = 0; i <= 12; i++) {
+          const a = Math.PI * (1.08 + 0.84 * i / 12), x = 100 + 50 * Math.cos(a), y = 98 + 50 * Math.sin(a);
+          leaves += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="8" ry="3.6" transform="rotate(' + ((a * 180) / Math.PI + 90 + (i % 2 ? 28 : -28)).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="#d4a72c" stroke="#9c7a17" stroke-width="1"/>';
+        }
+        return '<ellipse cx="54" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/><ellipse cx="146" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/>' + leaves;
       }
     }
   }
@@ -266,7 +288,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       case 'suit2': return suit('#383b47', '#b23a48');
       case 'suit3': return suit('#1e2230', '#c79a2e');
       case 'gown': return body('#7d1f2c') + '<path d="M70 160 Q100 196 130 160" stroke="#d4a72c" stroke-width="7" fill="none"/>';
-      default: return body('#8c8f96') + '<path d="M100 158 V222" stroke="#6f7279" stroke-width="2"/><circle cx="100" cy="182" r="3" fill="#6f7279"/><circle cx="100" cy="202" r="3" fill="#6f7279"/>';
+      default: return body('#24345c') + '<path d="M80 160 L100 222 L120 160" stroke="#d4a72c" stroke-width="6" fill="none"/>';
     }
   }
   function charSVG(t) {
@@ -277,7 +299,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     s += '<circle cx="82" cy="104" r="4.5" fill="#1d1d24"/><circle cx="118" cy="104" r="4.5" fill="#1d1d24"/>';
     if (L.tired) s += '<path d="M73 114 q9 6 18 0 M109 114 q9 6 18 0" stroke="#8b6c9c" stroke-width="2.5" fill="none" opacity="0.7"/>';
     if (L.glasses) s += '<circle cx="82" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><circle cx="118" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><path d="M95 104 H105" stroke="#24242c" stroke-width="2.5"/>';
-    if (L.mustache) s += '<path d="M78 124 Q90 116 100 122 Q110 116 122 124 Q112 134 100 128 Q88 134 78 124 Z" fill="' + HAIR.white + '" stroke="#c9ced6"/>';
+    if (L.beard) s += '<path d="M64 112 Q66 176 100 198 Q134 176 136 112 Q122 132 100 130 Q78 132 64 112 Z" fill="' + HAIR.white + '" stroke="#c9ced6" stroke-width="1.5"/><path d="M90 126 Q100 132 110 126" stroke="#7a3b2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
     else s += L.tired ? '<path d="M90 128 H110" stroke="#7a3b2e" stroke-width="3" stroke-linecap="round"/>' : '<path d="M88 125 Q100 135 112 125" stroke="#7a3b2e" stroke-width="3" fill="none" stroke-linecap="round"/>';
     return '<svg viewBox="0 0 200 222" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터">' + s + '</svg>';
   }
@@ -370,7 +392,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     $('tapMeta').textContent = '지금 탭 1번에 ' + fmt(E.perTap(st)) + (st.tier >= 3 ? ' (초당 생산의 2% 포함)' : '');
     $('tapCost').textContent = fmt(E.tapCost(st));
     $('tapBuy').disabled = st.data < E.tapCost(st);
-    $('tierBonus').textContent = '직급 보너스 생산 ×' + fmt(Math.pow(E.CFG.tierProd, st.tier - 1)) + '·탭 ×' + fmt(Math.pow(E.CFG.tierTap, st.tier - 1)) + ' / 레벨 ' + st.lv + ' +' + Math.round(E.CFG.levelBonus * 100 * st.lv) + '% / 논문 ' + st.papers + '편 +' + Math.round(E.CFG.paperBonus * 100 * st.papers) + '%' + (st.medals ? ' / 노벨 메달 ' + st.medals + '개 +' + st.medals * 50 + '%' : '');
+    $('tierBonus').textContent = '직급 보너스 생산 ×' + fmt(Math.pow(E.CFG.tierProd, st.tier - 1)) + '·탭 ×' + fmt(Math.pow(E.CFG.tierTap, st.tier - 1)) + ' / 레벨 ' + st.lv + ' +' + Math.round(E.CFG.levelBonus * 100 * st.lv) + '% / 논문 ' + st.papers + '편 +' + Math.round(E.CFG.paperBonus * 100 * st.papers) + '%' + (st.medals ? ' / 황금 월계관 ' + st.medals + '개 +' + st.medals * 50 + '%' : '');
   }
 
   function buildShop() {
@@ -409,6 +431,41 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     box.querySelectorAll('[data-sku]').forEach((b) => b.addEventListener('click', () => mockPay(b.dataset.sku)));
   }
 
+  function colPct() {
+    const keys = Object.keys(E.COLLECTION);
+    const have = keys.reduce((a, k) => a + E.colCount(st, k), 0), all = keys.reduce((a, k) => a + E.colTotal(k), 0);
+    return Math.floor((have / all) * 100);
+  }
+  function buildCol() {
+    const box = $('panel-col');
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let h = '<div class="notice">랩실 도감은 재입학해도 남습니다. 모든 항목은 플레이로만 얻고, 결제로는 얻을 수 없습니다. 이미 가진 항목이 나오면 커피 쿠폰 1개로 바뀌고, 중복이 ' + E.PITY + '번 쌓이면 다음에는 새 항목이 확정으로 나옵니다. 전체 ' + colPct() + '% 수집.</div>';
+    Object.keys(E.COLLECTION).forEach((k) => {
+      const c = E.COLLECTION[k], n = E.colCount(st, k), total = E.colTotal(k), done = E.colSetDone(st, k);
+      h += '<div class="sheet"><div class="colhead"><b>' + c.name + '</b><span class="num">' + n + '/' + total + '</span></div>' +
+        '<div class="colmeta">얻는 법: ' + c.source + (c.chance < 1 ? ' ' + Math.round(c.chance * 100) + '%' : '') + ' · ' + c.each + '<br>세트 보너스: <span class="' + (done ? 'done' : '') + '">' + c.set + (done ? ' (적용 중)' : '') + '</span>' +
+        (c.items ? ' · 중복 ' + ((st.col.pity || {})[k] || 0) + '/' + E.PITY : '') + '</div><div class="grid">';
+      if (c.items) {
+        c.items.forEach((it, i) => {
+          const own = st.col[k][i], rar = E.RARITY[it[1]];
+          h += '<div class="item ' + it[1] + (own ? ' owned' : ' missing') + '"><span class="rar ' + it[1] + '">' + rar.name + ' · ' + E.dropRate(k, i).toFixed(1) + '%</span>' +
+            (own ? '<span class="' + (k === 'quotes' ? 'q' : '') + '">' + (k === 'quotes' ? '“' + esc(it[0]) + '”' : esc(it[0])) + '</span>' + (own > 1 ? '<span class="colmeta num">×' + own + '</span>' : '') : '<span>???</span>') + '</div>';
+        });
+      } else if (k === 'topics') {
+        E.TOPICS.forEach((t, i) => {
+          const cnt = st.col.topics[i] || 0, stars = E.TOPIC_STARS.filter((x) => cnt >= x).length;
+          h += '<div class="item' + (cnt ? ' owned' : ' missing') + '"><span class="stars" aria-label="별 ' + stars + '개">' + '★'.repeat(stars) + '☆'.repeat(3 - stars) + '</span><span>' + (cnt ? esc(t) : '???') + '</span><span class="colmeta num">논문 ' + cnt + '편' + (stars < 3 ? ' · 다음 별 ' + E.TOPIC_STARS[stars] + '편' : '') + '</span></div>';
+        });
+      } else {
+        for (let t = 1; t <= E.LAST; t++) {
+          const own = st.col.photos[t];
+          h += '<div class="item' + (own ? ' owned' : ' missing') + '">' + (own ? charSVG(t) + '<span>' + E.TIERS[t].name + '</span>' : '<span>???</span><span class="colmeta">' + t + '단계</span>') + '</div>';
+        }
+      }
+      h += '</div></div>';
+    });
+    box.innerHTML = h;
+  }
   function mmss(sec) { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; }
   function buildTree() {
     const box = $('panel-tree'); box.innerHTML = '';
@@ -425,9 +482,9 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   function buildRec() {
     const box = $('panel-rec');
     const titles = st.paperTitles.slice().reverse().map((t, i) => '<li>[' + (st.paperTitles.length - i) + '] ' + t + '</li>').join('') || '<li>아직 논문이 없다.</li>';
-    box.innerHTML = '<div class="sheet"><div class="stats num"><span>플레이 시간<b>' + mmss(st.time) + '</b></span><span>총 탭<b>' + st.taps.toLocaleString('ko-KR') + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span><span>레벨<b>' + st.lv + '</b></span><span>노벨 메달<b>' + st.medals + '개</b></span><span>최고 직급<b>' + E.TIERS[st.bestTier].name + '</b></span></div></div>' +
+    box.innerHTML = '<div class="sheet"><div class="stats num"><span>플레이 시간<b>' + mmss(st.time) + '</b></span><span>총 탭<b>' + st.taps.toLocaleString('ko-KR') + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span><span>레벨<b>' + st.lv + '</b></span><span>황금 월계관<b>' + st.medals + '개</b></span><span>도감<b>' + colPct() + '%</b></span><span>최고 직급<b>' + E.TIERS[st.bestTier].name + '</b></span></div></div>' +
       '<div class="sheet"><b>게재 논문</b><div class="log"><ol>' + titles + '</ol></div></div>' +
-      '<div class="sheet" style="display:grid;gap:8px"><button class="btn danger" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">진행·쿠폰·구매 내역이 모두 지워집니다</span></button><div id="resetConfirm" hidden style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div></div>';
+      '<div class="sheet" style="display:grid;gap:8px"><button class="btn danger" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">진행·도감·쿠폰·구매 내역이 모두 지워집니다</span></button><div id="resetConfirm" hidden style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div></div>';
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
     $('resetYes').addEventListener('click', () => { st = E.newGame(); refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); });
@@ -490,11 +547,19 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     drainNotes();
     if (full && tab === 'tree') buildTree();
   }
+  function toast(text) {
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = text;
+    $('lab').appendChild(el);
+    setTimeout(() => el.remove(), 2800);
+  }
   function drainNotes() {
     if (!st.notes.length) return;
     const notes = st.notes.splice(0);
     const last = notes[notes.length - 1];
     say(last.text);
+    const got = notes.filter((n) => n.kind === 'collect');
+    if (got.length) { toast(got.length > 1 ? got[got.length - 1].text + ' 외 ' + (got.length - 1) + '건' : got[0].text); if (tab === 'col') buildCol(); }
     if (notes.some((n) => n.kind === 'level')) { const r = $('lab').getBoundingClientRect(); floatAt(r.width / 2, 40, 'LEVEL UP', 'lvup'); }
     if (notes.some((n) => n.kind === 'paper') && tab === 'rec') buildRec();
   }
@@ -567,7 +632,8 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
     tab = b.dataset.tab;
     document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
-    ['gens', 'tap', 'shop', 'tree', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== tab; });
+    ['gens', 'tap', 'col', 'shop', 'tree', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== tab; });
+    if (tab === 'col') buildCol();
     if (tab === 'tree') buildTree();
     if (tab === 'rec') buildRec();
     if (tab === 'shop') buildShop();
@@ -588,14 +654,14 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const t = st.tier, info = E.TIERS[t];
     const unlocked = E.GENS.filter((g) => g.tier === t).map((g) => g.name).join(', ');
     openModal('<span class="bigstamp">전직</span>' + charSVG(t) + '<h2>' + info.name + '</h2><p class="hand">' + info.title + '</p><p>' + PROMO_LINES[t] + '</p>' +
-      (unlocked ? '<p><b>새로 열림:</b> ' + unlocked + '</p>' : '') + '<p class="num">자동 생산 ×' + E.CFG.tierProd + ', 탭 ×' + E.CFG.tierTap + '</p>', [{ label: '계속 연구한다', primary: true }]);
+      (unlocked ? '<p><b>새로 열림:</b> ' + unlocked + '</p>' : '') + '<p>도감에 「' + info.name + '」 기념사진이 붙었다.</p><p class="num">자동 생산 ×' + E.CFG.tierProd + ', 탭 ×' + E.CFG.tierTap + '</p>', [{ label: '계속 연구한다', primary: true }]);
     say(E.TIERS[from].name + '에서 ' + info.name + '(으)로 전직했다!');
   }
   function showEnding() {
-    openModal('<span class="bigstamp">전설</span>' + charSVG(E.LAST) + '<h2>아인슈타인급</h2><p class="hand">인류의 지성</p><p>「' + st.paperTitles[st.paperTitles.length - 1] + '」이 교과서 첫 장에 실렸다.</p>' +
+    openModal('<span class="bigstamp">전설</span>' + charSVG(E.LAST) + '<h2>살아있는 교과서</h2><p class="hand">인류의 지성</p><p>「' + st.paperTitles[st.paperTitles.length - 1] + '」이 교과서 첫 장에 실렸다.</p>' +
       '<div class="stats num"><span>걸린 시간<b>' + mmss(st.time) + '</b></span><span>논문<b>' + st.papers + '편</b></span><span>레벨<b>' + st.lv + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span></div>' +
-      '<p>재입학하면 노벨 메달 1개를 들고 석사과정부터 다시 시작합니다. 메달 1개마다 생산과 탭이 영구히 50% 늘어납니다. 쿠폰·야옹·구매 내역은 그대로 남습니다.</p>',
-      [{ label: '노벨 메달을 들고 재입학', primary: true, fn: () => { const prev = st; prev.medals++; st = E.newGame(prev); refreshDay(); renderedTier = 0; save(); say('노벨 메달을 목에 걸고 다시 석사과정에 입학했다. 동기들이 수군거린다.'); update(true); } },
+      '<p>재입학하면 황금 월계관 1개를 쓰고 석사과정부터 다시 시작합니다. 월계관 1개마다 생산과 탭이 영구히 50% 늘어납니다. 랩실 도감·쿠폰·야옹·구매 내역은 그대로 남습니다. 도감 ' + colPct() + '% 수집.</p>',
+      [{ label: '황금 월계관을 쓰고 재입학', primary: true, fn: () => { const prev = st; prev.medals++; st = E.newGame(prev); refreshDay(); renderedTier = 0; save(); say('월계관을 쓰고 다시 석사과정에 입학했다. 동기들이 수군거린다.'); update(true); } },
        { label: '이대로 감상하기' }]);
   }
 
@@ -619,7 +685,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const lines = ['데이터 <b class="num">+' + fmt(r.gain) + '</b>'];
     if (r.levels) lines.push('레벨 <b class="num">+' + r.levels + '</b> (지금 Lv ' + st.lv + ')');
     if (r.papers) lines.push('후배가 대신 낸 논문 <b class="num">' + r.papers + '편</b>');
-    const capNote = r.capped ? '<p class="meta">' + (st.subActive ? E.CFG.subCapH : E.CFG.offlineCapH) + '시간까지만 쌓였다.' + (st.subActive ? '' : ' 정기구독이면 12시간, 효율 100%.') + '</p>' : '';
+    const capNote = r.capped ? '<p class="meta">' + r.capH + '시간까지만 쌓였다.' + (st.subActive ? '' : ' 정기구독이면 12시간, 효율 100%.') + '</p>' : '';
     const adOk = E.adLeft(st, 'offline') > 0;
     openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + mmss(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>' + lines.join('<br>') + '</p>' + capNote,
       [{ label: '받기', primary: true }, { label: (st.shop.noAds ? '데이터 2배로 받기' : '광고 보고 데이터 2배') + (adOk ? '' : ' (오늘 광고 소진)'), disabled: !adOk, fn: () => watchAd('offline', r.gain, () => say('방치 보상을 2배로 받았다. 데이터 +' + fmt(r.gain))) }]);
