@@ -43,7 +43,7 @@
 
 전신 노출의 문턱은 동물 행동 실험에서 유래한다. 학습 과제를 수행하는 설치류와 영장류에 전자파를 조사하였을 때 전신 평균 SAR 약 4 W/kg에서 과제 수행이 중단되었고, 이때 심부 체온은 약 1 °C 상승하였다 [13]. ICNIRP는 이를 건강 영향 문턱으로 보고, 작업자에 1/10, 일반인에 1/50의 감소 계수를 적용하여 기본 제한을 각각 0.4 W/kg, 0.08 W/kg으로 정하였다 [3]. 국부 노출은 조직 온도 상승의 허용 한도로부터 국부 SAR 한도를 정한다 [3]. 안구에 대해서는 2.45 GHz를 100분간 조사한 토끼에서 수정체 온도가 약 41 °C에 도달할 때(유리체 SAR 약 138 W/kg) 백내장이 유발되었다는 보고가 있다 [16].
 
-참고로 성인의 안정 시 대사 열생산은 약 80 W, 체중당 약 1.1 W/kg이다 [17]. 일반인 전신 기본 제한 0.08 W/kg은 그 약 7%에 해당한다. 표 II는 전자레인지에 관련된 두 계통의 기준을 정리한 것이다. 제품 방출 기준의 50 W/m²는 문 외면 근방 한 점의 전계 환산값이고, 인체보호기준의 전력밀도 10 W/m²는 사람이 점유하는 공간에서 전신에 대해 평균한 참고 수준이므로, 두 값을 직접 비교할 수 없다. 본 연구는 기준이 직접 규정하는 양인 SAR과, 기준이 방지하려는 결과인 온도 상승으로 노출을 평가한다.
+참고로 성인 남성(30–60세, 체중 70 kg)의 기초대사량은 약 1,680 kcal/day, 즉 약 80 W(체중당 약 1.1 W/kg)이다 [17]. 일반인 전신 기본 제한 0.08 W/kg은 그 약 7%에 해당한다. 표 II는 전자레인지에 관련된 두 계통의 기준을 정리한 것이다. 제품 방출 기준의 50 W/m²는 문 외면 근방 한 점의 전계 환산값이고, 인체보호기준의 전력밀도 10 W/m²는 사람이 점유하는 공간에서 전신에 대해 평균한 참고 수준이므로, 두 값을 직접 비교할 수 없다. 본 연구는 기준이 직접 규정하는 양인 SAR과, 기준이 방지하려는 결과인 온도 상승으로 노출을 평가한다.
 
 ::: {.widetab}
 <div class="tcap">표 II<br>전자레인지 누설과 관련된 기준</div>
@@ -62,7 +62,7 @@
 
 ## A. 전자레인지 모델
 
-해석에는 CST Studio Suite 2019의 시간영역 솔버(유한적분법, 육면체 격자)를 사용하였다 [18]. 전자레인지는 두 가지로 모델링하였다(그림 1). 단순 문 모델(v1)은 330 × 220 × 330 mm 조리실, WR-340 도파관과 탐침 급전, 조리실 중앙의 물 부하 275 mL로 구성되며, 문은 본체와 1 mm 간극을 둔 금속판이다. 초크와 타공판이 없으므로 누설이 문 둘레 전체에서 발생하여 실제 제품보다 크고 공간적으로 넓게 분포한다. 실제 문 구조 모델(v2)은 국내 판매 23 L 단독형 제품의 치수(외형 489 × 275 × 374 mm, 조리실 330 × 211 × 324 mm; 유통사 공개 사양 기준 [확인 필요])를 따랐으며, 강판 외함(도전율 6 × 10⁶ S/m 가정), 유리–타공판–수지 적층 문, 문 둘레의 λ/4 초크(직선 깊이 17.75 mm), 붕규산 회전판, 21 CFR 1030.10 조건의 비커 물 부하를 포함한다 [1], [19]–[21]. 타공판(두께 0.3 mm, 구멍 1.5 mm, 피치 2.5 mm)은 단위 셀 해석으로 차폐 효과 47.5 dB, 투과 위상 +89°를 얻고, 같은 투과 특성을 갖는 거친 개구 배열(정사각 5.55 mm, 피치 22.5 mm)로 대체하였다.
+해석에는 CST Studio Suite 2019의 시간영역 솔버(유한적분법, 육면체 격자)를 사용하였다 [18]. 전자레인지는 두 가지로 모델링하였다(그림 1). 단순 문 모델(v1)은 330 × 220 × 330 mm 조리실, WR-340 도파관과 탐침 급전, 조리실 중앙의 물 부하 275 mL로 구성되며, 문은 본체와 1 mm 간극을 둔 금속판이다. 초크와 타공판이 없으므로 누설이 문 둘레 전체에서 발생하여 실제 제품보다 크고 공간적으로 넓게 분포한다. 실제 문 구조 모델(v2)은 국내 판매 23 L 단독형 제품의 치수(외형 489 × 275 × 374 mm, 조리실 330 × 211 × 324 mm, 출력 800 W; 유통사 공개 사양 [19])를 따랐으며, 강판 외함(도전율 6 × 10⁶ S/m 가정), 유리–타공판–수지 적층 문, 문 둘레의 λ/4 초크(직선 깊이 17.75 mm), 붕규산 회전판, 21 CFR 1030.10 조건의 비커 물 부하를 포함한다 [1], [20]–[22]. 타공판(두께 0.3 mm, 구멍 1.5 mm, 피치 2.5 mm)은 단위 셀 해석으로 차폐 효과 47.5 dB, 투과 위상 +89°를 얻고, 같은 투과 특성을 갖는 거친 개구 배열(정사각 5.55 mm, 피치 22.5 mm)로 대체하였다.
 
 <figure class="wide">
 <img src="ieee/fig_geometry.png" alt="Fig. 1">
@@ -75,11 +75,11 @@
 
 ## C. 인체 모델과 노출 해석
 
-인체 모델로는 CST Voxel Family의 해부학적 모델 Gustav(성인 남성, 조직 질량 73.97 kg)와 Child(7세, 23.85 kg) [확인 필요: 원자료의 나이·신장]를 사용하였다 [18]. voxel 해상도는 Gustav 2.08 × 2.08 × 2 mm, Child 1.54 × 1.54 × 1.6 mm이며, 인체를 덮는 영역의 격자 간격은 각각 2.5 mm, 2.0 mm 이하로 두었다. 각 조직의 유전 상수는 Gabriel 4-Cole-Cole 매개변수 모델로 2.45 GHz 값을 계산하여 고정하였다 [22](표 III). 결과의 모델 의존성을 확인하기 위해 피부·지방·근육·뼈·뇌·안구로 구성된 층상 기하 모델(성인 1.72 m, 74.2 kg; 아동 1.13 m, 22.3 kg)과 MakeHuman [23] 기반의 실제 체형 균질 모델(성인, 7세, 3세)을 같은 조건으로 해석하였다(Ⅳ-F). 표면적을 일치시킨 단순 형상 모델은 GHz 대역 전신 평균 SAR을 보수적으로 평가하는 것으로 알려져 있다 [24].
+인체 모델로는 CST Voxel Family의 해부학적 모델 Gustav(성인 남성, 조직 질량 73.97 kg)와 Child(7세, 23.85 kg) [확인 필요: 원자료의 나이·신장]를 사용하였다 [18]. voxel 해상도는 Gustav 2.08 × 2.08 × 2 mm, Child 1.54 × 1.54 × 1.6 mm이며, 인체를 덮는 영역의 격자 간격은 각각 2.5 mm, 2.0 mm 이하로 두었다. 각 조직의 유전 상수는 Gabriel 4-Cole-Cole 매개변수 모델로 2.45 GHz 값을 계산하여 고정하였다 [23](표 III). 결과의 모델 의존성을 확인하기 위해 피부·지방·근육·뼈·뇌·안구로 구성된 층상 기하 모델(성인 1.72 m, 74.2 kg; 아동 1.13 m, 22.3 kg)과 MakeHuman [24] 기반의 실제 체형 균질 모델(성인, 7세, 3세)을 같은 조건으로 해석하였다(Ⅳ-F). 표면적을 일치시킨 단순 형상 모델은 GHz 대역 전신 평균 SAR을 보수적으로 평가하는 것으로 알려져 있다 [25].
 
 성인은 문 외면에서 몸통 전면까지의 거리 d = 30, 50, 100 cm에 정면으로 선 상황을 가정하였다. 오븐 단독 해석에서 이 영역은 포인팅 벡터와 $E_{\mathrm{rms}}^2/377$의 차이가 4% 이내인 방사장이었으므로, 인체 모델에 정면 평면파(수직 및 수평 편파)를 조사하여 입사 전력밀도 1 W/m²당 SAR을 구하고, 오븐 단독 해석의 거리별 신체 전면 전력밀도를 곱하였다. 신체 전면 전력밀도로는 몸통 투영 영역의 평균과 최댓값을 사용하였으며, 하한은 v2 모델의 평균, 상한은 v1 모델의 최댓값(전신이 최댓값으로 조사된다는 가정)으로 두었다. 지표마다 두 편파 중 큰 값을 취하였다. 문에 안면을 근접시킨 아동(안면 5, 10 cm)은 반응성 근역장 안에 있으므로 v1 오븐과 Child 모델을 함께 해석하였다. 격자 수를 GPU 메모리 안에 두기 위해 Child 모델은 머리끝부터 눈 아래 300 mm까지(9.94 kg, 뇌·안구·폐·심장 전체 포함)만 사용하였고, 누설 크기에는 오븐 단독 해석의 보정 계수를 그대로 적용하였다. 안면 최전방점과 문 외면 사이 거리는 52 mm와 102 mm(설계 50, 100 mm), 눈 높이는 문 중심보다 20 mm 위였으며, 모델 절단 과정에서 안면 중심이 문 중심에서 수평으로 14 mm 벗어났다. 이 해석의 전신 평균 SAR은 절단 모델의 흡수 전력을 아동 전체 질량(23.85 kg)으로 나눈 값으로, 하반신 흡수가 빠진 하한이다.
 
-격자는 공기 중 자유공간 파장의 1/15 이하, 안구 1 mm 이하, 물 부하 0.9 mm 이하, 문 간극 0.5 mm로 두었고, 모든 해석은 계산 영역 에너지가 −40 dB 이하로 감쇠할 때까지 수행하였다(표 IV). SAR은 IEC/IEEE 62704-1의 정육면체 평균(1 g, 10 g)으로 산출하였다 [25]. 안구 SAR은 안구와 수정체의 흡수 전력을 그 질량으로 나눈 평균값이다.
+격자는 공기 중 자유공간 파장의 1/15 이하, 안구 1 mm 이하, 물 부하 0.9 mm 이하, 문 간극 0.5 mm로 두었고, 모든 해석은 계산 영역 에너지가 −40 dB 이하로 감쇠할 때까지 수행하였다(표 IV). SAR은 IEC/IEEE 62704-1의 정육면체 평균(1 g, 10 g)으로 산출하였다 [26]. 안구 SAR은 안구와 수정체의 흡수 전력을 그 질량으로 나눈 평균값이다.
 
 <div class="tcap">표 III<br>주요 조직의 2.45 GHz 물성</div>
 
@@ -93,7 +93,7 @@
 | 유리체 | 68.2 | 2.48 | 1005 | 0.59 | 0 |
 | 수정체 | 48.1 | 1.53 | 1076 | 0.43 | 0 |
 
-<div class="tnote">유전 물성은 [22], 열 물성은 [26]의 대푯값.</div>
+<div class="tnote">유전 물성은 [23], 열 물성은 [27]의 대푯값.</div>
 
 <div class="tcap">표 IV<br>해석 조건</div>
 
@@ -108,11 +108,11 @@
 
 ## D. 온도 상승
 
-국부 온도 상승 $\Delta T$는 SAR 해석의 손실 밀도 $P_l$을 열원으로 하여 정상상태 Pennes 생체 열전달 방정식 [27]
+국부 온도 상승 $\Delta T$는 SAR 해석의 손실 밀도 $P_l$을 열원으로 하여 정상상태 Pennes 생체 열전달 방정식 [28]
 
 $$-\nabla\cdot(k\nabla \Delta T) + \rho\, w\, \rho_b c_b\, \Delta T = P_l$$
 
-을 유한체적법으로 풀어 구하였다. 해석 단면은 안면 돌출부를 지나는 시상 단면과 안구 높이 수평 단면이며, 각 단면의 조직 분포는 $\kappa = 2P_l/|E|^2$로부터 voxel 조직의 2.45 GHz 도전율에 대응시켜 얻었다. 열 물성은 IT'IS 데이터베이스 값을 사용하였다 [26]. 피부–공기 경계는 열전달 계수 h = 5, 10 W/m²·K의 대류 조건으로 두고 큰 쪽을 취하였다. 2차원 해석은 단면 수직 방향의 열 확산을 무시하므로 3차원 값보다 큰 상한을 준다. 평탄한 신체 전면에서의 1차원 해석해(흡수 0.4 W/m²/($h + \sqrt{k\rho w \rho_b c_b}$) ≈ 0.009 K per W/m²)는 층상 모델의 2차원 결과(0.007–0.009 K)와 일치하였다.
+을 유한체적법으로 풀어 구하였다. 해석 단면은 안면 돌출부를 지나는 시상 단면과 안구 높이 수평 단면이며, 각 단면의 조직 분포는 $\kappa = 2P_l/|E|^2$로부터 voxel 조직의 2.45 GHz 도전율에 대응시켜 얻었다. 열 물성은 IT'IS 데이터베이스 값을 사용하였다 [27]. 피부–공기 경계는 열전달 계수 h = 5, 10 W/m²·K의 대류 조건으로 두고 큰 쪽을 취하였다. 2차원 해석은 단면 수직 방향의 열 확산을 무시하므로 3차원 값보다 큰 상한을 준다. 평탄한 신체 전면에서의 1차원 해석해(흡수 0.4 W/m²/($h + \sqrt{k\rho w \rho_b c_b}$) ≈ 0.009 K per W/m²)는 층상 모델의 2차원 결과(0.007–0.009 K)와 일치하였다.
 
 Pennes 방정식은 혈액 온도를 고정하므로 심부 체온 상승을 줄 수 없다. 심부 체온은 두 방식으로 추정하였다. 하한 추정은 문턱(4 W/kg에서 +1 °C) [3]에 대한 비례이고, 상한 추정은 열 손실이 전혀 없다고 가정한 30분 노출의 단열 상승 $\Delta T = \mathrm{SAR}\cdot t/c$ (c = 3500 J/kg·K)이다.
 
@@ -131,7 +131,7 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 ## B. 비흡수율
 
-입사 1 W/m²당 전신 평균 SAR은 Gustav 4.6–5.5 × 10⁻³ W/kg, Child 7.9–8.7 × 10⁻³ W/kg이었다(표 V). 흡수는 오븐 쪽 체표 1–2 cm에 집중되었고(그림 3), 머리 1 g 최댓값은 코(수직 편파)와 귀 주변(수평 편파) 같은 안면 돌출부에 나타났다. 이는 해부학적 모델에서 국부 최댓값이 신체 돌출부에 나타난다는 보고와 일치한다 [28]. 안구 평균 SAR은 0.024–0.034 W/kg per W/m²로 머리 1 g 최댓값의 13–40%였다. 전신 10 g 최댓값은 두 모델 모두 사지(발)에서 나타났다.
+입사 1 W/m²당 전신 평균 SAR은 Gustav 4.6–5.5 × 10⁻³ W/kg, Child 7.9–8.7 × 10⁻³ W/kg이었다(표 V). 흡수는 오븐 쪽 체표 1–2 cm에 집중되었고(그림 3), 머리 1 g 최댓값은 코(수직 편파)와 귀 주변(수평 편파) 같은 안면 돌출부에 나타났다. 이는 해부학적 모델에서 국부 최댓값이 신체 돌출부에 나타난다는 보고와 일치한다 [29]. 안구 평균 SAR은 0.024–0.034 W/kg per W/m²로 머리 1 g 최댓값의 13–40%였다. 전신 10 g 최댓값은 두 모델 모두 사지(발)에서 나타났다.
 
 <figure class="wide">
 <img src="ieee/fig_sar_maps.png" alt="Fig. 3">
@@ -196,7 +196,7 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 ## E. 아동
 
-같은 입사 전력밀도에서 Child의 전신 평균 SAR은 Gustav의 1.6–1.7배였다. 질량에 비해 체표면적이 크기 때문이며, GHz 대역 전신 흡수가 체표면적에 지배된다는 보고와 일치한다 [29], [30]. 오븐과 Child 상반신을 함께 해석한 근역장 결과를 표 VII에 나타내었다. 안면을 문 외면 5 cm에 둔 경우, 방출 상한 누설(시나리오 B)에서도 머리 1 g 최댓값은 0.861 W/kg(입·턱, 문 중심 아래 20 mm)으로 기본 제한의 54%, 10 g 최댓값은 0.499 W/kg(이마)으로 25%였다. 안구 평균 SAR은 0.281 W/kg으로 토끼 백내장 유발 조건(유리체 약 138 W/kg) [16]의 약 1/500이었고, 수정체 평균은 0.130 W/kg이었다. 안면이 10 cm 거리에 있을 때 전신 평균과 안구 SAR은 감소하였으나(안구 0.198 W/kg), 머리 1 g 최댓값은 1.35 W/kg(턱 아래, 문 중심 아래 44 mm)으로 오히려 증가하여 기본 제한의 84%였다. 누설 빔은 문 중심 높이에서 나와 거리에 따라 위아래로 퍼진다. 이마 앞 10 mm 평면의 최대 전력밀도는 5 cm에서 10 cm로 갈 때 77 W/m²에서 36 W/m²로 줄었으나, 턱 높이 안면 전방의 전력밀도는 9–12 W/m²에서 14–19 W/m²로 커졌고, 국부 최댓값의 위치도 입·턱에서 턱 아래로 이동하였다. 즉 근역장에서 국부 SAR은 거리에 대해 단조 감소하지 않으며, 근접 노출의 평가는 여러 거리에서 수행해야 한다. 정상 제품(시나리오 A)에서는 모든 값이 이의 1/100이다.
+같은 입사 전력밀도에서 Child의 전신 평균 SAR은 Gustav의 1.6–1.7배였다. 질량에 비해 체표면적이 크기 때문이며, GHz 대역 전신 흡수가 체표면적에 지배된다는 보고와 일치한다 [30], [31]. 오븐과 Child 상반신을 함께 해석한 근역장 결과를 표 VII에 나타내었다. 안면을 문 외면 5 cm에 둔 경우, 방출 상한 누설(시나리오 B)에서도 머리 1 g 최댓값은 0.861 W/kg(입·턱, 문 중심 아래 20 mm)으로 기본 제한의 54%, 10 g 최댓값은 0.499 W/kg(이마)으로 25%였다. 안구 평균 SAR은 0.281 W/kg으로 토끼 백내장 유발 조건(유리체 약 138 W/kg) [16]의 약 1/500이었고, 수정체 평균은 0.130 W/kg이었다. 안면이 10 cm 거리에 있을 때 전신 평균과 안구 SAR은 감소하였으나(안구 0.198 W/kg), 머리 1 g 최댓값은 1.35 W/kg(턱 아래, 문 중심 아래 44 mm)으로 오히려 증가하여 기본 제한의 84%였다. 누설 빔은 문 중심 높이에서 나와 거리에 따라 위아래로 퍼진다. 이마 앞 10 mm 평면의 최대 전력밀도는 5 cm에서 10 cm로 갈 때 77 W/m²에서 36 W/m²로 줄었으나, 턱 높이 안면 전방의 전력밀도는 9–12 W/m²에서 14–19 W/m²로 커졌고, 국부 최댓값의 위치도 입·턱에서 턱 아래로 이동하였다. 즉 근역장에서 국부 SAR은 거리에 대해 단조 감소하지 않으며, 근접 노출의 평가는 여러 거리에서 수행해야 한다. 정상 제품(시나리오 A)에서는 모든 값이 이의 1/100이다.
 
 이 값을 평면파 가정과 비교하였다. 문 외면 5 cm 평면의 최대 전력밀도(시나리오 B, 49.8 W/m²)로 Child 전신을 정면 조사한다고 가정하면 전신 평균 0.43 W/kg, 머리 1 g 6.4 W/kg, 안구 1.67 W/kg, 피부 최대 온도 상승 0.52 °C가 산출된다. 실제 근역장 값은 이보다 전신 약 21–24배, 머리 1 g 7.4배, 안구 5.9배, 피부 온도 상승 4.1배 낮았다. 누설장이 문 간극 근방에 국한되어 머리의 일부만 조사되고, 5 cm 최댓값은 그 국한된 영역의 값이기 때문이다. 따라서 5 cm 측정값을 평면파 노출로 해석하는 것은 근접 노출에 대해서도 매우 보수적이다. 같은 조건의 층상 기하 모델(전신 포함)은 voxel 모델보다 1.0–1.4배 큰 값을 주어(1 g 0.881, 10 g 0.666, 안구 0.395 W/kg) 보수적인 방향으로 일치하였다.
 
@@ -246,11 +246,11 @@ v1 모델에서 포트 수용 전력의 99.4%가 물 부하에 흡수되고 0.63
 
 ## C. 아동과 전력밀도 참고 수준
 
-Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 평균 SAR은 기본 제한의 109%에 이른다(머리 1 g은 80%). 작은 체격에서는 참고 수준이 기본 제한보다 보수적이지 않을 수 있다는 해부학적 모델 연구들과 같은 경향이다 [28], [31]–[33]. 본 연구의 초과 폭(9%)이 선행 연구(20–45%)보다 작은 것은 2.45 GHz 정면 입사만을 다루었기 때문으로 보인다. 전자레인지 누설은 참고 수준보다 훨씬 낮으므로 이 차이가 본 연구의 결론을 바꾸지는 않는다.
+Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 평균 SAR은 기본 제한의 109%에 이른다(머리 1 g은 80%). 작은 체격에서는 참고 수준이 기본 제한보다 보수적이지 않을 수 있다는 해부학적 모델 연구들과 같은 경향이다 [29], [32]–[34]. 본 연구의 초과 폭(9%)이 선행 연구(20–45%)보다 작은 것은 2.45 GHz 정면 입사만을 다루었기 때문으로 보인다. 전자레인지 누설은 참고 수준보다 훨씬 낮으므로 이 차이가 본 연구의 결론을 바꾸지는 않는다.
 
 ## D. 한계
 
-첫째, 성인 노출의 상한은 누설을 과대평가하는 v1 모델로 산출하였고, v2의 3차원 초크 차단량은 2차원 설계값보다 작아 누설 절대값은 보정 모드로만 사용하였다. 둘째, 인체는 선 자세와 정면 입사만 고려하였으며, 다중 평면파 입사 시 전신 SAR은 약 ±25% 변할 수 있다 [34]. 셋째, 국부 SAR은 모델 형상에 민감하여 실제 체형 모델에서 Gustav보다 15% 큰 값이 나왔다(Ⅳ-F). 넷째, Child 모델의 주 연조직(근육·지방 평균 조직)에는 CST 재질 대응에 따라 지방 물성이 지정되었다. 전신 SAR은 다른 모델과 10% 이내로 일치하였으나 국부 값에는 영향이 있을 수 있다. 또한 근역장 해석은 상반신만 포함하였고, 안면이 문 중심에서 수평으로 14 mm 벗어나 있었으며, 아동의 신체 전면 전력밀도는 몸통 높이의 74%(바닥에서 0.59–0.94 m)만 덮는 평면에서 구하였으므로 하한은 덮인 부분의 평균이다. 덮이지 않은 띠를 0 또는 인접 행 값으로 두면 시나리오 B의 몸통 전체 평균은 30, 50, 100 cm에서 0.45–0.53, 0.25–0.37, 0.10 W/m²이다. 다섯째, 국부 온도 상승은 2차원 해석의 상한이며 3차원 열 해석으로 보완할 수 있다 [35]. 여섯째, 바닥·조리대·벽의 반사와 마그네트론의 간헐 동작은 고려하지 않았으며, 연속 노출 가정은 보수적이다. 일곱째, 실제 제품의 누설을 측정하지 않았다. 끝으로, 인터록 고장으로 문이 열린 채 동작하는 경우 [12]는 본 연구의 범위 밖이다.
+첫째, 성인 노출의 상한은 누설을 과대평가하는 v1 모델로 산출하였고, v2의 3차원 초크 차단량은 2차원 설계값보다 작아 누설 절대값은 보정 모드로만 사용하였다. 둘째, 인체는 선 자세와 정면 입사만 고려하였으며, 다중 평면파 입사 시 전신 SAR은 약 ±25% 변할 수 있다 [35]. 셋째, 국부 SAR은 모델 형상에 민감하여 실제 체형 모델에서 Gustav보다 15% 큰 값이 나왔다(Ⅳ-F). 넷째, Child 모델의 주 연조직(근육·지방 평균 조직)에는 CST 재질 대응에 따라 지방 물성이 지정되었다. 전신 SAR은 다른 모델과 10% 이내로 일치하였으나 국부 값에는 영향이 있을 수 있다. 또한 근역장 해석은 상반신만 포함하였고, 안면이 문 중심에서 수평으로 14 mm 벗어나 있었으며, 아동의 신체 전면 전력밀도는 몸통 높이의 74%(바닥에서 0.59–0.94 m)만 덮는 평면에서 구하였으므로 하한은 덮인 부분의 평균이다. 덮이지 않은 띠를 0 또는 인접 행 값으로 두면 시나리오 B의 몸통 전체 평균은 30, 50, 100 cm에서 0.45–0.53, 0.25–0.37, 0.10 W/m²이다. 다섯째, 국부 온도 상승은 2차원 해석의 상한이며 3차원 열 해석으로 보완할 수 있다 [36]. 여섯째, 바닥·조리대·벽의 반사와 마그네트론의 간헐 동작은 고려하지 않았으며, 연속 노출 가정은 보수적이다. 일곱째, 실제 제품의 누설을 측정하지 않았다. 끝으로, 인터록 고장으로 문이 열린 채 동작하는 경우 [12]는 본 연구의 범위 밖이다.
 
 # VI. 결론
 
@@ -261,6 +261,7 @@ Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 
 ::: {.refs}
 
 # 참고문헌
+
 
 
 
@@ -296,42 +297,44 @@ Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 
 
 [16] A. W. Guy, J. C. Lin, P. O. Kramar, and A. F. Emery, "Effect of 2450-MHz radiation on the rabbit eye," *IEEE Trans. Microw. Theory Techn.*, vol. MTT-23, no. 6, pp. 492–498, Jun. 1975.
 
-[17] [확인 필요: 성인 안정 시 대사율 약 80 W의 출처(생리학 교과서 또는 문헌)]
+[17] FAO/WHO/UNU, *Human Energy Requirements: Report of a Joint FAO/WHO/UNU Expert Consultation*, FAO Food and Nutrition Technical Report Series 1. Rome, Italy: FAO, 2004.
 
 [18] Dassault Systèmes, *CST Studio Suite 2019*, Version 2019.7, 2019.
 
-[19] "Microwave oven door screen," U.S. Patent 4 051 341.
+[19] Samsung MS23K3513AW product specifications (housing and cavity dimensions, output power), retailer listings Coolblue (coolblue.be) and DCS (dcs.dk). Accessed: Oct. 22, 2026.
 
-[20] "Wave choke device for a microwave oven door," U.S. Patent 8 455 803.
+[20] "Microwave oven door screen," U.S. Patent 4 051 341.
 
-[21] "Microwave oven door having a microwave shielding structure," U.S. Patent 5 973 305.
+[21] "Wave choke device for a microwave oven door," U.S. Patent 8 455 803.
 
-[22] S. Gabriel, R. W. Lau, and C. Gabriel, "The dielectric properties of biological tissues: III. Parametric models for the dielectric spectrum of tissues," *Phys. Med. Biol.*, vol. 41, no. 11, pp. 2271–2293, 1996.
+[22] "Microwave oven door having a microwave shielding structure," U.S. Patent 5 973 305.
 
-[23] MakeHuman Community, *MakeHuman 1.x base mesh and targets* (MPFB2 assets, CC0). [Online]. Available: https://github.com/makehumancommunity/mpfb2
+[23] S. Gabriel, R. W. Lau, and C. Gabriel, "The dielectric properties of biological tissues: III. Parametric models for the dielectric spectrum of tissues," *Phys. Med. Biol.*, vol. 41, no. 11, pp. 2271–2293, 1996.
 
-[24] A. Hirata, N. Ito, O. Fujiwara, T. Nagaoka, and S. Watanabe, "Conservative estimation of whole-body-averaged SARs in infants with a homogeneous and simple-shaped phantom in the GHz region," *Phys. Med. Biol.*, vol. 53, no. 24, pp. 7215–7223, 2008.
+[24] MakeHuman Community, *MakeHuman 1.x base mesh and targets* (MPFB2 assets, CC0). [Online]. Available: https://github.com/makehumancommunity/mpfb2
 
-[25] *Determining the Peak Spatial-Average Specific Absorption Rate (SAR) in the Human Body From Wireless Communications Devices, 30 MHz to 6 GHz—Part 1: General Requirements for Using the Finite-Difference Time-Domain (FDTD) Method for SAR Calculations*, IEC/IEEE 62704-1:2017.
+[25] A. Hirata, N. Ito, O. Fujiwara, T. Nagaoka, and S. Watanabe, "Conservative estimation of whole-body-averaged SARs in infants with a homogeneous and simple-shaped phantom in the GHz region," *Phys. Med. Biol.*, vol. 53, no. 24, pp. 7215–7223, 2008.
 
-[26] P. A. Hasgall *et al.*, "IT'IS database for thermal and electromagnetic parameters of biological tissues," IT'IS Foundation. [확인 필요: 버전]
+[26] *Determining the Peak Spatial-Average Specific Absorption Rate (SAR) in the Human Body From Wireless Communications Devices, 30 MHz to 6 GHz—Part 1: General Requirements for Using the Finite-Difference Time-Domain (FDTD) Method for SAR Calculations*, IEC/IEEE 62704-1:2017.
 
-[27] H. H. Pennes, "Analysis of tissue and arterial blood temperatures in the resting human forearm," *J. Appl. Physiol.*, vol. 1, no. 2, pp. 93–122, 1948.
+[27] P. A. Hasgall *et al.*, "IT'IS database for thermal and electromagnetic parameters of biological tissues," Version 4.1, IT'IS Foundation, Feb. 2022, doi: 10.13099/VIP21000-04-1.
 
-[28] J. F. Bakker, M. M. Paulides, A. Christ, N. Kuster, and G. C. van Rhoon, "Assessment of induced SAR in children exposed to electromagnetic plane waves between 10 MHz and 5.6 GHz," *Phys. Med. Biol.*, vol. 55, no. 11, pp. 3115–3130, 2010.
+[28] H. H. Pennes, "Analysis of tissue and arterial blood temperatures in the resting human forearm," *J. Appl. Physiol.*, vol. 1, no. 2, pp. 93–122, 1948.
 
-[29] A. Hirata, S. Kodera, J. Wang, and O. Fujiwara, "Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions," *Bioelectromagnetics*, vol. 28, no. 6, pp. 484–487, 2007.
+[29] J. F. Bakker, M. M. Paulides, A. Christ, N. Kuster, and G. C. van Rhoon, "Assessment of induced SAR in children exposed to electromagnetic plane waves between 10 MHz and 5.6 GHz," *Phys. Med. Biol.*, vol. 55, no. 11, pp. 3115–3130, 2010.
 
-[30] I. D. Flintoft, M. P. Robinson, G. C. R. Melia, J. F. Dawson, and A. C. Marvin, "Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study," *Phys. Med. Biol.*, vol. 59, no. 13, pp. 3297–3317, 2014.
+[30] A. Hirata, S. Kodera, J. Wang, and O. Fujiwara, "Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions," *Bioelectromagnetics*, vol. 28, no. 6, pp. 484–487, 2007.
 
-[31] J. Wang, O. Fujiwara, S. Kodera, and S. Watanabe, "FDTD calculation of whole-body average SAR in adult and child models for frequencies from 30 MHz to 3 GHz," *Phys. Med. Biol.*, vol. 51, no. 17, pp. 4119–4127, 2006.
+[31] I. D. Flintoft, M. P. Robinson, G. C. R. Melia, J. F. Dawson, and A. C. Marvin, "Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study," *Phys. Med. Biol.*, vol. 59, no. 13, pp. 3297–3317, 2014.
 
-[32] T. Uusitupa, I. Laakso, S. Ilvonen, and K. Nikoskinen, "SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures," *Phys. Med. Biol.*, vol. 55, no. 4, pp. 1157–1176, 2010.
+[32] J. Wang, O. Fujiwara, S. Kodera, and S. Watanabe, "FDTD calculation of whole-body average SAR in adult and child models for frequencies from 30 MHz to 3 GHz," *Phys. Med. Biol.*, vol. 51, no. 17, pp. 4119–4127, 2006.
 
-[33] E. Piuzzi, P. Bernardi, M. Cavagnaro, S. Pisa, and J. C. Lin, "Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz)," *IEEE Trans. Electromagn. Compat.*, vol. 53, no. 1, pp. 38–47, Feb. 2011.
+[33] T. Uusitupa, I. Laakso, S. Ilvonen, and K. Nikoskinen, "SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures," *Phys. Med. Biol.*, vol. 55, no. 4, pp. 1157–1176, 2010.
 
-[34] T. Kientega *et al.*, "A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz," *Ann. Telecommun.*, vol. 66, pp. 419–428, 2011.
+[34] E. Piuzzi, P. Bernardi, M. Cavagnaro, S. Pisa, and J. C. Lin, "Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz)," *IEEE Trans. Electromagn. Compat.*, vol. 53, no. 1, pp. 38–47, Feb. 2011.
 
-[35] T. Oizumi, I. Laakso, A. Hirata *et al.*, "FDTD analysis of temperature elevation in the lens of human and rabbit models due to near-field and far-field exposures at 2.45 GHz," *Radiat. Prot. Dosimetry*, vol. 155, no. 3, pp. 284–291, 2013.
+[35] T. Kientega *et al.*, "A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz," *Ann. Telecommun.*, vol. 66, pp. 419–428, 2011.
+
+[36] T. Oizumi, I. Laakso, A. Hirata *et al.*, "FDTD analysis of temperature elevation in the lens of human and rabbit models due to near-field and far-field exposures at 2.45 GHz," *Radiat. Prot. Dosimetry*, vol. 155, no. 3, pp. 284–291, 2013.
 
 :::
