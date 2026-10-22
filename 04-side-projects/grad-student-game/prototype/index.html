@@ -1,0 +1,503 @@
+<title>대학원생 키우기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Pen+Script&display=swap">
+<style>
+/* 레이아웃: 연구노트 모눈종이 위에 왼쪽은 탭하는 캐릭터, 오른쪽은 고용·전직 탭. 폰에서는 한 줄로 쌓는다. */
+:root {
+  --paper: #f3f6f9; --grid: #dbe5ee; --card: #ffffff; --line: #c8d4e0;
+  --ink: #1b2838; --muted: #5a6879; --accent: #2346a3; --accent-ink: #ffffff;
+  --stamp: #c3303a; --good: #2b7a4b; --warn: #a86a00; --soft: #e7eef8;
+  --font-display: "Black Han Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-hand: "Nanum Pen Script", "Apple SD Gothic Neo", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0e1828; --grid: #19283d; --card: #142238; --line: #2a3f5c;
+  --ink: #e5edf7; --muted: #93a4b9; --accent: #8eaeff; --accent-ink: #0e1828;
+  --stamp: #ff6d75; --good: #6fd39a; --warn: #f0b552; --soft: #1b2d48; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #0e1828; --grid: #19283d; --card: #142238; --line: #2a3f5c;
+  --ink: #e5edf7; --muted: #93a4b9; --accent: #8eaeff; --accent-ink: #0e1828;
+  --stamp: #ff6d75; --good: #6fd39a; --warn: #f0b552; --soft: #1b2d48; color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 16px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
+.num { font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* 상단 */
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; }
+.brand { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.02em; margin: 0; }
+.brand small { font-family: var(--font-hand); font-size: 1.25rem; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+.badge { display: inline-flex; align-items: baseline; gap: 8px; border: 2px solid var(--ink); padding: 2px 10px; background: var(--card); }
+.badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.badge span { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); }
+
+.main { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) { .main { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); align-items: start; } .left { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); } }
+.left, .right { display: grid; gap: 12px; min-width: 0; }
+
+.sheet { background: var(--card); border: 1px solid var(--line); padding: 14px; min-width: 0; }
+
+/* 데이터 표시 */
+.meter { display: grid; gap: 2px; }
+.meter .label { font-size: 0.8rem; letter-spacing: 0.08em; color: var(--muted); }
+.meter .big { font-family: var(--font-display); font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.1; }
+.rates { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 0.9rem; }
+.rates b { color: var(--ink); font-weight: 600; }
+
+/* 탭 영역 */
+.lab { position: relative; overflow: hidden; height: 300px; border: 1px solid var(--line); background: var(--soft); }
+.tapper { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.tapper svg { width: 200px; height: 220px; transition: transform 70ms ease-out; }
+.tapper.hit svg { transform: scale(0.94, 1.04); }
+.hint { position: absolute; left: 10px; bottom: 6px; font-family: var(--font-hand); font-size: 1.25rem; color: var(--muted); pointer-events: none; }
+.float { position: absolute; pointer-events: none; font-family: var(--font-display); font-size: 1.1rem; color: var(--accent); animation: up 900ms ease-out forwards; }
+@keyframes up { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -70px); opacity: 0; } }
+.prof { position: absolute; top: 18px; left: -70px; border: 2px dashed var(--stamp); background: var(--card); border-radius: 999px; padding: 4px 10px; cursor: pointer; font-size: 0.9rem; animation: fly 12s linear forwards; z-index: 2; }
+.prof em { font-style: normal; font-size: 1.4rem; vertical-align: middle; }
+@keyframes fly { 0% { left: -120px; top: 18px; } 50% { top: 60px; } 100% { left: calc(100% + 20px); top: 24px; } }
+.buffs { position: absolute; right: 8px; top: 8px; display: grid; gap: 4px; justify-items: end; pointer-events: none; }
+.chip { background: var(--accent); color: var(--accent-ink); font-size: 0.78rem; padding: 2px 8px; font-weight: 600; }
+
+.skills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn { border: 2px solid var(--ink); background: var(--card); padding: 8px 10px; cursor: pointer; text-align: left; display: grid; gap: 2px; }
+.btn:hover:not(:disabled) { background: var(--soft); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn .t { font-weight: 600; }
+.btn .s { font-size: 0.8rem; color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary .s { color: inherit; opacity: 0.85; }
+
+/* 논문·전직 */
+.paper { display: grid; gap: 10px; }
+.progress { height: 10px; background: var(--soft); border: 1px solid var(--line); }
+.progress i { display: block; height: 100%; background: var(--accent); width: 0; transition: width 200ms; }
+.next { display: flex; justify-content: space-between; gap: 8px; font-size: 0.9rem; color: var(--muted); flex-wrap: wrap; }
+.stampbtn { border: 3px double var(--stamp); color: var(--stamp); background: var(--card); font-family: var(--font-display); font-size: 1.3rem; padding: 8px; cursor: pointer; transform: rotate(-2deg); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: rotate(-2deg) scale(1.04); } }
+
+/* 탭 메뉴 */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--ink); overflow-x: auto; }
+.tabs button { border: 0; background: transparent; padding: 8px 14px; cursor: pointer; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.list { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; background: var(--card); border: 1px solid var(--line); padding: 10px 12px; }
+.row .name { font-weight: 600; }
+.row .name .own { font-family: var(--font-display); font-weight: 400; color: var(--accent); margin-left: 6px; }
+.row .note { font-family: var(--font-hand); font-size: 1.15rem; color: var(--muted); line-height: 1.2; }
+.row .meta { font-size: 0.82rem; color: var(--muted); }
+.row.locked { opacity: 0.5; }
+.buy { border: 2px solid var(--ink); background: var(--card); padding: 6px 10px; cursor: pointer; min-width: 92px; text-align: right; }
+.buy:not(:disabled):hover { background: var(--soft); }
+.buy:disabled { opacity: 0.4; cursor: not-allowed; }
+.buy b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
+.buy small { color: var(--muted); font-size: 0.75rem; }
+
+.tree { display: grid; gap: 6px; }
+.tier { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); background: var(--card); }
+.tier .n { font-family: var(--font-display); font-size: 1.2rem; color: var(--muted); }
+.tier.done .n { color: var(--good); }
+.tier.now { border: 2px solid var(--accent); }
+.tier .meta { font-size: 0.82rem; color: var(--muted); }
+
+.log { display: grid; gap: 4px; font-size: 0.9rem; max-height: 260px; overflow-y: auto; }
+.log li { list-style: none; border-bottom: 1px dashed var(--line); padding: 4px 0; }
+.log ol { margin: 0; padding: 0; }
+
+.ticker { font-family: var(--font-hand); font-size: 1.3rem; line-height: 1.3; min-height: 1.6em; color: var(--ink); }
+
+/* 모달 */
+.modal { position: fixed; inset: 0; background: rgba(10, 16, 28, 0.55); display: grid; place-items: center; padding: 16px; z-index: 20; }
+.dialog { background: var(--card); border: 2px solid var(--ink); max-width: 420px; width: 100%; max-height: calc(100% - 32px); overflow-y: auto; padding: 20px; display: grid; gap: 12px; text-align: center; }
+.dialog h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.8rem; margin: 0; text-wrap: balance; }
+.dialog p { margin: 0; }
+.dialog .hand { font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
+.dialog svg { width: 150px; height: 165px; justify-self: center; }
+.bigstamp { justify-self: center; border: 4px double var(--stamp); color: var(--stamp); font-family: var(--font-display); font-size: 1.6rem; padding: 2px 16px; transform: rotate(-8deg); animation: stamp 420ms cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes stamp { from { transform: rotate(-8deg) scale(2.4); opacity: 0; } to { transform: rotate(-8deg) scale(1); opacity: 1; } }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; text-align: left; font-size: 0.92rem; }
+.stats b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; }
+.danger { border-color: var(--stamp); color: var(--stamp); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; } .prof { animation: none; left: 12px; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">대학원생 키우기 <small>석사 입학부터 아인슈타인급까지</small></h1>
+    <div class="badge"><b id="tierName">석사과정</b><span id="tierTitle">랩실 막내</span></div>
+  </header>
+
+  <div class="main">
+    <section class="left" aria-label="연구실">
+      <div class="sheet meter">
+        <span class="label">연구 데이터</span>
+        <span class="big num" id="data">0</span>
+        <div class="rates num"><span>초당 <b id="ps">0</b></span><span>탭당 <b id="pt">1</b></span><span>논문 <b id="papers">0</b>편</span></div>
+      </div>
+      <div class="lab" id="lab">
+        <button class="tapper" id="tapper" aria-label="연구하기 (탭)"></button>
+        <div class="buffs" id="buffs"></div>
+        <span class="hint" id="hint">대학원생을 탭해서 데이터를 모으세요</span>
+      </div>
+      <div class="skills" id="skills"></div>
+      <div class="sheet ticker" id="ticker" aria-live="polite">연구실에 첫 출근했다. 책상에는 VNA 매뉴얼이 놓여 있다.</div>
+    </section>
+
+    <section class="right" aria-label="성장">
+      <div class="sheet paper">
+        <button class="btn primary" id="writeBtn"><span class="t">논문 쓰기</span><span class="s num" id="writeCost">비용</span></button>
+        <div class="next"><span id="nextLabel">다음 전직</span><span class="num" id="nextCount"></span></div>
+        <div class="progress" aria-hidden="true"><i id="nextBar"></i></div>
+        <button class="btn" id="centuryBtn" hidden><span class="t">세기의 연구 시작</span><span class="s num" id="centuryCost"></span></button>
+        <button class="stampbtn" id="promoteBtn" hidden>전직하기</button>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" id="tab-gens" aria-selected="true" data-tab="gens">동료·장비</button>
+        <button role="tab" id="tab-tap" aria-selected="false" data-tab="tap">탭 강화</button>
+        <button role="tab" id="tab-tree" aria-selected="false" data-tab="tree">전직 트리</button>
+        <button role="tab" id="tab-rec" aria-selected="false" data-tab="rec">기록</button>
+      </nav>
+      <div id="panel-gens" class="list"></div>
+      <div id="panel-tap" class="list" hidden></div>
+      <div id="panel-tree" class="tree" hidden></div>
+      <div id="panel-rec" hidden></div>
+    </section>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
+
+<script src="engine.js"></script>
+<script>
+(function () {
+  const E = window.GradEngine;
+  const fmt = E.fmt;
+  const KEY = 'gradclicker.v1';
+  const $ = (id) => document.getElementById(id);
+  let st, lastFrame = performance.now(), nextProfAt = 0, hiddenAt = 0, tab = 'gens';
+
+  // ---------- 캐릭터 ----------
+  const HAIR = {
+    dark: '#2a2a33', grey: '#8e949c', white: '#eceef2',
+  };
+  function hair(t) {
+    const cap = (c) => '<path d="M52 98 Q52 50 100 47 Q148 50 148 98 Q138 72 100 70 Q62 72 52 98 Z" fill="' + c + '"/>';
+    if (t === 1) return cap(HAIR.dark);
+    if (t === 2 || t === 3) return cap(HAIR.dark) + '<path d="M64 62 L58 40 L78 56 L84 34 L98 54 L110 32 L116 54 L134 38 L132 62 Z" fill="' + HAIR.dark + '"/>' + (t === 3 ? '<path d="M50 98 Q46 120 54 130 L58 100 Z M150 98 Q154 120 146 130 L142 100 Z" fill="' + HAIR.dark + '"/>' : '');
+    if (t === 4) return cap(HAIR.dark) + '<path d="M112 50 Q120 62 146 80" stroke="#55555f" stroke-width="2" fill="none"/>';
+    if (t === 5) return cap(HAIR.dark) + '<path d="M58 84 Q62 60 84 52 Q72 66 66 86 Z" fill="' + HAIR.grey + '"/>';
+    if (t === 6) return cap(HAIR.grey);
+    if (t === 7) return '<ellipse cx="54" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><ellipse cx="146" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><path d="M70 60 Q100 50 130 60" stroke="' + HAIR.white + '" stroke-width="6" fill="none" stroke-linecap="round"/>';
+    // 아인슈타인급: 사방으로 뻗친 흰 머리
+    const puffs = [[52, 70, 16], [44, 96, 14], [48, 122, 12], [148, 70, 16], [156, 96, 14], [152, 122, 12], [70, 50, 16], [92, 42, 17], [114, 42, 17], [134, 52, 16], [38, 80, 10], [162, 80, 10], [100, 34, 12]];
+    return puffs.map((p) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + p[2] + '" fill="' + HAIR.white + '" stroke="#c9ced6" stroke-width="1.5"/>').join('');
+  }
+  function outfit(t) {
+    const body = (c) => '<path d="M34 222 Q36 162 100 156 Q164 162 166 222 Z" fill="' + c + '"/>';
+    if (t <= 2) return body(t === 1 ? '#6f8fb8' : '#4f6684') + '<path d="M88 160 L86 190 M112 160 L114 190" stroke="#e8eef6" stroke-width="3" stroke-linecap="round"/>' + (t === 2 ? '<circle cx="128" cy="196" r="7" fill="#7b5a3a" opacity="0.55"/>' : '');
+    if (t === 3) return body('#b5574f') + '<path d="M46 180 H154 M42 200 H158 M70 160 V222 M100 156 V222 M130 160 V222" stroke="#8e3d37" stroke-width="2" opacity="0.6"/>';
+    if (t <= 6) {
+      const suit = t === 4 ? '#2c3e66' : t === 5 ? '#383b47' : '#1e2230';
+      return body(suit) + '<path d="M84 158 L100 200 L116 158 Z" fill="#f4f6fa"/>' + (t >= 5 ? '<path d="M96 168 L104 168 L106 198 L100 206 L94 198 Z" fill="' + (t === 5 ? '#b23a48' : '#c79a2e') + '"/>' : '') + '<path d="M84 158 L96 196 L72 176 Z M116 158 L104 196 L128 176 Z" fill="' + suit + '" stroke="#00000033"/>';
+    }
+    if (t === 7) return body('#7d1f2c') + '<path d="M70 160 Q100 196 130 160" stroke="#d4a72c" stroke-width="7" fill="none"/>';
+    return body('#8c8f96') + '<path d="M100 158 V222" stroke="#6f7279" stroke-width="2"/><circle cx="100" cy="182" r="3" fill="#6f7279"/><circle cx="100" cy="202" r="3" fill="#6f7279"/>';
+  }
+  function face(t) {
+    let s = '<rect x="88" y="138" width="24" height="22" fill="#e7b995"/>';
+    s += '<circle cx="51" cy="104" r="9" fill="#efc29f"/><circle cx="149" cy="104" r="9" fill="#efc29f"/>';
+    s += '<circle cx="100" cy="100" r="48" fill="#f3cba8"/>';
+    s += hair(t);
+    s += '<circle cx="82" cy="104" r="4.5" fill="#1d1d24"/><circle cx="118" cy="104" r="4.5" fill="#1d1d24"/>';
+    if (t === 2 || t === 3) s += '<path d="M73 114 q9 6 18 0 M109 114 q9 6 18 0" stroke="#8b6c9c" stroke-width="2.5" fill="none" opacity="0.7"/>';
+    if (t >= 2) s += '<circle cx="82" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><circle cx="118" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><path d="M95 104 H105" stroke="#24242c" stroke-width="2.5"/>';
+    if (t === 8) s += '<path d="M78 124 Q90 116 100 122 Q110 116 122 124 Q112 134 100 128 Q88 134 78 124 Z" fill="' + HAIR.white + '" stroke="#c9ced6"/>';
+    else s += t === 2 || t === 3 ? '<path d="M90 128 H110" stroke="#7a3b2e" stroke-width="3" stroke-linecap="round"/>' : '<path d="M88 125 Q100 135 112 125" stroke="#7a3b2e" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    return s;
+  }
+  function charSVG(t) {
+    return '<svg viewBox="0 0 200 222" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터">' + outfit(t) + face(t) + '</svg>';
+  }
+
+  // ---------- 저장 ----------
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ st, at: Date.now() })); } catch (e) {} }
+  function load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+
+  // ---------- 화면 갱신 ----------
+  let renderedTier = 0, genRows = {};
+  function say(text) { $('ticker').textContent = text; }
+
+  function buildGens() {
+    const box = $('panel-gens'); box.innerHTML = ''; genRows = {};
+    let shownLocked = false;
+    E.GENS.forEach((g) => {
+      const unlocked = E.genUnlocked(st, g.id);
+      if (!unlocked) { if (shownLocked) return; shownLocked = true; }
+      const row = document.createElement('div');
+      row.className = 'row' + (unlocked ? '' : ' locked');
+      row.innerHTML = '<div><div class="name">' + g.name + '<span class="own num"></span></div><div class="note">' + g.note + '</div><div class="meta num"></div></div>' +
+        '<button class="buy" id="buy-' + g.id + '"><b class="num"></b><small></small></button>';
+      const btn = row.querySelector('button');
+      btn.addEventListener('click', () => { if (E.buyGen(st, g.id)) { say(g.name + (g.id === 'intern' || g.id === 'junior' || g.id === 'postdoc' ? '을(를) 뽑았다.' : '을(를) 들였다.')); update(true); } });
+      box.appendChild(row);
+      genRows[g.id] = { row, own: row.querySelector('.own'), meta: row.querySelector('.meta'), btn, cost: btn.querySelector('b'), small: btn.querySelector('small'), unlocked };
+    });
+  }
+  function updateGens() {
+    E.GENS.forEach((g) => {
+      const r = genRows[g.id]; if (!r) return;
+      const n = st.gens[g.id];
+      r.own.textContent = n ? '×' + n : '';
+      if (!r.unlocked) { r.meta.textContent = E.TIERS[g.tier].name + '부터 고용할 수 있다'; r.btn.disabled = true; r.cost.textContent = '잠김'; r.small.textContent = ''; return; }
+      const each = E.genRate(st, g) * E.globalMult(st);
+      const nextMs = E.MILESTONES.find((m) => n < m);
+      r.meta.textContent = '1대당 초당 ' + fmt(each) + (nextMs ? ' · ' + nextMs + '대 보유 시 효율 2배' : ' · 효율 최대');
+      const c = E.genCost(st, g.id);
+      r.cost.textContent = fmt(c); r.small.textContent = '고용·구매';
+      r.btn.disabled = st.data < c;
+    });
+  }
+  function buildTap() {
+    const box = $('panel-tap');
+    box.innerHTML = '<div class="row"><div><div class="name">타자 속도 <span class="own num" id="tapLv"></span></div><div class="note">손가락이 빨라지면 탭 1번에 데이터 2배</div><div class="meta num" id="tapMeta"></div></div><button class="buy" id="tapBuy"><b class="num" id="tapCost"></b><small>강화</small></button></div>' +
+      '<div class="row"><div><div class="name">직급 보너스</div><div class="meta" id="tierBonus"></div></div><span></span></div>';
+    $('tapBuy').addEventListener('click', () => { if (E.buyTap(st)) { say('타자 연습을 했다. 탭이 2배 강해졌다.'); update(true); } });
+  }
+  function updateTap() {
+    if (!$('tapLv')) return;
+    $('tapLv').textContent = 'Lv ' + st.tapLv;
+    $('tapMeta').textContent = '지금 탭 1번에 ' + fmt(E.perTap(st)) + (st.tier >= 3 ? ' (초당 생산의 2% 포함)' : '');
+    $('tapCost').textContent = fmt(E.tapCost(st));
+    $('tapBuy').disabled = st.data < E.tapCost(st);
+    $('tierBonus').textContent = '자동 생산 ×' + fmt(Math.pow(E.CFG.tierProd, st.tier - 1)) + ', 탭 ×' + fmt(Math.pow(E.CFG.tierTap, st.tier - 1)) + ', 논문 1편당 생산 +' + Math.round(E.CFG.paperBonus * 100) + '%' + (st.medals ? ', 노벨 메달 ' + st.medals + '개로 생산·탭 +' + st.medals * 50 + '%' : '');
+  }
+  function mmss(sec) { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; }
+  function buildTree() {
+    const box = $('panel-tree'); box.innerHTML = '';
+    for (let t = 1; t <= 8; t++) {
+      const info = E.TIERS[t], reached = st.promotedAt.find((p) => p.tier === t);
+      const el = document.createElement('div');
+      el.className = 'tier' + (reached ? ' done' : '') + (t === st.tier ? ' now' : '');
+      const hidden = !reached && t > st.tier + 1 && t >= 7;
+      const cond = t === 1 ? '입학' : '논문 ' + E.CFG.needs[t] + '편' + (t === 8 ? ' + 세기의 연구' : '');
+      el.innerHTML = '<span class="n">' + t + '</span><div><b>' + (hidden ? '???' : info.name) + '</b> <span class="meta">' + (hidden ? '' : info.title) + '</span><div class="meta">' + (hidden ? '조건 비공개' : cond) + '</div></div><span class="meta num">' + (reached ? mmss(reached.time) : '') + '</span>';
+      box.appendChild(el);
+    }
+  }
+  function buildRec() {
+    const box = $('panel-rec');
+    const titles = st.paperTitles.slice().reverse().map((t, i) => '<li>[' + (st.paperTitles.length - i) + '] ' + t + '</li>').join('') || '<li>아직 논문이 없다.</li>';
+    box.innerHTML = '<div class="sheet"><div class="stats num"><span>플레이 시간<b>' + mmss(st.time) + '</b></span><span>총 탭<b>' + st.taps.toLocaleString('ko-KR') + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span><span>노벨 메달<b>' + st.medals + '개</b></span></div></div>' +
+      '<div class="sheet"><b>게재 논문</b><div class="log"><ol>' + titles + '</ol></div></div>' +
+      '<div class="sheet" style="display:grid;gap:8px"><button class="btn danger" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">저장된 진행이 지워집니다</span></button><div id="resetConfirm" hidden style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div></div>';
+    $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
+    $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(0); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); });
+  }
+
+  function update(full) {
+    $('data').textContent = fmt(st.data);
+    $('ps').textContent = fmt(E.perSec(st));
+    $('pt').textContent = fmt(E.perTap(st));
+    $('papers').textContent = st.papers;
+    if (renderedTier !== st.tier) {
+      renderedTier = st.tier;
+      $('tierName').textContent = E.TIERS[st.tier].name; $('tierTitle').textContent = E.TIERS[st.tier].title;
+      $('tapper').innerHTML = charSVG(st.tier);
+      buildGens(); buildTap(); buildSkills(); full = true;
+    }
+    // 논문·전직
+    const pc = E.paperCost(st);
+    $('writeCost').textContent = '데이터 ' + fmt(pc) + ' · 생산 +' + Math.round(E.CFG.paperBonus * 100) + '%';
+    $('writeBtn').disabled = st.data < pc || st.ended;
+    const nt = E.nextTier(st);
+    if (nt) {
+      const need = E.CFG.needs[st.tier + 1], prev = E.CFG.needs[st.tier];
+      $('nextLabel').textContent = '다음 전직: ' + nt.name;
+      $('nextCount').textContent = '논문 ' + Math.min(st.papers, need) + '/' + need + '편';
+      $('nextBar').style.width = Math.min(100, ((st.papers - prev) / Math.max(1, need - prev)) * 100) + '%';
+    } else { $('nextLabel').textContent = '최종 직급'; $('nextCount').textContent = ''; $('nextBar').style.width = '100%'; }
+    const showCentury = st.tier === 7 && !st.century;
+    $('centuryBtn').hidden = !showCentury;
+    if (showCentury) {
+      const ready = st.papers >= E.CFG.needs[8];
+      $('centuryCost').textContent = ready ? '데이터 ' + fmt(E.CFG.century) + '로 세기의 연구를 완성한다' : '논문 ' + E.CFG.needs[8] + '편을 채우면 시작할 수 있다';
+      $('centuryBtn').disabled = !ready || st.data < E.CFG.century;
+    }
+    $('promoteBtn').hidden = !E.canPromote(st);
+    if (nt && E.canPromote(st)) $('promoteBtn').textContent = nt.name + '(으)로 전직하기';
+    updateGens(); updateTap(); updateSkills(); updateBuffs();
+    if (full) { if (tab === 'tree') buildTree(); }
+  }
+
+  function buildSkills() {
+    const box = $('skills'); box.innerHTML = '';
+    Object.keys(E.SKILLS).forEach((id) => {
+      const s = E.SKILLS[id];
+      const b = document.createElement('button');
+      b.className = 'btn'; b.id = 'skill-' + id;
+      b.innerHTML = '<span class="t">' + s.name + '</span><span class="s num"></span>';
+      b.addEventListener('click', () => { if (E.useSkill(st, id)) { say(id === 'night' ? '밤을 새우기로 했다. 손가락이 불탄다.' : '내일이 마감이다. 연구실 전체가 달린다.'); update(); } });
+      box.appendChild(b);
+    });
+  }
+  function updateSkills() {
+    Object.keys(E.SKILLS).forEach((id) => {
+      const b = $('skill-' + id); if (!b) return;
+      const s = E.SKILLS[id], small = b.querySelector('.s');
+      if (st.tier < s.tier) { b.disabled = true; small.textContent = E.TIERS[s.tier].name + '부터'; return; }
+      const left = Math.ceil(st.skills[id] - st.time);
+      b.disabled = left > 0;
+      small.textContent = left > 0 ? '다시 쓰기까지 ' + left + '초' : s.desc;
+    });
+  }
+  function updateBuffs() {
+    const box = $('buffs');
+    const html = st.buffs.filter((b) => b.until > st.time).map((b) => '<span class="chip num">' + b.src + ' ' + (b.kind === 'tap' ? '탭' : '생산') + ' ×' + b.mult + ' · ' + Math.ceil(b.until - st.time) + '초</span>').join('');
+    if (box.innerHTML !== html) box.innerHTML = html;
+  }
+
+  // ---------- 입력 ----------
+  function floatAt(x, y, text) {
+    const el = document.createElement('span');
+    el.className = 'float num'; el.textContent = text;
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    $('lab').appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+  function doTap(x, y) {
+    if (st.ended) return;
+    const v = E.tap(st);
+    const t = $('tapper'); t.classList.add('hit'); setTimeout(() => t.classList.remove('hit'), 70);
+    floatAt(x, y, '+' + fmt(v));
+    if (st.taps === 1) $('hint').hidden = true;
+  }
+  $('tapper').addEventListener('pointerdown', (e) => {
+    const r = $('lab').getBoundingClientRect();
+    doTap(e.clientX - r.left + (Math.random() * 30 - 15), e.clientY - r.top - 10);
+  });
+  $('tapper').addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); const r = $('lab').getBoundingClientRect(); doTap(r.width / 2, r.height / 2 - 40); }
+  });
+  $('tapper').addEventListener('click', (e) => e.preventDefault());
+
+  $('writeBtn').addEventListener('click', () => {
+    const title = E.writePaper(st);
+    if (title) { say('논문 게재: 「' + title + '」'); update(true); if (tab === 'rec') buildRec(); }
+  });
+  $('centuryBtn').addEventListener('click', () => { if (E.buyCentury(st)) { say('세기의 연구가 완성됐다. 전 세계 연구실이 재현 실험을 시작했다.'); update(true); } });
+  $('promoteBtn').addEventListener('click', () => {
+    const from = st.tier;
+    if (!E.promote(st)) return;
+    update(true);
+    if (st.tier === 8) showEnding(); else showPromotion(from);
+  });
+
+  document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+    ['gens', 'tap', 'tree', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== tab; });
+    if (tab === 'tree') buildTree();
+    if (tab === 'rec') buildRec();
+    try { localStorage.setItem(KEY + '.tab', tab); } catch (e) {}
+  }));
+
+  // ---------- 모달 ----------
+  function openModal(html, buttons) {
+    $('dialog').innerHTML = html;
+    buttons.forEach((b) => {
+      const el = document.createElement('button');
+      el.className = 'btn ' + (b.primary ? 'primary' : '');
+      el.style.textAlign = 'center';
+      el.innerHTML = '<span class="t">' + b.label + '</span>';
+      el.addEventListener('click', () => { $('modal').hidden = true; if (b.fn) b.fn(); });
+      $('dialog').appendChild(el);
+    });
+    $('modal').hidden = false;
+    const first = $('dialog').querySelector('button'); if (first) first.focus();
+  }
+  const PROMO_LINES = {
+    2: '박사과정이 되었다. 후배가 들어오고, VNA를 들일 수 있다.',
+    3: '박사 학위를 받았다. 이제 탭 1번에 초당 생산의 2%가 더해진다.',
+    4: '교수 공채에 합격했다. 연구실 문패에 내 이름이 걸렸다.',
+    5: '테뉴어 심사를 통과했다. 국제 공동연구단을 꾸릴 수 있다.',
+    6: '정교수가 되었다. 전파망원경 배열로 우주에서 데이터가 온다.',
+    7: '국제학회 펠로우로 선정됐다. 세기의 연구에 도전할 수 있다.',
+  };
+  function showPromotion(from) {
+    const t = st.tier, info = E.TIERS[t];
+    const unlocked = E.GENS.filter((g) => g.tier === t).map((g) => g.name).join(', ');
+    openModal('<span class="bigstamp">전직</span>' + charSVG(t) + '<h2>' + info.name + '</h2><p class="hand">' + info.title + '</p><p>' + PROMO_LINES[t] + '</p>' +
+      (unlocked ? '<p><b>새로 열림:</b> ' + unlocked + '</p>' : '') + '<p class="num">자동 생산 ×' + E.CFG.tierProd + ', 탭 ×' + E.CFG.tierTap + '</p>', [{ label: '계속 연구한다', primary: true }]);
+    say(E.TIERS[from].name + '에서 ' + info.name + '(으)로 전직했다!');
+  }
+  function showEnding() {
+    openModal('<span class="bigstamp">전설</span>' + charSVG(8) + '<h2>아인슈타인급</h2><p class="hand">인류의 지성</p><p>「' + st.paperTitles[st.paperTitles.length - 1] + '」이 교과서 첫 장에 실렸다.</p>' +
+      '<div class="stats num"><span>걸린 시간<b>' + mmss(st.time) + '</b></span><span>논문<b>' + st.papers + '편</b></span><span>총 탭<b>' + st.taps.toLocaleString('ko-KR') + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span></div>' +
+      '<p>재입학하면 노벨 메달 1개를 들고 석사과정부터 다시 시작합니다. 메달 1개마다 생산과 탭이 영구히 50% 늘어납니다.</p>',
+      [{ label: '노벨 메달을 들고 재입학', primary: true, fn: () => { st = E.newGame(st.medals + 1); renderedTier = 0; save(); say('노벨 메달을 목에 걸고 다시 석사과정에 입학했다. 동기들이 수군거린다.'); update(true); } },
+       { label: '이대로 감상하기', fn: () => {} }]);
+  }
+
+  // ---------- 지나가는 교수님 ----------
+  function spawnProf() {
+    if (st.ended || $('lab').querySelector('.prof')) return;
+    const b = document.createElement('button');
+    b.className = 'prof'; b.innerHTML = '<em aria-hidden="true">🧑‍🏫</em> 교수님';
+    b.setAttribute('aria-label', '지나가는 교수님 잡기');
+    b.addEventListener('click', (e) => { e.stopPropagation(); const r = E.profReward(st); say(r.text); b.remove(); update(); });
+    b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    b.addEventListener('animationend', () => b.remove());
+    $('lab').appendChild(b);
+  }
+
+  // ---------- 루프 ----------
+  function frame(now) {
+    const dt = Math.min(1, (now - lastFrame) / 1000);
+    lastFrame = now;
+    if (!document.hidden) {
+      E.tick(st, dt);
+      if (st.time >= nextProfAt) { spawnProf(); nextProfAt = st.time + 60 + Math.random() * 60; }
+    }
+    requestAnimationFrame(frame);
+  }
+  setInterval(() => update(), 150);
+  setInterval(save, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); save(); return; }
+    const away = (Date.now() - hiddenAt) / 1000;
+    if (hiddenAt && away > 30) { const r = E.offline(st, away); if (r.gain > 0) say('자리를 비운 ' + mmss(r.seconds) + ' 동안 연구실이 데이터 ' + fmt(r.gain) + '를 모았다.'); }
+    lastFrame = performance.now();
+  });
+
+  function start(data) {
+    const saved = data && data.st ? data : load();
+    if (saved && saved.st && saved.st.v === 1) {
+      st = saved.st;
+      const away = (Date.now() - (saved.at || Date.now())) / 1000;
+      if (away > 30) {
+        const r = E.offline(st, away);
+        if (r.gain > 0) setTimeout(() => openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + mmss(r.seconds) + ' 동안</p><p>학부연구생과 장비가 데이터 <b class="num">' + fmt(r.gain) + '</b>를 모았다. (최대 8시간, 효율 50%)</p>', [{ label: '좋아', primary: true }]), 300);
+      }
+    } else st = E.newGame(0);
+    nextProfAt = st.time + 40;
+    try { const t = localStorage.getItem(KEY + '.tab'); if (t) { const b = document.querySelector('.tabs button[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) {}
+    update(true);
+    requestAnimationFrame(frame);
+  }
+  window.claude?.hot?.snapshot?.(() => ({ st, at: Date.now() }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
