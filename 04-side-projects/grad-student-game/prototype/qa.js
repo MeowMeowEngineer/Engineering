@@ -256,6 +256,8 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   { const g = E.newGame(); g.buffs.push({ kind: 'prod', mult: 2, until: g.time + 1800, src: '연구 지원금' }); E.offline(g, 60); ok('자리를 비워도 버프가 남는다 (남은 시간만 줄어듦)', g.buffs.length === 1 && Math.round(g.buffs[0].until - g.time) === 1740); }
   { const g = E.newGame(); g.tier = 3; g.data = 1e6; E.startProject(g, 'i1'); g.gens.lab = 300; const before = g.total; g.time = g.projects[0].endAt - 0.01; E.tick(g, 0.02); ok('과제 보상은 끝날 때의 생산 기준', g.total - before >= E.projReward(g, E.PROJECTS[0]) * 0.99); }
   { let okm = true; try { const m = E.migrate({ v: 2, col: null, gens: null, daily: null, buffs: null, papers: '5' }); E.tick(m, 1); E.refreshDay(m, '2026-10-23', '2026-10-22'); okm = m.papers === 5; } catch (e) { okm = false; } ok('깨진 저장본(null 칸, 문자열 숫자)도 열린다', okm); }
+  // 앞에서 연 페이지가 많으면 브라우저가 메모리 부족으로 죽는다. 이 뒤로는 앞 페이지를 쓰지 않으니 닫는다
+  for (const c of browser.contexts()) await c.close();
   { const ps = await page(undefined, JSON.stringify({ st: Object.assign(E.newGame(), { tier: E.LAST, ended: true, century: true, papers: 45, paperTitles: [E.FINAL_TITLE, '다른 논문'] }), at: Date.now() }));
     await ps.waitForTimeout(300); while (await clickModal(ps, '받기') || await clickModal(ps, '닫기')) await ps.waitForTimeout(150);
     ok('엔딩을 닫아도 재입학 버튼이 남는다', (await ps.textContent('#promoteBtn')).includes('재입학') && !(await ps.isHidden('#promoteBtn')));
