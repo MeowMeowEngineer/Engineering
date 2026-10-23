@@ -81,7 +81,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   let yrHits = 0, yrName = '';
   for (let seed = 1; seed <= 40; seed++) { const yr = E.newGame(); yr.rng = seed * 7919; yr.data = 1e9; E.writePaper(yr); E.writePaper(yr); yrName = E.rankName(yr); if (E.colCount(yr, 'scholar') > 0) yrHits++; }
   ok('연차가 오르면 장학생이 70% 확률로 떨어진다 (40판 중 20~38판)', yrName === '석사과정 2년차' && yrHits >= 20 && yrHits <= 38, yrHits + '/40');
-  const sw = E.newGame(); E.COLLECTION.awards.items.forEach((_, i) => (sw.col.awards[i] = 1)); sw.tier = 9; sw.ended = true; sw.papers = 45;
+  const sw = E.newGame(); E.COLLECTION.awards.items.forEach((_, i) => (sw.col.awards[i] = 1)); sw.tier = 9; sw.ended = true; sw.papers = E.CFG.needs[E.LAST];
   ok('상장 세트를 완성하면 엔딩 월계관 +1', E.laurelReward(sw).award === 1 && E.laurelReward(sw).total === 4);
   E.COLLECTION.scholar.items.forEach((_, i) => (sw.col.scholar[i] = 1));
   ok('장학생 세트를 완성하면 재입학 때 에너지 드링크 3개', E.retire(sw).drinks === 3);
@@ -160,7 +160,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('포닥 → 시간강사 전직', m9.includes('시간강사') && m9.includes('보따리'), m9.split('\n').slice(0, 3).join(' / '));
   await p.screenshot({ path: SP + '/qa-lecturer.png' });
   // 10. 엔딩과 재입학 (쿠폰·야옹 유지)
-  const s10 = E.newGame(); s10.tier = 8; s10.papers = 45; s10.data = 2e10; s10.coupons = 77; s10.pet = true; s10.medals = 0;
+  const s10 = E.newGame(); s10.tier = 8; s10.papers = E.CFG.needs[E.LAST]; s10.data = 2e10; s10.coupons = 77; s10.pet = true; s10.medals = 0;
   p = await page({ viewport: { width: 1200, height: 900 }, colorScheme: 'dark' }, JSON.stringify({ st: s10, at: Date.now() }));
   await clickModal(p, '받기');
   await p.click('#centuryBtn'); await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(500);
