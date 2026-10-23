@@ -12,11 +12,11 @@
 
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 승진 속도를 맞춘다.
   const CFG = {
-    fameNeed: [0, 0, 1e3, 3e5, 7e7, 2e10], // 직급별 승진에 필요한 누적 명성
+    fameNeed: [0, 0, 1e3, 3e5, 1.5e8, 1.5e11], // 직급별 승진에 필요한 누적 명성
     tierValue: 2.5, fameRate: 0.1,
     prodGrowth: 1.14, stageGrowth: 1.16, hireBase: 30, hireGrowth: 1.32,
     offlineCapH: 8, offlineEff: 0.5, laurelBonus: 0.25, libraryBonus: 0.05,
-    officeGate: 10, // 다른 방은 교수실 레벨 + 이 값까지
+    officeGate: 10, moodMax: 1.3, // 다른 방은 교수실 레벨 + 이 값까지
   };
 
   const TIERS = [
@@ -40,10 +40,10 @@
     { id: 'library', name: '자료실', role: 'V', plot: [0, 2], tier: 2, build: 3000, ucost: 600, buildSec: 120, note: '선행 연구를 모아 논문 가치를 높인다' },
     { id: 'clean', name: '클린룸', role: 'A', plot: [2, 1], tier: 3, build: 2e5, ucost: 3e4, rate: 110, buildSec: 300, note: '방진복을 입고 들어가는 정밀 실험실' },
     { id: 'bigequip', name: '대형 장비실', role: 'A', plot: [1, 2], tier: 4, build: 3e7, ucost: 4e6, rate: 1300, buildSec: 600, note: '전국에 몇 대 없는 장비' },
-    { id: 'global', name: '국제 공동연구센터', role: 'A', plot: [2, 2], tier: 4, build: 6e8, ucost: 8e7, rate: 16000, buildSec: 900, note: '시차 덕분에 24시간 연구' },
+    { id: 'global', name: '국제 공동연구센터', role: 'A', plot: [2, 2], tier: 5, build: 6e8, ucost: 8e7, rate: 16000, buildSec: 900, note: '시차 덕분에 24시간 연구' },
   ];
   const MILESTONES = [10, 25, 50, 100]; // 이 레벨에 닿으면 효율 2배. 닿는 업그레이드는 대공사(시간이 걸림)
-  const MILESTONE_SEC = { 10: 60, 25: 180, 50: 600, 100: 1800 };
+  const MILESTONE_SEC = { 10: 45, 25: 120, 50: 300, 100: 600 };
 
   // 방별 가구·장비 5종: [이름, 효과, 레벨당 크기, 단계별 모습 5개].
   // 효과 mult=그 방 산출, seat=좌석(레벨당), comfort=휴게 정원, value=연구비, fame=명성
@@ -79,11 +79,11 @@
   // 작은 나라 지방 사립대에서 시작해 세계적 명문대가 되는 것이 최종 목표다. 승격은 공사 대기열을 쓰고 시간이 걸린다.
   const UNIVS = [
     null,
-    { name: '지방 사립대', desc: '작은 나라 지방 소도시의 신생 사립대. 정문 하나, 건물 셋.', cap: 30, needTier: 1, cost: 0, sec: 0 },
-    { name: '지방 거점 국립대', desc: '도에서 제일 큰 대학. 서버실과 자료실을 지을 부지가 생긴다.', cap: 60, needTier: 2, cost: 1000, sec: 60 },
-    { name: '수도권 종합대', desc: '지하철역이 가까워 좋은 학생이 지원한다. 클린룸 부지가 생긴다.', cap: 110, needTier: 3, cost: 2e6, sec: 180 },
-    { name: '서울 명문 사립대', desc: '대형 장비실과 국제 공동연구센터를 지을 수 있다.', cap: 170, needTier: 4, cost: 3e9, sec: 480 },
-    { name: '세계적 명문대', desc: '전 세계에서 학생이 찾아오는 명문대. 이곳의 대가 랩실이 최종 목표다.', cap: 250, needTier: 4, cost: 3e11, sec: 900 },
+    { name: '신생 지방대', desc: '작은 나라 지방 소도시에 막 문을 연 한빛대. 정문 하나, 건물 셋.', cap: 30, needTier: 1, cost: 0, sec: 0 },
+    { name: '지역 거점대', desc: '한빛대가 지역에서 손꼽히는 대학이 됐다. 서버실과 자료실 부지가 생긴다.', cap: 60, needTier: 2, cost: 1000, sec: 60 },
+    { name: '연구중심대', desc: '연구비가 몰리면서 좋은 학생이 지원한다. 클린룸 부지가 생긴다.', cap: 110, needTier: 3, cost: 2e6, sec: 180 },
+    { name: '국내 최상위 명문대', desc: '나라 안에서 첫손에 꼽힌다. 대형 장비실 부지가 생긴다.', cap: 170, needTier: 4, cost: 3e9, sec: 480 },
+    { name: '세계적 명문대', desc: '전 세계에서 학생이 찾아온다. 국제 공동연구센터 부지가 생긴다. 이곳의 대가 랩실이 최종 목표다.', cap: 250, needTier: 4, cost: 3e11, sec: 900 },
   ];
   const UNIV_MAX = UNIVS.length - 1, MAXLV = 250;
 
@@ -134,10 +134,10 @@
     { id: 'p3', g: 'p', name: '만능 포닥 오세린', rar: 'e', role: 'any', skill: '멀티태스킹' },
     { id: 'p4', g: 'p', name: '전설의 연구교수 임도현', rar: 'l', role: 'any', skill: '세기의 아이디어' },
     { id: 'p5', g: 'p', name: '편집위원 연구교수 서은비', rar: 'l', role: 'B', skill: '특집호 초청' },
-    { id: 'v1', g: 'v', name: '독일 방문연구원 레온', rar: 'r', role: 'A', skill: '정밀 측정' },
-    { id: 'v2', g: 'v', name: '미국 방문연구원 에밀리', rar: 'r', role: 'B', skill: '영어 교정' },
-    { id: 'v3', g: 'v', name: '일본 방문연구원 하루토', rar: 'e', role: 'A', skill: '장비 개량' },
-    { id: 'v4', g: 'v', name: '프랑스 방문연구원 클레어', rar: 'e', role: 'M', skill: '티타임' },
+    { id: 'v1', g: 'v', name: '방문연구원 레온 (독일)', rar: 'r', role: 'A', skill: '공동 실험' },
+    { id: 'v2', g: 'v', name: '방문연구원 에밀리 (미국)', rar: 'r', role: 'B', skill: '공동 저자 섭외' },
+    { id: 'v3', g: 'v', name: '방문연구원 하루토 (일본)', rar: 'e', role: 'A', skill: '데이터 공유' },
+    { id: 'v4', g: 'v', name: '방문연구원 클레어 (프랑스)', rar: 'e', role: 'M', skill: '세미나 뒤풀이' },
     { id: 'v5', g: 'v', name: '세계적 석학 권하린', rar: 'l', role: 'C', skill: '기조연설' },
   ];
   // 강화: 같은 연구원이 또 나오면 중복 카드로 쌓이고, 중복 카드를 써서 별을 올린다. 별 1개마다 배율 +25%
@@ -150,7 +150,7 @@
   const MISSIONS = {
     up: { name: '방·장비 업그레이드 20번', goal: 20 },
     hire: { name: '학생 2명 모집', goal: 2 },
-    cheer: { name: '방 독려 5번', goal: 5 },
+    cheer: { name: '야식 쏘기 5번', goal: 5 },
     event: { name: '돌발 이벤트 2개 처리', goal: 2 },
     research: { name: '학과 연구 1번 시작', goal: 1 },
   };
@@ -163,7 +163,7 @@
     grant: { name: '공동 연구비', desc: '연구비 +5%' },
   };
   const allyTechLevel = (points) => Math.min(20, Math.floor(Math.sqrt(Math.max(0, points) / 20)));
-  const WEEK_GOALS = [{ papers: 100, tickets: 2, minutes: 30 }, { papers: 500, tickets: 3, minutes: 60 }, { papers: 2000, tickets: 5, minutes: 120 }];
+  const WEEK_GOALS = [{ papers: 50, tickets: 2, minutes: 30 }, { papers: 200, tickets: 3, minutes: 60 }, { papers: 600, tickets: 5, minutes: 120 }];
   const HELP_MAX = 10; // 요청 하나에 받을 수 있는 도움 수
 
   const STUDENT_NAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송'];
@@ -198,7 +198,7 @@
       v: 2, univ: 1, money: 60, fame: 0, totalMoney: 0, papers: 0, time: 0, tier: 1, ended: false,
       rooms: {}, equip: {}, students: [], buffs: [], cooldown: {}, notes: [], rng: (Math.random() * 2 ** 32) >>> 0,
       laurels: keep.laurels || 0, runs: keep.runs || 0, promotedAt: [{ tier: 1, time: 0 }],
-      builds: [], research: { lv: {}, active: null }, nextReq: 1, helpApplied: {},
+      builds: [], research: { lv: {}, active: null }, nextReq: 1, reqPre: ((Math.random() * 46656) | 0).toString(36), helpApplied: {}, upTotal: 0,
       cards: keep.cards || { owned: {}, dup: {}, assign: {}, skillCd: {}, pity: 0 }, tickets: keep.tickets != null ? keep.tickets : 2,
       missions: keep.missions || { day: '', prog: {}, claimed: {}, bonus: false },
       week: keep.week || { key: '', papers: 0, claimed: {} },
@@ -223,6 +223,7 @@
     if (!st || typeof st !== 'object') return null;
     if (st.v === 1) st.v = 2; // v1에는 장비·연구·카드가 없다. 아래에서 기본값을 채운다
     if (st.v !== 2) return null;
+    const hadUniv = typeof st.univ === 'number';
     const fresh = newGame({ laurels: st.laurels, runs: st.runs });
     Object.keys(fresh).forEach((k) => { if (st[k] === undefined) st[k] = fresh[k]; });
     ROOMS.forEach((r) => {
@@ -231,7 +232,13 @@
       while (st.equip[r.id].length < EQ_N) st.equip[r.id].push(0);
     });
     if (typeof st.univ !== 'number' || st.univ < 1 || st.univ > UNIV_MAX) st.univ = 1;
-    if (st.univ < Math.min(UNIV_MAX - 1, st.tier)) st.univ = Math.min(UNIV_MAX - 1, st.tier); // 본관이 없던 저장: 직급에 맞춰 준다
+    if (!hadUniv) st.univ = Math.max(1, Math.min(UNIV_MAX - 1, st.tier)); // 본관이 없던 저장에만 직급에 맞춰 준다
+    // 일부가 빠진 저장본: 하위 칸을 채운다
+    ['owned', 'dup', 'assign', 'skillCd'].forEach((k) => { if (!st.cards[k] || typeof st.cards[k] !== 'object') st.cards[k] = {}; });
+    if (typeof st.cards.pity !== 'number') st.cards.pity = 0;
+    Object.keys(fresh.col).forEach((k) => { if (!st.col[k] || typeof st.col[k] !== 'object') st.col[k] = {}; });
+    if (!st.reqPre) st.reqPre = fresh.reqPre;
+    if (typeof st.upTotal !== 'number') st.upTotal = 99;
     // 예전 카드 12종 id를 새 학생 도감 id로 옮긴다
     const c = st.cards; if (!c.dup) c.dup = {};
     Object.keys(OLD_CARD).forEach((o) => {
@@ -286,10 +293,13 @@
   const capOf = (st, id) => room(id).cap * lv(st, id) * Math.pow(2, Math.floor(lv(st, id) / 10)) * Math.pow(1.6, st.tier - 1) * (1 + eqSum(st, id, 'mult')) * cardMult(st, id);
   const stageB = (st) => capOf(st, 'meeting') * buffMult(st, 'meeting') * (1 + 0.1 * rlv(st, 'write')) * (1 + 0.05 * tech(st, 'seminar')) * (1 + avBonus(st, 'face') + cardSet(st, 'm'));
   const stageC = (st) => capOf(st, 'office') * buffMult(st, 'office') * (1 + 0.1 * rlv(st, 'admin')) * (1 + 0.05 * tech(st, 'office')) * (1 + avBonus(st, 'face') + cardSet(st, 'p'));
-  const comfort = (st) => Math.floor((3 + 2 * lv(st, 'lounge') + eqAll(st, 'comfort') + 2 * rlv(st, 'welfare')) * cardMult(st, 'lounge') * (1 + avBonus(st, 'pose')));
-  const mood = (st) => Math.max(0.35, Math.min(1, 1 - 0.07 * (st.students.length - comfort(st))));
-  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant')) * (1 + colBonus(st, 'money') + colBonus(st, 'all') + avBonus(st, 'hair') + cardSet(st, 'v') + projBuff(st));
+  const comfort = (st) => Math.floor((3 + 2 * lv(st, 'lounge') + eqAll(st, 'comfort') + 2 * rlv(st, 'welfare')) * cardMult(st, 'lounge') * buffMult(st, 'lounge') * (1 + avBonus(st, 'pose')));
+  // 정원을 넘으면 1명당 -7%(최저 35%), 정원에 여유가 있으면 1명당 +1%(최대 130%)
+  const mood = (st) => { const d = comfort(st) - st.students.length; return d >= 0 ? Math.min(CFG.moodMax, 1 + 0.01 * d) : Math.max(0.35, 1 + 0.07 * d); };
+  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * cardMult(st, 'library') * buffMult(st, 'library') * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant')) * (1 + colBonus(st, 'money') + colBonus(st, 'all') + avBonus(st, 'hair') + cardSet(st, 'v') + projBuff(st));
   const fameMult = (st) => (1 + eqAll(st, 'fame')) * (1 + 0.1 * rlv(st, 'pr')) * (1 + 0.15 * (st.univ - 1)) * (1 + colBonus(st, 'fame') + colBonus(st, 'all') + avBonus(st, 'outfit')); // 좋은 대학일수록 논문이 주목받는다
+  // '연구비 N분 치' 보상은 일시 버프를 뺀 수입으로 센다(광고·독려를 겹쳐 보상을 부풀리지 못하게)
+  function incomeBase(st) { const b = st.buffs; st.buffs = []; const v = flow(st).money; st.buffs = b; return v; }
   function flow(st) {
     const a = stageA(st), b = stageB(st), c = stageC(st), m = mood(st);
     const t = Math.min(a, b, c) * m;
@@ -334,7 +344,7 @@
   function gain(st, f, sec, eff) {
     st.money += f.money * sec * eff; st.totalMoney += f.money * sec * eff;
     st.fame += f.fame * sec * eff; st.lifeFame += f.fame * sec * eff;
-    const p = (f.t * sec * eff) / (40 * Math.pow(2, st.tier - 1));
+    const p = (sec * eff * Math.min(1, f.mood) * (f.t > 0 ? 1 : 0)) / 30; // 논문은 30초에 1편꼴(분위기가 나쁘면 줄어든다)
     st.papers += p; st.week.papers += p;
   }
   function finishTimers(st) {
@@ -344,12 +354,12 @@
         st.univ = b.toLv;
         gainPhoto(st, b.toLv - 1);
         giveAvatar(st, '대학 승격');
-        note(st, 'univ', '대학이 ' + UNIVS[b.toLv].name + '(으)로 승격했다! 교수실을 Lv ' + UNIVS[b.toLv].cap + '까지 올릴 수 있다.');
+        note(st, 'univ', '한빛대가 ' + jo(UNIVS[b.toLv].name, '으로', '로') + ' 성장했다! 교수실을 Lv ' + UNIVS[b.toLv].cap + '까지 올릴 수 있다.');
         checkEnd(st);
         return false;
       }
       st.rooms[b.room] = b.toLv;
-      note(st, 'build', room(b.room).name + (b.toLv === 1 ? ' 공사를 마쳤다!' : ' Lv ' + b.toLv + ' 대공사 완료! 효율 2배'));
+      note(st, 'build', room(b.room).name + (b.toLv === 1 ? ' 공사를 마쳤다!' : ' Lv ' + b.toLv + ' 대공사 완료!' + (room(b.room).role === 'A' ? ' 효율 2배' : '')));
       dropCol(st, 'covers', 0.25);
       return false;
     });
@@ -362,6 +372,7 @@
     finishProjects(st);
   }
   function canUpgrade(st, id) {
+    if (st.ended) return '정년 퇴임 전';
     const r = room(id);
     if (!unlocked(st, id)) return UNIVS[r.tier].name + '부터';
     if (building(st, id)) return '공사 중';
@@ -372,10 +383,10 @@
   function upgrade(st, id) {
     if (canUpgrade(st, id) !== true) return false;
     st.money -= upCost(st, id);
-    track(st, 'up');
+    track(st, 'up'); st.upTotal = (st.upTotal || 0) + 1;
     const sec = bigWorkSec(st, id);
     if (sec > 0) {
-      st.builds.push({ room: id, toLv: lv(st, id) + 1, endAt: st.time + sec, total: sec, reqId: 'b' + st.nextReq++ });
+      st.builds.push({ room: id, toLv: lv(st, id) + 1, endAt: st.time + sec, total: sec, reqId: 'b' + (st.reqPre || '') + st.nextReq++ });
       note(st, 'build', room(id).name + (lv(st, id) === 0 ? ' 공사를 시작했다. ' : ' 대공사를 시작했다. ') + fmtTime(sec) + ' 걸린다. 컨소시엄 동료가 도와주면 빨라진다.');
       return true;
     }
@@ -384,6 +395,7 @@
   }
   // 대학 본관 승격
   function canUpgradeUniv(st) {
+    if (st.ended) return '정년 퇴임 전';
     if (st.univ >= UNIV_MAX) return '최고 단계';
     if (building(st, 'univ')) return '승격 공사 중';
     const u = UNIVS[st.univ + 1];
@@ -395,8 +407,8 @@
     if (canUpgradeUniv(st) !== true) return false;
     const u = UNIVS[st.univ + 1], sec = u.sec * timeMult(st);
     st.money -= u.cost;
-    track(st, 'up');
-    st.builds.push({ room: 'univ', toLv: st.univ + 1, endAt: st.time + sec, total: sec, reqId: 'b' + st.nextReq++ });
+    track(st, 'up'); st.upTotal = (st.upTotal || 0) + 1;
+    st.builds.push({ room: 'univ', toLv: st.univ + 1, endAt: st.time + sec, total: sec, reqId: 'b' + (st.reqPre || '') + st.nextReq++ });
     note(st, 'univ', u.name + ' 승격 공사를 시작했다. ' + fmtTime(sec) + ' 걸린다.');
     return true;
   }
@@ -412,7 +424,7 @@
     if (canEquip(st, id, i) !== true) return false;
     st.money -= eqCost(st, id, i);
     st.equip[id][i] = eqLv(st, id, i) + 1;
-    track(st, 'up');
+    track(st, 'up'); st.upTotal = (st.upTotal || 0) + 1;
     return true;
   }
   function canHire(st) {
@@ -431,7 +443,7 @@
   }
   function encourage(st, id) {
     if (!built(st, id) || (st.cooldown[id] || 0) > st.time) return false;
-    st.buffs.push({ target: id, mult: 2, until: st.time + 15, src: room(id).name + ' 독려' });
+    st.buffs.push({ target: id, mult: 2, until: st.time + 15, src: room(id).name + ' 야식' });
     st.cooldown[id] = st.time + 45;
     track(st, 'cheer');
     return true;
@@ -439,6 +451,7 @@
 
   // ---------- 학과 연구 ----------
   function canResearch(st, id) {
+    if (st.ended) return '정년 퇴임 전';
     if (st.research.active) return '다른 연구 진행 중';
     if (rlv(st, id) >= RESEARCH[id].max) return '최대';
     return st.money >= researchCost(st, id) ? true : '연구비 부족';
@@ -447,7 +460,7 @@
     if (canResearch(st, id) !== true) return false;
     st.money -= researchCost(st, id);
     const sec = researchSec(st, id);
-    st.research.active = { id, toLv: rlv(st, id) + 1, endAt: st.time + sec, total: sec, reqId: 'r' + st.nextReq++ };
+    st.research.active = { id, toLv: rlv(st, id) + 1, endAt: st.time + sec, total: sec, reqId: 'r' + (st.reqPre || '') + st.nextReq++ };
     track(st, 'research');
     return true;
   }
@@ -467,7 +480,7 @@
     if (!had) {
       st.cards.owned[pick.id] = 1;
       note(st, 'card', '[새 연구원] ' + RARITY[pick.rar].name + ' 「' + pick.name + '」 (' + CARD_GROUPS[pick.g].name + ' ' + groupCount(st, pick.g) + '/' + groupTotal(pick.g) + ')');
-    } else if (had >= STAR_MAX && !(st.cards.dup[pick.id] > 0)) {
+    } else if (had >= STAR_MAX) {
       st.gems += MAX_DUP_GEMS;
       note(st, 'card', '「' + pick.name + '」 중복 (이미 ★5). 발전기금 +' + MAX_DUP_GEMS);
     } else {
@@ -502,6 +515,12 @@
     st.cards.assign[roomId] = cid;
     return true;
   }
+  // 빈 방 중 맞는 곳에 자동으로 배치한다
+  function autoAssign(st, cid) {
+    const c = CARDS.find((x) => x.id === cid); if (!c) return null;
+    const r = ROOMS.find((x) => built(st, x.id) && roleFits(c, x.id) && !st.cards.assign[x.id]);
+    return r && assignCard(st, cid, r.id) ? r.id : null;
+  }
   function unassignCard(st, roomId) { delete st.cards.assign[roomId]; }
   function useSkill(st, roomId) {
     const cid = st.cards.assign[roomId];
@@ -528,7 +547,7 @@
     if (!missionDone(st, id) || st.missions.claimed[id]) return false;
     st.missions.claimed[id] = true; st.tickets++;
     dropCol(st, 'alumni', 0.5);
-    const v = Math.max(100, flow(st).money * 300); st.money += v; st.totalMoney += v;
+    const v = Math.max(100, incomeBase(st) * 300); st.money += v; st.totalMoney += v;
     return true;
   }
   const allMissionsClaimed = (st) => Object.keys(MISSIONS).every((k) => st.missions.claimed[k]);
@@ -537,7 +556,7 @@
   // ---------- 돌발 이벤트 ----------
   const EVENTS = {
     deadline: { name: '마감 임박', text: '학회 마감이 내일이다! 회의실이 30초 동안 3배로 달린다.', apply: (st) => st.buffs.push({ target: 'meeting', mult: 3, until: st.time + 30, src: '마감 임박' }) },
-    grant: { name: '과제 선정', text: '국가과제에 선정됐다! 연구비 1분 치와 연구원 모집권 1장을 받았다.', apply: (st) => { const v = Math.max(flow(st).money * 60, 100); st.money += v; st.totalMoney += v; st.tickets++; return v; } },
+    grant: { name: '과제 선정', text: '국가과제에 선정됐다! 연구비 1분 치와 연구원 모집권 1장을 받았다.', apply: (st) => { const v = Math.max(incomeBase(st) * 60, 100); st.money += v; st.totalMoney += v; st.tickets++; return v; } },
     audit: { name: '연구비 감사', text: '영수증을 정리했다. 감사를 무사히 넘겼다.', apply: () => 0, missed: (st) => st.buffs.push({ target: 'office', mult: 0.5, until: st.time + 60, src: '감사 대응' }) },
     conference: { name: '학회 시즌', text: '학회 발표가 호평을 받았다. 40초 동안 연구비 2배.', apply: (st) => st.buffs.push({ target: 'money', mult: 2, until: st.time + 40, src: '학회 시즌' }) },
   };
@@ -547,7 +566,7 @@
 
   // ---------- 컨소시엄 ----------
   // 기부: 연구비 10분 치를 내고 그 기술에 10점. 멤버 기부 점수 합으로 기술 레벨이 정해진다.
-  const donateCost = (st) => Math.ceil(Math.max(100, flow(st).money * 600));
+  const donateCost = (st) => Math.ceil(Math.max(100, incomeBase(st) * 600));
   function donate(st, techId) {
     if (!st.ally.id || !ALLY_TECH[techId]) return false;
     const c = donateCost(st); if (st.money < c) return false;
@@ -582,7 +601,7 @@
     if (cnt >= 1) return false; // 요청 하나에 한 사람은 한 번만
     st.ally.helps[uid] = reqId + ':' + (cnt + 1);
     st.ally.helpGiven++;
-    const v = Math.max(50, flow(st).money * 60); st.money += v; st.totalMoney += v;
+    const v = Math.max(50, incomeBase(st) * 60); st.money += v; st.totalMoney += v;
     return true;
   }
   function refreshWeek(st, key) { if (st.week.key !== key) { st.week = { key, papers: 0, claimed: {} }; st.ally.weekDonated = 0; } }
@@ -591,7 +610,7 @@
     if (!g || st.week.claimed[i] || teamPapers < g.papers) return false;
     st.week.claimed[i] = true; st.tickets += g.tickets;
     dropCol(st, null, 1);
-    const v = Math.max(500, flow(st).money * 60 * g.minutes); st.money += v; st.totalMoney += v;
+    const v = Math.max(500, incomeBase(st) * 60 * g.minutes); st.money += v; st.totalMoney += v;
     return true;
   }
   const power = (st) => st.tier * 1000 + Math.floor(Math.log10(1 + st.lifeFame) * 100) + st.laurels * 300;
@@ -603,7 +622,7 @@
     alumni: { name: '졸업생 소식', kind: 'money', how: '일일 미션 보상 받기 50%', set: 0.2, items: [['중소기업 연구원', 'c'], ['스타트업 개발자', 'c'], ['공공기관 연구원', 'c'], ['고등학교 과학 교사', 'c'], ['중견기업 엔지니어', 'c'], ['박사후연구원', 'c'], ['대기업 연구소', 'r'], ['국책 연구소 선임', 'r'], ['스타트업 창업', 'r'], ['교수 임용', 'e'], ['해외 대학 교수', 'e'], ['세계적 학술상 수상', 'l']] },
     visitors: { name: '연구실 방문객', kind: 'data', how: '돌발 이벤트 처리 40%', set: 0.2, items: [['견학 온 고등학생', 'c'], ['과학 기자', 'c'], ['다른 대학 교수', 'c'], ['장비 영업사원', 'c'], ['총장', 'r'], ['해외 석학', 'r'], ['기업 연구소장', 'r'], ['장관급 인사', 'e'], ['다큐멘터리 촬영팀', 'e'], ['살아있는 전설', 'l']] },
     contracts: { name: '과제 협약서', kind: 'money', how: '과제를 처음 마칠 때 확정', set: 0.1, items: [['시제품 성능 시험 대행', 'c'], ['공정 데이터 분석 용역', 'r'], ['산학 공동연구센터', 'e'], ['스마트 센서 국산화', 'c'], ['친환경 소재 개발', 'c'], ['제조 AI 고도화', 'r'], ['바이오 진단 키트 상용화', 'r'], ['차세대 반도체 원천기술', 'e'], ['탄소중립 에너지 플랫폼', 'l']] },
-    photos: { name: '대학 기념사진', kind: 'all', how: '대학 승격 때 확정', set: 0.1, items: [['지방 사립대 정문', 'c'], ['지방 거점 국립대 본관', 'r'], ['수도권 종합대 시계탑', 'r'], ['서울 명문 사립대 졸업식', 'e'], ['세계적 명문대 돔', 'l']] },
+    photos: { name: '대학 기념사진', kind: 'all', how: '대학 승격 때 확정', set: 0.1, items: [['신생 지방대 정문', 'c'], ['지역 거점대 본관', 'r'], ['연구중심대 시계탑', 'r'], ['국내 최상위 명문대 졸업식', 'e'], ['세계적 명문대 돔', 'l']] },
   };
   const COL_W = { c: 55, r: 30, e: 12, l: 3 }; // 갈래 안에서 등급이 뽑힐 비중
   const COL_BONUS = { c: 0.01, r: 0.02, e: 0.04, l: 0.08 };
@@ -693,7 +712,11 @@
     if (kind === 'build') {
       const t = timerOf(st, reqId); if (!t) return false;
       t.endAt = Math.max(st.time, t.endAt - 900); st.daily.adBuild++; finishTimers(st);
-    } else { st.daily.adBoost++; st.buffs.push({ target: 'money', mult: 2, until: st.time + 1800, src: '연구 지원금 광고' }); }
+    } else {
+      st.daily.adBoost++;
+      const cur = st.buffs.find((b) => b.src === '연구 지원금 광고' && b.until > st.time);
+      if (cur) cur.until += 1800; else st.buffs.push({ target: 'money', mult: 2, until: st.time + 1800, src: '연구 지원금 광고' }); // 겹치면 시간만 늘어난다
+    }
     st.daily.ads++;
     return true;
   }
@@ -709,7 +732,7 @@
   function spendAdvance(st) {
     if (st.gems < ADVANCE_GEMS) return false;
     st.gems -= ADVANCE_GEMS;
-    const v = Math.max(1000, flow(st).money * 7200); st.money += v; st.totalMoney += v;
+    const v = Math.max(1000, incomeBase(st) * 7200); st.money += v; st.totalMoney += v;
     return v;
   }
   function buyDeco(st, id) {
@@ -792,11 +815,12 @@
   const proj = (id) => PROJECTS.find((x) => x.id === id);
   const projSlots = (st) => PROJ_SLOTS[st.tier];
   const projBuff = (st) => (st.projects ? st.projects.active.reduce((a, x) => a + proj(x.id).buff, 0) : 0);
-  const projCost = (st, id) => Math.ceil(Math.max(30, flow(st).money * 60 * proj(id).costMin));
+  const projCost = (st, id) => Math.ceil(Math.max(30, incomeBase(st) * 60 * proj(id).costMin));
   // 국가과제 선정 확률: 대학 단계가 높을수록 오른다(단계마다 +5%p, 최대 95%)
   const projSelect = (st, id) => { const p = proj(id); return p.select >= 1 ? 1 : Math.min(0.95, p.select + 0.05 * (st.univ - p.univ)); };
   function canStartProject(st, id) {
     const p = proj(id); if (!p) return '없음';
+    if (st.ended) return '정년 퇴임 전';
     if (st.tier < p.tier) return TIERS[p.tier].name + '부터';
     if (st.univ < p.univ) return UNIVS[p.univ].name + '부터';
     if (st.projects.active.some((a) => a.id === id)) return '진행 중';
@@ -823,7 +847,7 @@
     if (!st.projects) return;
     st.projects.active = st.projects.active.filter((a) => {
       if (a.endAt > st.time) return true;
-      const p = proj(a.id), v = Math.max(200, flow(st).money * 60 * p.rewardMin);
+      const p = proj(a.id), v = Math.max(200, incomeBase(st) * 60 * p.rewardMin);
       st.money += v; st.totalMoney += v; st.tickets += p.tickets;
       st.projects.done[a.id] = (st.projects.done[a.id] || 0) + 1;
       note(st, 'project', '「' + p.name + '」 과제 완료! 연구비 +' + fmt(v) + (p.tickets ? ', 모집권 +' + p.tickets : ''));
@@ -840,38 +864,52 @@
   function guide(st) {
     const f = flow(st);
     if (st.ended) return { kind: 'retire', text: '최종 목표를 이뤘어요! 정년 퇴임하고 월계관을 받으세요.' };
-    if (canPromote(st)) return { kind: 'promote', text: '명성이 찼어요. ' + TIERS[st.tier + 1].name + (TIERS[st.tier + 1].name.endsWith('서') ? '로' : '으로') + ' 승진하세요!' };
-    if (canUpgradeUniv(st) === true) return { kind: 'univ', text: '대학 본관을 ' + UNIVS[st.univ + 1].name + '로 승격할 수 있어요.' };
+    if (canPromote(st)) return { kind: 'promote', text: '명성이 찼어요. ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 승진하세요!' };
+    if (canUpgradeUniv(st) === true) return { kind: 'univ', text: '대학 본관을 ' + jo(UNIVS[st.univ + 1].name, '으로', '로') + ' 승격할 수 있어요.' };
     const nb = ROOMS.find((r) => !built(st, r.id) && canUpgrade(st, r.id) === true);
     if (nb) return { kind: 'build', room: nb.id, text: nb.name + ' 부지가 열렸어요. 눌러서 공사하세요.' };
-    if (f.mood < 0.95 && canUpgrade(st, 'lounge') === true) return { kind: 'upgrade', room: 'lounge', text: '학생이 휴게실 정원을 넘었어요. 휴게실을 올려 분위기를 지키세요.' };
-    if (Object.keys(MISSIONS).some((k) => missionDone(st, k) && !st.missions.claimed[k])) return { kind: 'tab', tab: 'mission', text: '끝난 미션 보상을 받으세요.' };
-    if (st.daily && st.daily.day && st.daily.claimed !== st.daily.day) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상이 있어요.' };
-    if (st.tickets > 0) return { kind: 'tab', tab: 'cards', text: '모집권 ' + st.tickets + '장이 있어요. 연구원을 뽑아 보세요.' };
-    if (anyEnhance(st)) return { kind: 'tab', tab: 'cards', text: '중복 카드가 모였어요. 연구원을 강화하세요.' };
-    // 배치 안 된 연구원
-    const free = CARDS.find((c) => st.cards.owned[c.id] && !Object.values(st.cards.assign).includes(c.id) && ROOMS.some((r) => built(st, r.id) && roleFits(c, r.id) && !st.cards.assign[r.id]));
-    if (free) return { kind: 'tab', tab: 'cards', text: '「' + free.name + '」' + (/[가-힣]$/.test(free.name) && (free.name.charCodeAt(free.name.length - 1) - 0xac00) % 28 ? '을' : '를') + ' 빈 방에 배치하세요.' };
-    // 병목
-    const prod = producers(st).slice(-1)[0];
-    const target = f.bott === 'B' ? 'meeting' : f.bott === 'C' ? 'office' : prod.id;
-    if (f.bott === 'A' && canHire(st) === true) return { kind: 'hire', text: '빈자리가 있어요. 학생을 뽑으면 데이터가 늘어요.' };
-    const cu = canUpgrade(st, target);
-    if (cu === true) return { kind: 'upgrade', room: target, text: (f.bott === 'A' ? '데이터 생산이 병목이에요. ' : jo(room(target).name, '이', '가') + ' 병목이에요. ') + jo(room(target).name, '을', '를') + ' 업그레이드하세요.' };
-    if (typeof cu === 'string' && cu.startsWith('교수실') && canUpgrade(st, 'office') === true) return { kind: 'upgrade', room: 'office', text: jo(room(target).name, '을', '를') + ' 더 올리려면 교수실 레벨이 필요해요. 교수실부터 올리세요.' };
-    if (cu === '대학 본관 승격 필요') return { kind: 'univ', text: '교수실이 한계예요. 대학 본관을 승격해야 더 올릴 수 있어요.' };
-    if (f.bott === 'A' && canHire(st) === '자리 부족') {
-      const eqi = (EQUIP[prod.id] || []).findIndex((e, i) => e[1] === 'seat' && canEquip(st, prod.id, i) === true);
-      if (eqi >= 0) return { kind: 'equip', room: prod.id, i: eqi, text: '자리가 꽉 찼어요. ' + jo(EQUIP[prod.id][eqi][0], '을', '를') + ' 늘려 좌석을 확장하세요.' };
+    if (f.mood < 1 && canUpgrade(st, 'lounge') === true) return { kind: 'upgrade', room: 'lounge', text: '학생이 휴게실 정원을 넘어 분위기가 ' + Math.round(f.mood * 100) + '%예요. 휴게실을 올리세요.' };
+    const early = st.tier === 1 && (st.upTotal || 0) < 15; // 처음 몇 분은 핵심 반복(병목 업그레이드)부터
+    if (!early) {
+      if (Object.keys(MISSIONS).some((k) => missionDone(st, k) && !st.missions.claimed[k])) return { kind: 'tab', tab: 'mission', text: '끝난 미션 보상을 받으세요.' };
+      if (allMissionsClaimed(st) && !st.missions.bonus) return { kind: 'tab', tab: 'mission', text: '오늘 미션을 다 끝냈어요. 보너스 모집권 2장을 받으세요.' };
+      if (st.daily && st.daily.day && st.daily.claimed !== st.daily.day) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상이 있어요.' };
+      if (st.tickets > 0) return { kind: 'tab', tab: 'cards', text: '모집권 ' + st.tickets + '장이 있어요. 연구원을 뽑아 보세요.' };
+      if (anyEnhance(st)) return { kind: 'tab', tab: 'cards', text: '중복 카드가 모였어요. 연구원을 강화하세요.' };
+      const free = CARDS.find((c) => st.cards.owned[c.id] && !Object.values(st.cards.assign).includes(c.id) && ROOMS.some((r) => built(st, r.id) && roleFits(c, r.id) && !st.cards.assign[r.id]));
+      if (free) return { kind: 'assign', card: free.id, text: '「' + free.name + '」' + jo(free.name, '을', '를').slice(free.name.length) + ' 빈 방에 배치하세요.' };
     }
-    if (!st.research.active && Object.keys(RESEARCH).some((k) => canResearch(st, k) === true)) return { kind: 'tab', tab: 'lab', text: '학과 연구가 쉬고 있어요. 연구를 시작하세요.' };
-    if (st.projects.active.length < projSlots(st) && PROJECTS.some((x) => canStartProject(st, x.id) === true)) return { kind: 'tab', tab: 'proj', text: '과제 칸이 비었어요. 과제를 신청하세요.' };
-    // 싼 장비
-    for (const r of ROOMS) { if (!built(st, r.id)) continue; const i = EQUIP[r.id].findIndex((_, k) => canEquip(st, r.id, k) === true && eqCost(st, r.id, k) < st.money * 0.3); if (i >= 0) return { kind: 'equip', room: r.id, i, text: r.name + '의 ' + jo(EQUIP[r.id][i][0], '을', '를') + ' 싸게 올릴 수 있어요.' }; }
-    if (!st.look.gender) return { kind: 'tab', tab: 'avatar', text: '아바타 탭에서 교수 모습을 정해 보세요.' };
-    const need = canUpgrade(st, target) === '연구비 부족' ? upCost(st, target) - st.money : 0;
-    if (need > 0 && f.money > 0) return { kind: 'wait', room: target, text: room(target).name + ' 업그레이드까지 연구비를 모으는 중 (약 ' + fmtTime(need / f.money) + ')' };
-    return { kind: 'wait', room: target, text: '연구실이 잘 돌아가고 있어요.' };
+    // 병목: 세 단계가 비슷하면 지난번 대상을 유지해 말풍선이 이리저리 튀지 않게 한다
+    const val = { A: f.a, B: f.b, C: f.c }, low = Math.min(f.a, f.b, f.c);
+    const stage = st.gPrev && val[st.gPrev] <= low * 1.15 ? st.gPrev : f.bott;
+    st.gPrev = stage;
+    // 생산 공간은 들인 연구비 대비 늘어나는 데이터가 가장 큰 방
+    const seat = seating(st);
+    const prod = producers(st).map((r) => { const L = lv(st, r.id), k = (L + 1) / L * (MILESTONES.includes(L + 1) ? 2 : 1); return { r, score: (perStudent(st, r.id) * (k - 1) * (seat[r.id] || 0) + 1e-9) / upCost(st, r.id), ok: canUpgrade(st, r.id) }; })
+      .filter((x) => x.ok === true || x.ok === '연구비 부족').sort((a, b) => b.score - a.score)[0];
+    const target = stage === 'B' ? 'meeting' : stage === 'C' ? 'office' : (prod ? prod.r.id : producers(st).slice(-1)[0].id);
+    let busy = null;
+    if (stage === 'A' && canHire(st) === true) return { kind: 'hire', text: '빈자리가 있어요. 학생을 뽑으면 데이터가 늘어요.' };
+    const cu = canUpgrade(st, target), tn = room(target).name;
+    if (cu === true) return { kind: 'upgrade', room: target, text: (stage === 'A' ? '데이터 생산이 병목이에요. ' : jo(tn, '이', '가') + ' 병목이에요. ') + jo(tn, '을', '를') + ' 업그레이드하세요.' };
+    if (typeof cu === 'string' && cu.startsWith('교수실') && canUpgrade(st, 'office') === true) return { kind: 'upgrade', room: 'office', text: jo(tn, '을', '를') + ' 더 올리려면 교수실 레벨이 필요해요. 교수실부터 올리세요.' };
+    if (cu === '대학 본관 승격 필요') { const u = UNIVS[st.univ + 1]; busy = '교수실이 대학 한계예요. ' + (u && st.tier < u.needTier ? '명성을 모아 ' + jo(TIERS[u.needTier].name, '으로', '로') + ' 승진하면 본관을 승격할 수 있어요.' : '본관 승격 공사를 기다리는 중이에요.'); }
+    if (cu === '공사 중') { const b = building(st, target); busy = tn + ' 대공사 중 (남은 ' + fmtTime(b.endAt - st.time) + '). 그동안 다른 일을 해 보세요.'; }
+    if (stage === 'A' && canHire(st) === '자리 부족') {
+      const pr = prod ? prod.r.id : target;
+      const eqi = seats(st, pr) < 14 ? (EQUIP[pr] || []).findIndex((e, i) => e[1] === 'seat' && canEquip(st, pr, i) === true) : -1;
+      if (eqi >= 0) return { kind: 'equip', room: pr, i: eqi, text: '자리가 꽉 찼어요. ' + jo(EQUIP[pr][eqi][0], '을', '를') + ' 늘려 좌석을 확장하세요.' };
+    }
+    if (early) {
+      if (st.tickets > 0) return { kind: 'tab', tab: 'cards', text: '모집권 ' + st.tickets + '장이 있어요. 연구원을 뽑아 보세요.' };
+    }
+    if (!st.research.active && Object.keys(RESEARCH).some((k) => canResearch(st, k) === true)) return { kind: 'tab', tab: 'lab', text: (busy ? busy + ' ' : '') + '학과 연구가 쉬고 있어요.' };
+    if (st.projects.active.length < projSlots(st) && PROJECTS.some((x) => canStartProject(st, x.id) === true)) return { kind: 'tab', tab: 'proj', text: (busy ? busy + ' ' : '') + '과제 칸이 비었어요.' };
+    for (const r of ROOMS) { if (!built(st, r.id)) continue; const i = EQUIP[r.id].findIndex((_, k) => canEquip(st, r.id, k) === true && eqCost(st, r.id, k) < st.money * 0.3); if (i >= 0) return { kind: 'equip', room: r.id, i, text: (busy ? busy + ' ' : '') + r.name + '의 ' + jo(EQUIP[r.id][i][0], '을', '를') + ' 싸게 올릴 수 있어요.' }; }
+    if (busy) return { kind: 'wait', room: target, short: busy.split('.')[0], text: busy };
+    const need = cu === '연구비 부족' ? upCost(st, target) - st.money : 0;
+    if (need > 0 && f.money > 0) return { kind: 'wait', room: target, short: tn + ' · 약 ' + fmtTime(need / f.money), text: tn + ' 업그레이드까지 연구비를 모으는 중 (약 ' + fmtTime(need / f.money) + ')' };
+    return { kind: 'wait', room: target, short: '잘 돌아가는 중', text: '연구실이 잘 돌아가고 있어요.' };
   }
 
   // ---------- 승진과 정년 ----------
@@ -889,6 +927,7 @@
   const laurelReward = (st) => 3 + Math.min(5, Math.floor(Math.log10(Math.max(1, st.fame / CFG.fameNeed[LAST])) * 2));
   function retire(st) {
     if (!st.ended) return null;
+    st.cards.skillCd = {}; // 새 연구실은 시계가 0부터라 쿨다운을 비운다
     st.projects.active.forEach((a) => { a.endAt = st.time; }); finishTimers(st); // 진행 중인 과제는 퇴임 때 마무리한다
     const keep = { laurels: st.laurels + laurelReward(st), runs: st.runs + 1, cards: st.cards, tickets: st.tickets, missions: st.missions, week: st.week, ally: st.ally, allyTech: st.allyTech, lifeFame: st.lifeFame, col: st.col, colPity: st.colPity, colNew: st.colNew, gems: st.gems, daily: st.daily, shop: st.shop, deco: st.deco, look: st.look, av: st.av, projects: st.projects, guideOff: st.guideOff };
     return newGame(keep);
@@ -901,9 +940,9 @@
     const s = Math.min(Math.max(0, raw), capH * 3600);
     const before = { money: st.totalMoney, fame: st.fame };
     if (s > 0 && !st.ended) {
-      st.buffs = [];
       const n = 40, dt = s / n;
       for (let i = 0; i < n; i++) { gain(st, flow(st), dt, eff); st.time += dt; finishTimers(st); }
+      st.buffs = st.buffs.filter((b) => b.until > st.time); // 버프는 지워지지 않고 비운 시간만큼 줄어든다
     }
     // 오프라인 동안에도 실제 시간은 흐르므로, 상한을 넘긴 시간만큼 타이머만 더 진행한다
     if (raw > s) { st.time += raw - s; finishTimers(st); }
@@ -920,7 +959,7 @@
     CFG, TIERS, LAST, ROOMS, MILESTONES, EQUIP, EQUIP_MAX, EQUIP_UNLOCK, EQ_N, UNIVS, UNIV_MAX, MAXLV, eqGrade, eqLook, placeName, canUpgradeUniv, upgradeUniv, RESEARCH, RARITY, CARDS, CARD_PITY, MISSIONS, ALLY_TECH, WEEK_GOALS, HELP_MAX, GRADES, EVENTS, fmt, fmtTime,
     newGame, migrate, tick, flow, room, lv, unlocked, built, seats, seating, maxStudents, perStudent, capOf, comfort, mood, valueMult, maxLevel, building, buildSlots, bigWorkSec,
     upCost, hireCost, canUpgrade, upgrade, canHire, hire, encourage, eqLv, eqCost, canEquip, upgradeEquip, cardMult,
-    rlv, researchCost, researchSec, canResearch, startResearch, drawCard, cardRate, roleFits, assignCard, unassignCard, useSkill,
+    rlv, researchCost, researchSec, canResearch, startResearch, drawCard, cardRate, roleFits, assignCard, autoAssign, unassignCard, useSkill, jo,
     refreshDay, missionDone, claimMission, allMissionsClaimed, claimMissionBonus, pickEvent, applyEvent, missEvent,
     allyTechLevel, donateCost, donate, helpRequests, applyHelps, giveHelp, refreshWeek, claimWeek, power,
     nextNeed, canPromote, promote, laurelReward, retire, offline, buffMult, tech,

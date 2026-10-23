@@ -74,7 +74,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .mapbox { position: relative; background: linear-gradient(var(--sky), var(--paper)); border: 1px solid var(--line); overflow: hidden; }
 .mapscroll { overflow-x: auto; overscroll-behavior-x: contain; }
 .map { display: block; width: 100%; height: auto; touch-action: pan-x pan-y; }
-@media (max-width: 680px) { .map { width: 680px; max-width: none; } }
+@media (max-width: 680px) { .map { width: 680px; max-width: none; } .maptip { display: none; } .guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 8px 6px 12px; font-size: 0.9rem; }
+.guidebar span { flex: 1; min-width: 0; }
+.gdo { flex: none; border: 2px solid #a86a00; background: #e0b030; color: #2a1d00; font: inherit; font-weight: 700; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.gdo:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 480px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; } .stat { padding: 5px 7px; } .stat .v { font-size: 1.02rem; } .stat .s { display: none; } .goal { font-size: 0.78rem; padding: 5px 8px; } }
 .plot { cursor: pointer; }
 .plot:focus-visible { outline: none; }
 .plot:focus-visible .floor, .plot.sel .floor { stroke: #2346a3; stroke-width: 4; }
@@ -174,10 +178,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .bigstamp { justify-self: center; border: 4px double var(--stamp); color: var(--stamp); font-family: var(--font-display); font-size: 1.6rem; padding: 2px 16px; transform: rotate(-8deg); }
 .guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; text-align: left; width: 100%; }
 .guidebar b { white-space: nowrap; }
-.bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; animation: bub 1.2s ease-in-out infinite; pointer-events: none; }
-.bubble::after { content: ""; position: absolute; left: 18px; bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
+.bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; left: var(--ax, 18px); bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
 .bubble.below::after { bottom: auto; top: -9px; border-top: 0; border-bottom: 8px solid #e0b030; }
-.bubble button { pointer-events: auto; position: absolute; right: 2px; top: 1px; border: 0; background: none; cursor: pointer; font-size: 0.9rem; color: #7a5a00; }
+.bubble button { pointer-events: auto; position: absolute; right: 0; top: 0; width: 30px; height: 30px; border: 0; background: none; cursor: pointer; font-size: 1.1rem; color: #7a5a00; }
 @keyframes bub { 50% { transform: translateY(-3px); } }
 .gpulse { box-shadow: 0 0 0 3px #e0b030, 0 0 14px 4px #e0b03099 !important; animation: gp 1s ease-in-out infinite; }
 @keyframes gp { 50% { box-shadow: 0 0 0 5px #e0b030, 0 0 18px 6px #e0b030aa; } }
@@ -201,7 +205,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <div class="topr">
       <button class="ticket gem num" id="gemBtn" aria-label="발전기금, 상점 탭 열기">기금 <span id="gems">0</span></button>
       <button class="ticket num" id="ticketBtn" aria-label="연구원 모집권, 연구원 탭 열기">🎫 <span id="tickets">0</span></button>
-      <div class="badge"><b id="univName">지방 사립대</b><span id="tierName">조교수</span></div>
+      <div class="badge"><b id="univName">신생 지방대</b><span id="tierName">조교수</span></div>
     </div>
   </header>
 
@@ -213,7 +217,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <div class="stat"><span class="k">쓴 논문</span><span class="v num" id="papers">0</span><span class="s" id="laurelNote"></span></div>
   </div>
   <div class="goal" id="goal"></div>
-  <button class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span></button>
+  <div class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span><button type="button" class="gdo" id="guideDo" hidden></button></div>
 
   <div class="main">
     <section aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
@@ -222,7 +226,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <span class="maptip">본관이나 방을 눌러 업그레이드하세요. 폰에서는 지도를 좌우로 밀어 보세요.</span>
       </div>
       <div class="flow num" id="flow"></div>
-      <div class="card"><div class="ticker" id="ticker" aria-live="polite">작은 나라 지방 사립대에 임용된 첫날. 빈 실험실에 학생 둘이 앉아 있다.</div></div>
+      <div class="card"><div class="ticker" id="ticker" aria-live="polite">작은 나라 지방 소도시의 신생 한빛대에 임용된 첫날. 빈 실험실에 학생 둘이 앉아 있다.</div></div>
     </section>
 
     <aside class="side" aria-label="운영 패널">
@@ -261,6 +265,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 (function () {
   const E = window.LabEngine, fmt = E.fmt, fmtTime = E.fmtTime;
   const KEY = 'labtycoon.v1';
+  const jo = E.jo;
   const $ = (id) => document.getElementById(id);
   let st, sel = 'wetlab', tab = 'room', lastFrame = performance.now(), hiddenAt = 0, event = null, nextEventAt = 0, walkClock = 0, endShown = false;
   const dayKey = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -564,7 +569,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     [[-0.55, 1], [-0.55, 2.2], [2.55, 0.1], [2.55, 1.4], [0.8, 2.6], [-2.0, -0.4], [-0.4, -2.0], [1.0, -1.4], [-1.4, 1.0]].forEach((t, i) => { const c = center(t[0], t[1]); s += '<g class="tree" style="animation-delay:' + i * 0.6 + 's"><ellipse cx="' + c[0] + '" cy="' + (c[1] + 4) + '" rx="14" ry="5" fill="#00000022"/><rect x="' + (c[0] - 3) + '" y="' + (c[1] - 18) + '" width="6" height="20" fill="#7a5a3a"/><circle cx="' + c[0] + '" cy="' + (c[1] - 30) + '" r="17" fill="' + (st.deco.cherry ? '#f4b6c8' : '#5a9e5e') + '"/><circle cx="' + (c[0] - 8) + '" cy="' + (c[1] - 24) + '" r="11" fill="' + (st.deco.cherry ? '#eb9db5' : '#4f8f53') + '"/></g>'; });
     // 상점 장식: 가로등과 정문 아치
     if (st.deco.lamps) [[-0.95, 0.4], [-0.95, 1.6], [0.4, 2.95], [1.6, 2.95], [2.95, 1.6], [2.95, 0.4]].forEach((t) => { const c = center(t[0], t[1]); s += '<line x1="' + c[0] + '" y1="' + c[1] + '" x2="' + c[0] + '" y2="' + (c[1] - 46) + '" stroke="#3b485c" stroke-width="3"/><circle class="glow" cx="' + c[0] + '" cy="' + (c[1] - 48) + '" r="6" fill="#ffe08a"/><ellipse cx="' + c[0] + '" cy="' + (c[1] + 2) + '" rx="10" ry="3" fill="#00000022"/>'; });
-    if (st.deco.gate) { const g0 = center(2.62, 2.62); const x = g0[0], y = g0[1] + 60; s += '<rect x="' + (x - 34) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><rect x="' + (x + 24) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><path d="M' + (x - 36) + ' ' + (y - 56) + ' q36 -28 72 0 v-8 q-36 -28 -72 0 z" fill="#a58a62"/><rect x="' + (x - 18) + '" y="' + (y - 76) + '" width="36" height="10" fill="#1b2838"/><text x="' + x + '" y="' + (y - 68) + '" text-anchor="middle" font-size="8" fill="#ffd54a" font-family="IBM Plex Sans KR, sans-serif">' + E.UNIVS[st.univ].name.slice(0, 6) + '</text>'; }
+    if (st.deco.gate) { const g0 = center(2.62, 2.62); const x = g0[0], y = g0[1] + 60; s += '<rect x="' + (x - 34) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><rect x="' + (x + 24) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><path d="M' + (x - 36) + ' ' + (y - 56) + ' q36 -28 72 0 v-8 q-36 -28 -72 0 z" fill="#a58a62"/><rect x="' + (x - 18) + '" y="' + (y - 76) + '" width="36" height="10" fill="#1b2838"/><text x="' + x + '" y="' + (y - 68) + '" text-anchor="middle" font-size="8" fill="#ffd54a" font-family="IBM Plex Sans KR, sans-serif">' + '한빛대' + '</text>'; }
     return s;
   }
   const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.deco) + JSON.stringify(st.look) + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
@@ -677,7 +682,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     let h = '<h2>대학 본관 <small class="num">' + st.univ + '/' + E.UNIV_MAX + '단계</small></h2><p class="note">' + u.name + ' · ' + u.desc + '</p>' +
       '<dl class="kv num"><dt>교수실 최대 레벨</dt><dd>Lv ' + u.cap + '</dd><dt>명성 보너스</dt><dd>+' + (st.univ - 1) * 15 + '%</dd></dl>';
     if (b) h += '<div class="bar"><i style="width:' + Math.min(100, (1 - (b.endAt - st.time) / b.total) * 100) + '%"></i></div><p class="meta num">' + E.UNIVS[b.toLv].name + ' 승격 공사 중 · 남은 시간 ' + fmtTime(b.endAt - st.time) + '. 컨소시엄 동료가 도와주면 빨라진다.</p>';
-    if (nx) h += '<button class="btn primary" id="univBtn"' + (c === true ? '' : ' disabled') + '><span class="t">' + nx.name + '(으)로 승격</span><span class="s num">' + (c === true || c === '연구비 부족' ? '연구비 ' + fmt(nx.cost) + ' · ' + fmtTime(nx.sec) + (c === true ? '' : ' (연구비 부족)') : c) + '</span></button>';
+    if (nx) h += '<button class="btn primary" id="univBtn"' + (c === true ? '' : ' disabled') + '><span class="t">' + jo(nx.name, '으로', '로') + ' 승격</span><span class="s num">' + (c === true || c === '연구비 부족' ? '연구비 ' + fmt(nx.cost) + ' · ' + fmtTime(nx.sec) + (c === true ? '' : ' (연구비 부족)') : c) + '</span></button>';
     else h += '<p class="meta">최고 단계에 올랐다. ' + (st.tier === E.LAST ? '세계적 명문대의 대가 랩실이 되었다.' : '살아있는 교과서로 승진하면 최종 목표를 이룬다.') + '</p>';
     h += '<h3>대학 단계 <small>모든 방의 한계를 정한다</small></h3><ul class="ulist">';
     for (let i = 1; i <= E.UNIV_MAX; i++) { const x = E.UNIVS[i]; h += '<li class="' + (i === st.univ ? 'cur' : i < st.univ ? 'done' : '') + '"><span class="n">' + i + '</span><div><b>' + x.name + '</b><div class="meta">' + (i > 1 ? E.TIERS[x.needTier].name + ' 이상 · ' : '') + '교수실 Lv ' + x.cap + '까지' + (E.ROOMS.some((r) => r.tier === i && i > 1) ? ' · ' + E.ROOMS.filter((r) => r.tier === i).map((r) => r.name).join('·') + ' 부지' : '') + '</div></div><span>' + (i < st.univ ? '✓' : i === st.univ ? '지금' : '') + '</span></li>'; }
@@ -689,7 +694,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (sel === 'univ') return renderUniv();
     const r = E.room(sel), built = E.built(st, sel), open = E.unlocked(st, sel), b = E.building(st, sel);
     const box = $('roomCard');
-    if (!open) { box.innerHTML = '<h2>' + r.name + ' <small>잠김</small></h2><p class="note">' + r.note + '</p><p class="meta">대학 본관을 ' + E.UNIVS[r.tier].name + '(으)로 승격하면 공사할 수 있다.</p>'; return; }
+    if (!open) { box.innerHTML = '<h2>' + r.name + ' <small>잠김</small></h2><p class="note">' + r.note + '</p><p class="meta">대학 본관을 ' + jo(E.UNIVS[r.tier].name, '으로', '로') + ' 승격하면 공사할 수 있다.</p>'; return; }
     const can = E.canUpgrade(st, sel), cd = Math.max(0, Math.ceil((st.cooldown[sel] || 0) - st.time));
     const big = !b && E.bigWorkSec(st, sel) > 0;
     let h = '<h2>' + r.name + ' <small class="num">' + (built ? 'Lv ' + E.lv(st, sel) + ' / 최대 ' + E.maxLevel(st, sel) : '미공사') + '</small></h2><p class="note">' + r.note + '</p>';
@@ -697,7 +702,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (b) h += '<p class="meta num">' + (b.toLv === 1 ? '공사' : 'Lv ' + b.toLv + ' 대공사') + ' 중 · 남은 시간 ' + fmtTime(b.endAt - st.time) + '. 컨소시엄 동료가 도와주면 빨라진다.</p>';
     h += '<div class="btns"><button class="btn primary" id="upBtn"' + (can === true ? '' : ' disabled') + '><span class="t">' + (built ? (big ? '대공사 시작' : '업그레이드') : '공사하기') + '</span><span class="s num">' + (can === true || can === '연구비 부족' ? fmt(E.upCost(st, sel)) + (big ? ' · ' + fmtTime(E.bigWorkSec(st, sel)) : '') : can) + '</span></button>' +
       '<button class="btn" id="up10Btn"' + (built && can === true && !big ? '' : ' disabled') + '><span class="t">×10 올리기</span><span class="s">대공사 전까지</span></button>' +
-      '<button class="btn wide" id="cheerBtn"' + (built && !cd ? '' : ' disabled') + '><span class="t">독려하기</span><span class="s num">' + (cd ? '다시 독려까지 ' + cd + '초' : '15초 동안 이 방 2배') + '</span></button></div>';
+      '<button class="btn wide" id="cheerBtn"' + (built && !cd ? '' : ' disabled') + '><span class="t">야식 쏘기</span><span class="s num">' + (cd ? '다시 쏘기까지 ' + cd + '초' : '피자 10판 · 15초 동안 이 방 2배') + '</span></button></div>';
     if (built) {
       h += interiorLine(sel) + '<h3>가구·장비 <small>단계가 오를수록 모습이 바뀌고 효과 +10%</small></h3>';
       E.EQUIP[sel].forEach((e, i) => {
@@ -715,8 +720,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     box.innerHTML = h;
     $('upBtn').addEventListener('click', () => { if (E.upgrade(st, sel)) { save(); refresh(true); if (st.builds.length) pushMe(true); } });
     $('up10Btn').addEventListener('click', () => { let n = 0; while (n < 10 && E.bigWorkSec(st, sel) === 0 && E.upgrade(st, sel)) n++; if (n) { say(r.name + ' 레벨을 ' + n + ' 올렸다.'); save(); refresh(true); } });
-    $('cheerBtn').addEventListener('click', () => { if (E.encourage(st, sel)) { say(r.name + '을(를) 독려했다. "다들 조금만 더 힘내자!"'); refresh(true); } });
-    box.querySelectorAll('[data-eq]').forEach((bt) => bt.addEventListener('click', () => { const i = +bt.dataset.eq, before = E.eqLook(st, sel, i); if (E.upgradeEquip(st, sel, i)) { const after = E.eqLook(st, sel, i); if (after !== before) say(r.name + '에 「' + after + '」을(를) 들였다.'); save(); refresh(true); } }));
+    $('cheerBtn').addEventListener('click', () => { if (E.encourage(st, sel)) { say(r.name + '에 피자를 쐈다. "다들 먹고 해!" 15초 동안 2배.'); refresh(true); } });
+    box.querySelectorAll('[data-eq]').forEach((bt) => bt.addEventListener('click', () => { const i = +bt.dataset.eq, before = E.eqLook(st, sel, i); if (E.upgradeEquip(st, sel, i)) { const after = E.eqLook(st, sel, i); if (after !== before) say(r.name + '에 「' + after + '」' + jo(after, '을', '를').slice(after.length) + ' 들였다.'); save(); refresh(true); } }));
     if ($('skillBtn')) $('skillBtn').addEventListener('click', () => { if (E.useSkill(st, sel)) refresh(true); });
   }
   function renderHire() {
@@ -744,7 +749,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   function renderCards() {
     let h = '<h2>학생 도감 <small class="num">모집권 ' + st.tickets + '장</small></h2><p class="note">모집권으로 연구원을 뽑아 방에 배치한다. 같은 연구원이 또 나오면 중복 카드가 쌓이고, 중복 카드로 별을 올린다.</p>' +
       '<div class="btns"><button class="btn primary" id="drawBtn"' + (st.tickets > 0 ? '' : ' disabled') + '><span class="t">1번 뽑기</span><span class="s">모집권 1장</span></button><button class="btn" id="draw10Btn"' + (st.tickets >= 10 ? '' : ' disabled') + '><span class="t">10번 뽑기</span><span class="s">모집권 10장</span></button></div>' +
-      '<p class="meta">모집권은 일일 미션, 승진, 과제, 과제 선정 이벤트, 출석 7일째, 컨소시엄 주간 목표에서 무료로 얻는다. 결제로 파는 상품은 없다. 등급 확률: 일반 60% · 희귀 28% · 영웅 9% · 전설 3% (카드별 확률은 아래). 영웅 이상 없이 ' + E.CARD_PITY + '번 뽑으면 다음은 영웅 이상 확정 (지금 ' + st.cards.pity + '/' + E.CARD_PITY + ').</p>' +
+      '<p class="meta">모집권은 일일 미션, 승진, 과제, 과제 선정 이벤트, 출석 7일째, 컨소시엄 주간 목표에서 무료로 얻는다. 결제로 파는 상품은 없다. 등급 확률: 일반 60% · 희귀 28% · 영웅 9% · 전설 3% (카드별 확률은 아래). 영웅 이상이 ' + (E.CARD_PITY - 1) + '번 연속 안 나오면 ' + E.CARD_PITY + '번째는 영웅 이상 확정 (지금 ' + st.cards.pity + '/' + E.CARD_PITY + ').</p>' +
       '<p class="meta">강화: ★1→2 중복 1장, ★2→3 2장, ★3→4 3장, ★4→5 5장. 별 1개마다 배율 +25%. ★5에서 또 나오면 발전기금 10.</p>';
     Object.keys(E.CARD_GROUPS).forEach((g) => {
       const G = E.CARD_GROUPS[g];
@@ -770,7 +775,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('panel-cards').querySelectorAll('select[data-card]').forEach((s2) => s2.addEventListener('change', () => {
       const v = s2.value, cid = s2.dataset.card;
       if (v === '-') { const where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === cid); if (where) E.unassignCard(st, where); }
-      else if (v && E.assignCard(st, cid, v)) say(E.CARDS.find((x) => x.id === cid).name + '을(를) ' + E.room(v).name + '에 배치했다.');
+      else if (v && E.assignCard(st, cid, v)) say(E.CARDS.find((x) => x.id === cid).jo(name, '을', '를') + ' ' + E.room(v).name + '에 배치했다.');
       save(); renderCards(); refresh(true);
     }));
   }
@@ -815,7 +820,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('panel-avatar').querySelectorAll('[data-av]').forEach((b) => b.addEventListener('click', () => {
       const i = +b.dataset.av, a = E.AVATARS[i];
       if (st.av[i]) { E.wear(st, i); save(); renderAvatar(); refresh(true); return; }
-      openModal('<h2>아바타 사기</h2><p>' + RAR_NAME(a[3]) + ' 「' + a[2] + '」</p><p class="meta">발전기금 ' + E.AV_PRICE[a[3]] + ' (가진 기금 ' + st.gems + ')</p>', [{ label: '산다', primary: true, fn: () => { if (E.buyAvatar(st, i)) { E.wear(st, i); say('「' + a[2] + '」을(를) 샀다.'); save(); renderAvatar(); refresh(true); } } }, { label: '취소' }]);
+      openModal('<h2>아바타 사기</h2><p>' + RAR_NAME(a[3]) + ' 「' + a[2] + '」</p><p class="meta">발전기금 ' + E.AV_PRICE[a[3]] + ' (가진 기금 ' + st.gems + ')</p>', [{ label: '산다', primary: true, fn: () => { if (E.buyAvatar(st, i)) { E.wear(st, i); say('「' + a[2] + '」' + jo(a[2], '을', '를').slice(a[2].length) + ' 샀다.'); save(); renderAvatar(); refresh(true); } } }, { label: '취소' }]);
     }));
   }
 
@@ -879,7 +884,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('adBuild').addEventListener('click', () => watch('build', () => { const t = E.helpRequests(st)[0]; if (t && E.adReward(st, 'build', t.reqId)) { say(t.label + ' 15분 단축!'); save(); refresh(true); } }));
     box.querySelectorAll('[data-finish]').forEach((b) => b.addEventListener('click', () => { if (E.finishNow(st, b.dataset.finish)) { save(); refresh(true); } }));
     $('advBtn').addEventListener('click', () => { const v = E.spendAdvance(st); if (v) { say('연구비 선지급 +' + fmt(v)); save(); refresh(true); } });
-    box.querySelectorAll('[data-deco]').forEach((b) => b.addEventListener('click', () => { if (E.buyDeco(st, b.dataset.deco)) { say('캠퍼스에 ' + E.DECOS[b.dataset.deco].name + '을(를) 설치했다.'); save(); refresh(true); } }));
+    box.querySelectorAll('[data-deco]').forEach((b) => b.addEventListener('click', () => { if (E.buyDeco(st, b.dataset.deco)) { say('캠퍼스에 ' + jo(E.DECOS[b.dataset.deco].name, '을', '를') + ' 설치했다.'); save(); refresh(true); } }));
     box.querySelectorAll('[data-sku]').forEach((b) => b.addEventListener('click', () => {
       const sku = b.dataset.sku, p = E.PRODUCTS[sku];
       openModal('<h2>가상 구매</h2><p>' + p.name + ' · ' + p.price.toLocaleString('ko-KR') + '원</p><p class="meta">실제 결제는 일어나지 않습니다. BM 시험용 기록만 남습니다.</p>', [{ label: '가상으로 구매', primary: true, fn: () => { const end = sku === 'sub' ? (st.subActive && st.shop.subUntil > dayKey() ? (() => { const d = new Date(st.shop.subUntil); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10); })() : addDays(30)) : ''; if (E.mockBuy(st, sku, dayKey(), end)) { say(p.name + ' (가상) 구매 완료'); save(); refresh(true); } } }, { label: '취소' }]);
@@ -892,10 +897,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   const num = (v, d) => (typeof v === 'number' && isFinite(v) ? v : d);
   const str = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
   function cleanMember(id, d) {
-    const donated = {}; Object.keys(E.ALLY_TECH).forEach((k) => { donated[k] = Math.max(0, Math.min(1e6, num((d.donated || {})[k], 0))); });
-    const helps = {}; if (d.helps && typeof d.helps === 'object') Object.keys(d.helps).slice(0, 50).forEach((k) => { if (typeof d.helps[k] === 'string') helps[k] = d.helps[k].slice(0, 40); });
+    const donated = {}; Object.keys(E.ALLY_TECH).forEach((k) => { donated[k] = Math.max(0, Math.min(1e5, num((d.donated || {})[k], 0))); });
+    const helps = {}; if (d.helps && typeof d.helps === 'object') Object.keys(d.helps).slice(0, 50).forEach((k) => { if (typeof d.helps[k] === 'string') { const [rid, n] = d.helps[k].slice(0, 40).split(':'); helps[k] = rid + ':' + Math.min(1, Number(n) || 0); } }); // 한 사람은 요청 하나에 한 번만 도울 수 있다
     const reqs = Array.isArray(d.reqs) ? d.reqs.slice(0, 4).map((r) => ({ reqId: str(r && r.reqId, 20), label: str(r && r.label, 40), left: num(r && r.left, 0), at: num(r && r.at, 0) })) : [];
-    return { id, nick: str(d.nick, 12), ally: str(d.ally, 80) || null, tier: Math.min(5, Math.max(1, num(d.tier, 1) | 0)), univ: Math.min(5, Math.max(1, num(d.univ, 1) | 0)), power: Math.max(0, num(d.power, 0)), donated, weekKey: str(d.weekKey, 10), weekPapers: Math.max(0, num(d.weekPapers, 0)), helpGiven: num(d.helpGiven, 0), helps, reqs, at: num(d.updatedAt, 0) };
+    return { id, nick: str(d.nick, 12), ally: str(d.ally, 80) || null, tier: Math.min(5, Math.max(1, num(d.tier, 1) | 0)), univ: Math.min(5, Math.max(1, num(d.univ, 1) | 0)), power: Math.max(0, num(d.power, 0)), donated, weekKey: str(d.weekKey, 10), weekPapers: Math.max(0, Math.min(5000, num(d.weekPapers, 0))), helpGiven: num(d.helpGiven, 0), helps, reqs, at: num(d.updatedAt, 0) };
   }
   const team = () => (st.ally.id ? Object.values(members).filter((m) => m.ally === st.ally.id) : []);
   function syncAlly() {
@@ -942,6 +947,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   }
   function renderAlly() {
     const box = $('panel-ally');
+    // 입력 중이면 다시 그리지 않는다(쓰던 글자가 지워지지 않게). 다시 그릴 때는 입력값을 되살린다
+    const ae = document.activeElement; if (ae && ae.tagName === 'INPUT' && box.contains(ae)) return;
+    const keepVals = {}; box.querySelectorAll('input[id]').forEach((i) => { keepVals[i.id] = i.value; });
+    setTimeout(() => Object.keys(keepVals).forEach((id) => { const i = $(id); if (i && keepVals[id] && !i.value) i.value = keepVals[id]; }), 0);
     const intro = '<p class="note">다른 교수들과 컨소시엄(연합)을 맺으면 공사·연구를 서로 도와 시간을 줄이고, 기부로 공동 기술을 올리고, 주간 공동 목표를 함께 채운다.</p>';
     if (!db) { box.innerHTML = '<div class="card"><h2>연구 컨소시엄</h2>' + intro + '<p class="meta">컨소시엄은 claude.ai에서 공유된 이 게임을 열었을 때 켜집니다. 파일로 직접 열면 혼자 플레이만 됩니다.</p></div>'; return; }
     if (!myId) { box.innerHTML = '<div class="card"><h2>연구 컨소시엄</h2><p class="meta">로그인한 claude.ai 계정으로 열어야 컨소시엄에 참여할 수 있습니다.</p></div>'; return; }
@@ -991,7 +1000,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const now = Date.now(), hl = $('helpList');
     const reqs = []; T.forEach((m) => m.reqs.forEach((r) => { const left = r.left - (now - r.at) / 1000; if (left > 0 && r.reqId) reqs.push({ m, r, left }); }));
     if (!reqs.length) hl.appendChild(li2('지금 도움이 필요한 동료가 없다'));
-    reqs.forEach((x) => { const bt = document.createElement('button'); bt.className = 'btn primary'; const given = (st.ally.helps[x.m.id] || '').startsWith(x.r.reqId + ':'); bt.innerHTML = '<span class="t">' + (given ? '도움 완료' : '도와주기') + '</span>'; bt.disabled = given || canWrite === false; bt.addEventListener('click', () => { if (E.giveHelp(st, x.m.id, x.r.reqId)) { say((x.m.nick || '동료') + '의 ' + x.r.label + '을(를) 도왔다. 연구비를 받았다.'); save(); pushMe(true); renderAlly(); } }); hl.appendChild(li2((x.m.nick || '익명 교수') + ' · ' + x.r.label, '남은 시간 약 ' + fmtTime(x.left), bt)); });
+    reqs.forEach((x) => { const bt = document.createElement('button'); bt.className = 'btn primary'; const given = (st.ally.helps[x.m.id] || '').startsWith(x.r.reqId + ':'); bt.innerHTML = '<span class="t">' + (given ? '도움 완료' : '도와주기') + '</span>'; bt.disabled = given || canWrite === false; bt.addEventListener('click', () => { if (E.giveHelp(st, x.m.id, x.r.reqId)) { say((x.m.nick || '동료') + '의 ' + jo(x.r.label, '을', '를') + ' 도왔다. 연구비를 받았다.'); save(); pushMe(true); renderAlly(); } }); hl.appendChild(li2((x.m.nick || '익명 교수') + ' · ' + x.r.label, '남은 시간 약 ' + fmtTime(x.left), bt)); });
     box.querySelectorAll('[data-don]').forEach((b) => b.addEventListener('click', () => { if (E.donate(st, b.dataset.don)) { syncAlly(); save(); pushMe(true); renderAlly(); refresh(true); } else say('기부할 연구비가 부족하다.'); }));
     box.querySelectorAll('[data-wk]').forEach((b) => b.addEventListener('click', () => { if (E.claimWeek(st, +b.dataset.wk, teamPapers)) { say('주간 공동 목표 상자를 열었다!'); save(); renderAlly(); refresh(true); } }));
     // 멤버 목록: 닉네임이 없으면 claude.ai 이름으로
@@ -1025,13 +1034,26 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('guideToggle').addEventListener('click', () => { st.guideOff = !st.guideOff; save(); renderRec(); updateGuide(true); });
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
-    $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 지방 사립대에 조교수로 부임했다.'); });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 신생 한빛대에 조교수로 부임했다.'); askGender(); });
   }
 
   // ---------- 실시간 말풍선 가이드 ----------
-  // 엔진의 guide()가 고른 할 일을 지도 위(방·본관) 또는 버튼 위에 말풍선으로 띄운다.
-  let guideKey = '', guideMuteKey = '', guideMuteUntil = 0, pulsed = null;
-  const vis = (el) => el && !el.disabled && el.offsetParent !== null;
+  // 엔진의 guide()가 고른 할 일을 위쪽(폰은 아래쪽) 가이드 줄에 쓰고, 대상 버튼이나 지도 위 방을 빛낸다.
+  // 떠다니는 말풍선은 종류마다 처음 2번과 중요한 순간(승진·승격·새 방·퇴임)에만 띄운다. 같은 안내는 6초 유지한다.
+  // 가이드 줄의 버튼을 누르면 그 자리에서 바로 실행된다.
+  let guideKey = '', guideMuteKey = '', guideMuteUntil = 0, pulsed = null, shown = null, shownAt = 0, seen = {}, mapScrolledFor = '';
+  try { seen = JSON.parse(localStorage.getItem(KEY + '.seen') || '{}') || {}; } catch (e) {}
+  const ALWAYS = { promote: 1, univ: 1, build: 1, retire: 1 };
+  const RANK = ['retire', 'promote', 'univ', 'build', 'upgrade', 'hire', 'equip', 'assign', 'tab', 'wait'];
+  const keyOf = (g) => (g ? g.kind + (g.room || g.tab || g.card || '') + (g.i != null ? g.i : '') : '');
+  // 화면에 실제로 보이는지: 숨김·비활성이 아니고, 스크롤되는 운영 패널 밖으로 잘리지 않았는지
+  function vis(el) {
+    if (!el || el.disabled || el.offsetParent === null) return false;
+    const side = el.closest('.side');
+    if (!side || side.scrollHeight <= side.clientHeight + 2) return true;
+    const r = el.getBoundingClientRect(), b = side.getBoundingClientRect();
+    return r.top >= b.top - 2 && r.bottom <= b.bottom + 2;
+  }
   function guideTarget(g) {
     const firstOn = (q) => Array.from(document.querySelectorAll(q)).find(vis);
     if (g.kind === 'promote' || g.kind === 'retire') return { el: $('promoteBtn') };
@@ -1039,62 +1061,90 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (g.kind === 'build' || g.kind === 'upgrade') return tab === 'room' && sel === g.room && vis($('upBtn')) ? { el: $('upBtn') } : { map: g.room };
     if (g.kind === 'equip') return tab === 'room' && sel === g.room && vis(document.querySelector('[data-eq="' + g.i + '"]')) ? { el: document.querySelector('[data-eq="' + g.i + '"]') } : { map: g.room };
     if (g.kind === 'hire') return tab === 'room' ? { el: $('hireBtn') } : { el: $('tab-room') };
+    if (g.kind === 'assign') return tab === 'cards' ? { el: document.querySelector('select[data-card="' + g.card + '"]') } : { el: $('tab-cards') };
     if (g.kind === 'tab') {
       if (tab !== g.tab) return { el: $('tab-' + g.tab) };
-      const q = { cards: st.tickets > 0 ? '#drawBtn' : '[data-enh]:not([disabled]), select[data-card]', mission: '[data-ms]:not([disabled]), #msBonus', shop: '#attendBtn', lab: '[data-rs]:not([disabled])', proj: '[data-proj]:not([disabled])', avatar: '[data-gender]' }[g.tab];
+      const q = { cards: st.tickets > 0 ? '#drawBtn' : '[data-enh]:not([disabled])', mission: '[data-ms]:not([disabled]), #msBonus:not([disabled])', shop: '#attendBtn', lab: '[data-rs]:not([disabled])', proj: '[data-proj]:not([disabled])', avatar: '[data-gender]' }[g.tab];
       const el = q && firstOn(q); return el ? { el } : null;
     }
     if (g.kind === 'wait') return { map: g.room, quiet: true };
     return null;
   }
+  // 가이드 줄 버튼: [라벨, 할 수 있는지, 실행]
+  function guideAction(g) {
+    const done = () => { save(); refresh(true); pushMe(true); };
+    switch (g.kind) {
+      case 'promote': case 'retire': return [st.ended ? '퇴임하기' : '승진하기', true, () => $('promoteBtn').click()];
+      case 'univ': { const c = E.canUpgradeUniv(st), nx = E.UNIVS[st.univ + 1]; return ['승격 · ' + (nx ? fmt(nx.cost) : ''), c === true, () => { if (E.upgradeUniv(st)) { sel = 'univ'; done(); } }]; }
+      case 'build': case 'upgrade': return [(g.kind === 'build' ? '공사 · ' : '업그레이드 · ') + fmt(E.upCost(st, g.room)), E.canUpgrade(st, g.room) === true, () => { sel = g.room; if (E.upgrade(st, g.room)) done(); }];
+      case 'hire': return ['학생 뽑기 · ' + fmt(E.hireCost(st)), E.canHire(st) === true, () => { if (E.hire(st)) done(); }];
+      case 'equip': return [E.EQUIP[g.room][g.i][0] + ' · ' + fmt(E.eqCost(st, g.room, g.i)), E.canEquip(st, g.room, g.i) === true, () => { sel = g.room; if (E.upgradeEquip(st, g.room, g.i)) done(); }];
+      case 'assign': return ['자동 배치', true, () => { const r = E.autoAssign(st, g.card); if (r) { say(E.CARDS.find((x) => x.id === g.card).name + ' → ' + E.room(r).name); done(); } }];
+      case 'tab': return [{ mission: '미션 열기', shop: '상점 열기', cards: '연구원 열기', lab: '연구 열기', proj: '과제 열기', avatar: '아바타 열기' }[g.tab] || '열기', tab !== g.tab, () => switchTab(g.tab)];
+      default: return null;
+    }
+  }
   function clearPulse() { if (pulsed) { pulsed.classList.remove('gpulse'); pulsed = null; } }
   function updateGuide() {
     const bub = $('bubble'), gg = $('guideG');
-    const off = st.guideOff || !$('modal').hidden;
-    const g = off ? null : E.guide(st);
-    const key = g ? g.kind + (g.room || g.tab || '') + (g.i != null ? g.i : '') : '';
+    let g = st.guideOff || !$('modal').hidden ? null : E.guide(st);
+    if (shown && g && keyOf(g) !== shown.key && Date.now() - shownAt < 6000 && RANK.indexOf(g.kind) >= RANK.indexOf(shown.g.kind)) {
+      const a = guideAction(shown.g);
+      if (shown.g.kind === 'wait' || (a && a[1])) g = shown.g;
+    }
+    const key = keyOf(g);
+    if (!shown || key !== shown.key) {
+      shown = g ? { key, g } : null; shownAt = Date.now();
+      if (g && !ALWAYS[g.kind]) { seen[g.kind] = (seen[g.kind] || 0) + 1; try { localStorage.setItem(KEY + '.seen', JSON.stringify(seen)); } catch (e) {} }
+    }
+    guideKey = key;
+    $('guidebar').hidden = !g;
+    if (g && $('guidetext').textContent !== g.text) $('guidetext').textContent = g.text;
+    const act = g && guideAction(g), doBtn = $('guideDo');
+    doBtn.hidden = !act;
+    if (act) { if (doBtn.textContent !== act[0]) doBtn.textContent = act[0]; doBtn.disabled = !act[1]; }
     const muted = key && key === guideMuteKey && Date.now() < guideMuteUntil;
-    $('guidebar').hidden = !g || st.guideOff;
-    if (g) $('guidetext').textContent = g.text;
     const t = g && !muted ? guideTarget(g) : null;
+    const float = g && (ALWAYS[g.kind] || (seen[g.kind] || 0) <= 2);
     // 버튼 말풍선
     if (t && t.el && vis(t.el)) {
       if (pulsed !== t.el) { clearPulse(); t.el.classList.add('gpulse'); pulsed = t.el; }
-      const r = t.el.getBoundingClientRect(), below = r.top < 90;
-      bub.hidden = false; bub.className = 'bubble' + (below ? ' below' : '');
-      if (bub.dataset.k !== key + g.text) { bub.dataset.k = key + g.text; bub.firstChild.textContent = g.text; }
-      const w = Math.min(240, bub.offsetWidth || 200);
-      bub.style.left = Math.max(8, Math.min(window.scrollX + r.left + 6, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
-      bub.style.top = (below ? window.scrollY + r.bottom + 10 : window.scrollY + r.top - bub.offsetHeight - 10) + 'px';
+      if (float) {
+        const r = t.el.getBoundingClientRect(), below = r.top < 90;
+        bub.hidden = false; bub.className = 'bubble' + (below ? ' below' : '');
+        if (bub.firstChild.textContent !== g.text) bub.firstChild.textContent = g.text;
+        const w = bub.offsetWidth || 200, left = Math.max(8, Math.min(window.scrollX + r.left + 6, window.scrollX + document.documentElement.clientWidth - w - 8));
+        bub.style.left = left + 'px';
+        bub.style.top = (below ? window.scrollY + r.bottom + 10 : window.scrollY + r.top - bub.offsetHeight - 10) + 'px';
+        bub.style.setProperty('--ax', Math.max(8, Math.min(w - 26, window.scrollX + r.left + Math.min(r.width, 60) / 2 - left - 8)) + 'px');
+      } else bub.hidden = true;
     } else { bub.hidden = true; clearPulse(); }
-    // 지도 말풍선
+    // 지도 말풍선: 내용이 바뀔 때만 다시 그린다(대기 시간 글자는 제자리에서 갱신)
     if (gg) {
-      const mk = t && t.map ? key + g.text + t.map : '';
+      const mk = t && t.map ? key + t.map : '';
+      const nm = t && t.map ? (t.map === 'univ' ? '대학 본관' : E.room(t.map).name) : '';
+      const short = !mk ? '' : ({ build: nm + ' 공사하기 ▼', upgrade: nm + ' 업그레이드 ▼', equip: nm + ' 장비 강화 ▼', univ: '본관을 눌러 승격 ▼' }[g.kind] || g.short || g.text);
+      const txt = short.length > 24 ? short.slice(0, 23) + '…' : short;
       if (gg.dataset.k !== mk) {
         gg.dataset.k = mk;
         if (!mk) gg.innerHTML = '';
         else {
           let x, y;
           if (t.map === 'univ') { x = center(...UNIV_C)[0]; y = center(...UNIV_C)[1] - 60; } else { const c = center(...E.room(t.map).plot); x = c[0]; y = c[1] - 10; }
-          // 지도에는 짧게, 자세한 설명은 위쪽 가이드 줄에
-          const nm = t.map === 'univ' ? '대학 본관' : E.room(t.map).name;
-          const short = { build: nm + ' 공사하기 ▼', upgrade: nm + ' 업그레이드 ▼', equip: nm + ' 장비 강화 ▼', univ: '본관을 눌러 승격 ▼' }[g.kind] || g.text;
-          const txt = short.length > 24 ? short.slice(0, 23) + '…' : short, w = txt.length * 13.5 + 24;
+          const w = Math.max(txt.length, 12) * 13.5 + 24;
           const bx = Math.max(-30, Math.min(820 - w, x - w / 2)), by = y - (t.map === 'univ' ? 150 : 162);
           gg.innerHTML = (t.quiet ? '' : '<ellipse class="gring" cx="' + x + '" cy="' + (y + 10) + '" rx="' + (W * 0.9) + '" ry="' + (H * 0.9) + '" fill="none" stroke="#e0b030" stroke-width="4"/>') +
-            '<g class="gbub"' + (t.quiet ? ' opacity="0.85"' : '') + '><rect x="' + bx + '" y="' + by + '" width="' + w + '" height="30" rx="8"/><path d="M' + (x - 9) + ' ' + (by + 29) + ' l9 12 l9 -12 z" fill="#fff8e1" stroke="#e0b030" stroke-width="2.5"/><rect x="' + (x - 8) + '" y="' + (by + 26) + '" width="16" height="5" fill="#fff8e1"/><text x="' + (bx + w / 2) + '" y="' + (by + 20) + '" text-anchor="middle">' + esc(txt) + '</text></g>';
+            '<g class="gbub"' + (t.quiet ? ' opacity="0.85"' : '') + '><rect x="' + bx + '" y="' + by + '" width="' + w + '" height="30" rx="8"/><path d="M' + (x - 9) + ' ' + (by + 29) + ' l9 12 l9 -12 z" fill="#fff8e1" stroke="#e0b030" stroke-width="2.5"/><rect x="' + (x - 8) + '" y="' + (by + 26) + '" width="16" height="5" fill="#fff8e1"/><text x="' + (bx + w / 2) + '" y="' + (by + 20) + '" text-anchor="middle"></text></g>';
+          // 폰에서는 지도를 밀어 대상이 보이게 한다
+          const sc = $('mapscroll');
+          if (!t.quiet && sc.scrollWidth > sc.clientWidth + 4 && mapScrolledFor !== mk) { mapScrolledFor = mk; sc.scrollLeft = (x + 40) * (sc.scrollWidth / 880) - sc.clientWidth / 2; }
         }
       }
+      const te = gg.querySelector('text'); if (te && te.textContent !== txt) te.textContent = txt;
     }
-    if (key !== guideKey) guideKey = key;
   }
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  $('guidebar').addEventListener('click', () => {
-    const g = E.guide(st), t = g && guideTarget(g);
-    if (!t) return;
-    if (t.map) { sel = t.map; switchTab('room'); drawMap(); $('mapbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-    else if (t.el) t.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+  $('guideDo').addEventListener('click', () => { const g = shown && shown.g, a = g && guideAction(g); if (a && a[1]) { a[2](); shownAt = 0; updateGuide(); } });
 
   // ---------- 화면 갱신 ----------
   function switchTab(t) {
@@ -1108,12 +1158,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   function renderTab(force) {
     if (tab === 'room') {
       const rs = sel === 'univ' ? 'u' + st.univ + E.canUpgradeUniv(st) + (E.building(st, 'univ') ? Math.ceil(E.building(st, 'univ').endAt - st.time) : '') + st.tier :
-        sel + E.lv(st, sel) + E.canUpgrade(st, sel) + Math.ceil((st.cooldown[sel] || 0) - st.time) + st.univ + JSON.stringify(st.equip[sel]) + E.EQUIP[sel].map((_, i) => E.canEquip(st, sel, i)).join() + (E.building(st, sel) ? Math.ceil(E.building(st, sel).endAt - st.time) : '') + st.cards.assign[sel] + Math.ceil((st.cards.skillCd[st.cards.assign[sel]] || 0) - st.time);
+        sel + E.lv(st, sel) + E.canUpgrade(st, sel) + Math.max(0, Math.ceil((st.cooldown[sel] || 0) - st.time)) + st.univ + JSON.stringify(st.equip[sel]) + E.EQUIP[sel].map((_, i) => E.canEquip(st, sel, i)).join() + (E.building(st, sel) ? Math.ceil(E.building(st, sel).endAt - st.time) : '') + st.cards.assign[sel] + Math.max(0, Math.ceil((st.cards.skillCd[st.cards.assign[sel]] || 0) - st.time));
       const hs = E.canHire(st) + st.students.length;
       if (force || rs + hs !== roomSig) { roomSig = rs + hs; renderRoom(); renderHire(); }
       return;
     }
-    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) + Object.keys(st.rooms).filter((k) => st.rooms[k] > 0).join() : tab === 'proj' ? JSON.stringify(st.projects) + st.tier + st.univ + E.PROJECTS.map((x) => E.canStartProject(st, x.id)).join() + st.projects.active.map((a) => Math.ceil(a.endAt - st.time)).join() + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'avatar' ? JSON.stringify(st.look) + JSON.stringify(st.av) + st.gems : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'col' ? JSON.stringify(st.col) + st.colPity : tab === 'shop' ? st.gems + JSON.stringify(st.daily) + JSON.stringify(st.shop) + JSON.stringify(st.deco) + st.builds.map((b) => b.reqId + Math.ceil((b.endAt - st.time) / 60)).join() + (st.research.active ? Math.ceil((st.research.active.endAt - st.time) / 60) : '') + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
+    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) + Object.keys(st.rooms).filter((k) => st.rooms[k] > 0).join() : tab === 'proj' ? JSON.stringify(st.projects) + st.tier + st.univ + E.PROJECTS.map((x) => E.canStartProject(st, x.id)).join() + st.projects.active.map((a) => Math.ceil(a.endAt - st.time)).join() + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'avatar' ? JSON.stringify(st.look) + JSON.stringify(st.av) + st.gems : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'col' ? JSON.stringify(st.col) + st.colPity : tab === 'shop' ? st.gems + JSON.stringify(st.daily) + JSON.stringify(st.shop) + JSON.stringify(st.deco) + st.builds.map((b) => b.reqId + Math.ceil((b.endAt - st.time) / 60)).join() + (st.research.active ? Math.ceil((st.research.active.endAt - st.time) / 60) : '') + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'rec' ? st.runs + '|' + st.guideOff : 'ally' + Math.floor(Date.now() / 5000));
     if (!force && sig === tabSig) return;
     tabSig = sig;
     if (tab === 'lab') renderLab();
@@ -1155,7 +1205,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('flow').innerHTML = '<div class="st' + (f.bott === 'A' ? ' bott' : '') + '">데이터 생산<b>' + fmt(f.a) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'B' ? ' bott' : '') + '">회의실 논문화<b>' + fmt(f.b) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'C' ? ' bott' : '') + '">교수실 투고<b>' + fmt(f.c) + '/s</b></div>';
     const pb = $('promoteBtn');
     if (st.ended) { pb.hidden = false; pb.textContent = '정년 퇴임하고 새 연구실로'; }
-    else { pb.hidden = !E.canPromote(st); if (E.canPromote(st)) pb.textContent = E.TIERS[st.tier + 1].name + '(으)로 승진하기'; }
+    else { pb.hidden = !E.canPromote(st); if (E.canPromote(st)) pb.textContent = jo(E.TIERS[st.tier + 1].name, '으로', '로') + ' 승진하기'; }
     const dot = (id, on) => { const b = $(id); const has = b.querySelector('.dot'); if (on && !has) b.insertAdjacentHTML('beforeend', '<span class="dot" aria-label="새 소식"></span>'); if (!on && has) has.remove(); };
     dot('tab-mission', Object.keys(E.MISSIONS).some((k) => E.missionDone(st, k) && !st.missions.claimed[k]));
     dot('tab-cards', st.tickets > 0 || E.anyEnhance(st));
@@ -1181,17 +1231,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   }
   function showEnding() {
     const lr = E.laurelReward(st);
-    openModal('<span class="bigstamp">전설</span><h2>세계적 명문대의 대가 랩실</h2><p class="hand">작은 나라 지방 사립대에서 여기까지</p><p>' + fmtTime(st.time) + ' 만에 살아있는 교과서가 되었고, 대학은 세계적 명문대가 되었다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 지방 사립대에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%. 스타 연구원·모집권·컨소시엄은 그대로 남습니다.</p>',
+    openModal('<span class="bigstamp">전설</span><h2>세계적 명문대의 대가 랩실</h2><p class="hand">작은 나라 신생 지방대에서 여기까지</p><p>' + fmtTime(st.time) + ' 만에 살아있는 교과서가 되었고, 대학은 세계적 명문대가 되었다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 지방 사립대에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%. 스타 연구원·모집권·컨소시엄은 그대로 남습니다.</p>',
       [{ label: '정년 퇴임하고 새 연구실로', primary: true, fn: doRetire }, { label: '이대로 감상하기' }]);
   }
-  function doRetire() { const n = E.retire(st); if (!n) return; st = n; sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); pushMe(true); say('새 지방 사립대에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); }
+  function doRetire() { const n = E.retire(st); if (!n) return; st = n; sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); pushMe(true); say('새 신생 지방대에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); }
   $('promoteBtn').addEventListener('click', () => {
     if (st.ended) { showEnding(); return; }
     if (!E.promote(st)) return;
     save(); refresh(true); pushMe(true);
     if (st.ended) return; // 대학이 이미 세계적 명문대면 바로 엔딩
     const nx = E.UNIVS[st.univ + 1];
-    const line = nx && st.tier >= nx.needTier ? '대학 본관을 ' + nx.name + '(으)로 승격할 수 있다.' : st.tier === E.LAST ? '대학 본관을 세계적 명문대로 승격하면 최종 목표를 이룬다.' : '';
+    const line = nx && st.tier >= nx.needTier ? '대학 본관을 ' + jo(nx.name, '으로', '로') + ' 승격할 수 있다.' : st.tier === E.LAST ? '대학 본관을 세계적 명문대로 승격하면 최종 목표를 이룬다.' : '';
     openModal('<span class="bigstamp">승진</span><h2>' + E.TIERS[st.tier].name + '</h2><p class="hand">' + E.TIERS[st.tier].title + '</p><p>' + line + ' 회의실·교수실 용량 ×1.6, 데이터 1당 연구비 ×' + E.CFG.tierValue + ', 연구원 모집권 2장.' + (st.tier === 3 ? ' 공사 대기열이 2칸이 된다.' : '') + '</p>', [{ label: '본관으로 가기', primary: true, fn: () => { sel = 'univ'; switchTab('room'); drawMap(); } }, { label: '계속 운영한다' }]);
   });
 
@@ -1217,7 +1267,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (!(sec > 30)) return;
     const r = E.offline(st, sec);
     if (r.money <= 0) return;
-    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + fmtTime(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다. 공사·연구 타이머도 그만큼 흘렀다.</p>' + (r.capped ? '<p class="meta">연구비·명성은 최대 ' + r.capH + '시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
+    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + fmtTime(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>만큼 모았다. 공사·연구 타이머도 그만큼 흘렀다.</p>' + (r.capped ? '<p class="meta">연구비·명성은 최대 ' + r.capH + '시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
     save();
   }
 
@@ -1228,13 +1278,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     requestAnimationFrame(frame);
   }
   setInterval(() => { E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); refresh(false); }, 250);
-  setInterval(save, 5000);
+  setInterval(() => { if (!document.hidden) save(); }, 5000); // 숨겨진 동안 저장 시각을 밀면 방치 보상이 줄어든다
   window.addEventListener('pagehide', save);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { hiddenAt = Date.now(); save(); pushMe(true); return; }
     if (hiddenAt) grantOffline((Date.now() - hiddenAt) / 1000);
     lastFrame = performance.now();
   });
+  function askGender() { if (!st.look.gender) openModal('<h2>교수님, 어서 오세요</h2><p class="hand">작은 나라 지방 소도시의 신생 한빛대에 새로 임용되셨습니다</p><p>교수 아바타를 고르세요. 나중에 아바타 탭에서 바꿀 수 있습니다.</p>', [{ label: '남자 교수', primary: true, fn: () => { E.setGender(st, 'm'); save(); refresh(true); } }, { label: '여자 교수', primary: true, fn: () => { E.setGender(st, 'f'); save(); refresh(true); } }]); }
   function start(data) {
     const saved = data && data.st ? data : load();
     const restored = saved && E.migrate(saved.st);
@@ -1242,7 +1293,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey());
     if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
     endShown = !!st.ended; // 이미 끝난 저장은 버튼으로만 엔딩을 다시 연다
-    if (!st.look.gender) openModal('<h2>교수님, 어서 오세요</h2><p class="hand">작은 나라 지방 사립대에 새로 임용되셨습니다</p><p>교수 아바타를 고르세요. 나중에 아바타 탭에서 바꿀 수 있습니다.</p>', [{ label: '남자 교수', primary: true, fn: () => { E.setGender(st, 'm'); save(); refresh(true); } }, { label: '여자 교수', primary: true, fn: () => { E.setGender(st, 'f'); save(); refresh(true); } }]);
+    askGender();
     nextEventAt = st.time + 60;
     refresh(true);
     const sc = $('mapscroll'); sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2;
