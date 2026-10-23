@@ -1,0 +1,442 @@
+<title>랩실 운영하기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Pen+Script&display=swap">
+<style>
+/* 레이아웃: 위에 연구실 지도(아이소메트릭), 넓은 화면에서는 오른쪽에 운영 패널. 폰에서는 지도 아래로 쌓는다. */
+:root {
+  --paper: #eef2f6; --card: #ffffff; --line: #c8d4e0; --ink: #1b2838; --muted: #5a6879;
+  --accent: #2346a3; --accent-ink: #ffffff; --stamp: #c3303a; --good: #2b7a4b; --gold: #a86a00; --soft: #e5ecf5;
+  --map: #dfe7ef; --scrim: rgba(10, 16, 28, 0.55);
+  --font-display: "Black Han Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-hand: "Nanum Pen Script", "Apple SD Gothic Neo", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0e1828; --card: #142238; --line: #2a3f5c; --ink: #e5edf7; --muted: #93a4b9;
+  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48;
+  --map: #182739; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #0e1828; --card: #142238; --line: #2a3f5c; --ink: #e5edf7; --muted: #93a4b9;
+  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48;
+  --map: #182739; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 14px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 16px; }
+.brand { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; }
+.brand small { display: block; font-family: var(--font-hand); font-size: 1.3rem; color: var(--muted); }
+.badge { border: 2px solid var(--ink); background: var(--card); padding: 2px 10px; display: inline-flex; gap: 8px; align-items: baseline; }
+.badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.badge span { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.stat { background: var(--card); border: 1px solid var(--line); padding: 8px 12px; display: grid; gap: 2px; min-width: 0; }
+.stat .k { font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); }
+.stat .v { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; }
+.stat .s { font-size: 0.78rem; color: var(--muted); }
+.bar { height: 7px; background: var(--soft); border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 200ms; }
+
+.main { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 940px) { .main { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); } }
+
+/* 지도 */
+.mapbox { position: relative; background: var(--map); border: 1px solid var(--line); overflow: hidden; }
+.mapscroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.map { display: block; width: 100%; height: auto; touch-action: pan-x pan-y; }
+@media (max-width: 640px) { .map { width: 640px; max-width: none; } }
+.plot { cursor: pointer; }
+.plot:focus-visible { outline: none; }
+.plot:focus-visible .floor, .plot.sel .floor { stroke: #2346a3; stroke-width: 4; }
+.plot:hover .floor { filter: brightness(1.05); }
+.sign rect { fill: #fdfdfb; stroke: #1b2838; stroke-width: 1.5; }
+.sign text { font-family: "IBM Plex Sans KR", sans-serif; font-weight: 600; font-size: 13px; fill: #1b2838; }
+.tag rect { fill: #c3303a; } .tag text { fill: #fff; font-size: 11px; font-weight: 700; font-family: "IBM Plex Sans KR", sans-serif; }
+.boost rect { fill: #2b7a4b; }
+.led { animation: led 1s steps(2) infinite; }
+.led.l2 { animation-delay: 0.5s; }
+@keyframes led { 50% { opacity: 0.2; } }
+.bob { animation: bob 1.6s ease-in-out infinite; }
+.bob.b2 { animation-delay: 0.4s; } .bob.b3 { animation-delay: 0.8s; } .bob.b4 { animation-delay: 1.2s; }
+@keyframes bob { 50% { transform: translateY(-2px); } }
+.glow { animation: glowp 1.8s ease-in-out infinite alternate; }
+@keyframes glowp { from { opacity: 0.5; } to { opacity: 1; } }
+.coin { animation: coin 1.2s ease-out forwards; }
+@keyframes coin { to { transform: translateY(-40px); opacity: 0; } }
+.event { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); border: 3px double var(--stamp); background: var(--card); color: var(--stamp); padding: 6px 14px; font-weight: 700; cursor: pointer; animation: pulse 1s ease-in-out infinite; z-index: 2; max-width: calc(100% - 24px); }
+@keyframes pulse { 50% { transform: translateX(-50%) scale(1.05); } }
+.maptip { position: absolute; left: 10px; bottom: 6px; font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); pointer-events: none; }
+
+/* 흐름 */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 4px; align-items: center; font-size: 0.82rem; }
+.flow .st { background: var(--card); border: 1px solid var(--line); padding: 6px 8px; text-align: center; min-width: 0; }
+.flow .st b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
+.flow .st.bott { border: 2px solid var(--stamp); }
+.flow .st.bott::after { content: "병목"; display: block; color: var(--stamp); font-weight: 700; font-size: 0.72rem; }
+.flow .arrow { color: var(--muted); }
+
+/* 패널 */
+.side { display: grid; gap: 10px; min-width: 0; }
+.card { background: var(--card); border: 1px solid var(--line); padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card h2 small { font-family: var(--font-body); font-size: 0.85rem; color: var(--muted); }
+.note { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); line-height: 1.2; margin: 0; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.88rem; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; text-align: right; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.btn { border: 2px solid var(--ink); background: var(--card); padding: 8px 10px; cursor: pointer; display: grid; gap: 1px; text-align: left; }
+.btn:hover:not(:disabled) { background: var(--soft); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn .t { font-weight: 600; } .btn .s { font-size: 0.78rem; color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary .s { color: inherit; opacity: 0.85; }
+.btn.wide { grid-column: 1 / -1; }
+.stampbtn { border: 3px double var(--stamp); color: var(--stamp); background: var(--card); font-family: var(--font-display); font-size: 1.25rem; padding: 8px; cursor: pointer; animation: pulse2 1.2s ease-in-out infinite; }
+@keyframes pulse2 { 50% { transform: scale(1.03); } }
+.ticker { font-family: var(--font-hand); font-size: 1.25rem; min-height: 1.5em; }
+.students { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px; font-size: 0.85rem; max-height: 180px; overflow-y: auto; }
+.students li { border: 1px solid var(--line); padding: 3px 8px; }
+.students li span { color: var(--muted); font-size: 0.75rem; display: block; }
+
+.modal { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; padding: 16px; z-index: 20; }
+.dialog { background: var(--card); border: 2px solid var(--ink); max-width: 420px; width: 100%; max-height: calc(100% - 32px); overflow-y: auto; padding: 20px; display: grid; gap: 12px; text-align: center; }
+.dialog h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.8rem; }
+.dialog p { margin: 0; }
+.dialog .hand { font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
+.bigstamp { justify-self: center; border: 4px double var(--stamp); color: var(--stamp); font-family: var(--font-display); font-size: 1.6rem; padding: 2px 16px; transform: rotate(-8deg); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">랩실 운영하기 <small>교수가 되어 랩실을 운영하라</small></h1>
+    <div class="badge"><b id="tierName">조교수</b><span id="tierTitle">신임 교수</span></div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><span class="k">연구비</span><span class="v num" id="money">0</span><span class="s num" id="moneyPs">초당 0</span></div>
+    <div class="stat"><span class="k">명성</span><span class="v num" id="fame">0</span><div class="bar" aria-hidden="true"><i id="fameBar"></i></div><span class="s num" id="fameNext"></span></div>
+    <div class="stat"><span class="k">학생</span><span class="v num" id="studentsN">2</span><span class="s num" id="seatsN"></span></div>
+    <div class="stat"><span class="k">연구실 분위기</span><span class="v num" id="mood">100%</span><span class="s" id="moodNote"></span></div>
+    <div class="stat"><span class="k">쓴 논문</span><span class="v num" id="papers">0</span><span class="s" id="laurelNote"></span></div>
+  </div>
+
+  <div class="main">
+    <section class="mapcol" aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
+      <div class="mapbox" id="mapbox">
+        <div class="mapscroll" id="mapscroll"><svg class="map" id="map" viewBox="20 -50 760 540" role="img" aria-label="연구실 아이소메트릭 지도"></svg></div>
+        <span class="maptip" id="maptip">방을 눌러 업그레이드하고 독려하세요. 폰에서는 지도를 좌우로 밀어 보세요.</span>
+      </div>
+      <div class="flow num" id="flow"></div>
+    </section>
+
+    <aside class="side" aria-label="운영 패널">
+      <button class="stampbtn" id="promoteBtn" hidden>승진하기</button>
+      <div class="card" id="roomCard"></div>
+      <div class="card">
+        <h2>학생 모집 <small class="num" id="hireInfo"></small></h2>
+        <p class="note">학생은 생산 공간의 빈자리에 앉아 데이터를 만든다. 휴게실 정원을 넘기면 분위기가 떨어진다.</p>
+        <button class="btn primary" id="hireBtn"><span class="t">학생 뽑기</span><span class="s num" id="hireCost"></span></button>
+        <ul class="students" id="studentList"></ul>
+      </div>
+      <div class="card"><div class="ticker" id="ticker" aria-live="polite">임용 첫날. 빈 실험실에 학생 둘이 앉아 있다.</div></div>
+      <div class="card">
+        <h2>기록</h2>
+        <dl class="kv num" id="record"></dl>
+        <button class="btn" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">이 기기의 진행이 지워집니다</span></button>
+        <div id="resetConfirm" hidden class="btns"><button class="btn" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
+
+<script src="engine.js"></script>
+<script>
+(function () {
+  const E = window.LabEngine, fmt = E.fmt;
+  const KEY = 'labtycoon.v1';
+  const $ = (id) => document.getElementById(id);
+  let st, sel = 'wetlab', lastFrame = performance.now(), hiddenAt = 0, event = null, nextEventAt = 0;
+
+  // ---------- 아이소메트릭 좌표 ----------
+  const W = 120, H = 70, OX = 400, OY = 80, WALL = 38;
+  const center = (gx, gy) => [OX + (gx - gy) * W, OY + (gx + gy) * H];
+  // 방 안 좌표(u: 오른쪽 아래 축, v: 왼쪽 아래 축, -1~1)와 높이 z를 화면 좌표로
+  const P = (cx, cy, u, v, z) => [cx + (u - v) * W * 0.5, cy + (u + v) * H * 0.5 - (z || 0)];
+  const pts = (arr) => arr.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  // 상자: 바닥 (u0,v0)~(u1,v1), 높이 h. 윗면과 앞쪽 두 면을 그린다.
+  function box(cx, cy, u0, v0, u1, v1, h, top, side1, side2, z0) {
+    const z = z0 || 0;
+    const t = [P(cx, cy, u0, v0, z + h), P(cx, cy, u1, v0, z + h), P(cx, cy, u1, v1, z + h), P(cx, cy, u0, v1, z + h)];
+    const fr = [P(cx, cy, u1, v0, z), P(cx, cy, u1, v1, z), P(cx, cy, u1, v1, z + h), P(cx, cy, u1, v0, z + h)];
+    const fl = [P(cx, cy, u0, v1, z), P(cx, cy, u1, v1, z), P(cx, cy, u1, v1, z + h), P(cx, cy, u0, v1, z + h)];
+    return '<polygon points="' + pts(fl) + '" fill="' + side2 + '"/><polygon points="' + pts(fr) + '" fill="' + side1 + '"/><polygon points="' + pts(t) + '" fill="' + top + '"/>';
+  }
+  function person(x, y, shirt, cls, hair) {
+    return '<g class="' + (cls || '') + '"><ellipse cx="' + x + '" cy="' + (y + 1) + '" rx="7" ry="3" fill="#00000022"/><path d="M' + (x - 6) + ' ' + y + ' q0 -14 6 -14 q6 0 6 14 z" fill="' + shirt + '"/><circle cx="' + x + '" cy="' + (y - 19) + '" r="5.5" fill="#f3cba8"/><path d="M' + (x - 5.5) + ' ' + (y - 20) + ' q5.5 -8 11 0 q-5.5 -3 -11 0z" fill="' + (hair || '#2a2a33') + '"/></g>';
+  }
+  const ROOM_COLOR = { office: '#e8dcc6', meeting: '#d9e4f1', lounge: '#e3eedb', wetlab: '#dcefe9', server: '#d7dbe6', library: '#efe4d2', clean: '#f4f7fb', bigequip: '#e6dff2', global: '#dbe9f7' };
+  const SHIRTS = ['#6f8fb8', '#b5574f', '#4f8a6a', '#8a6fb8', '#c0873f', '#4f6684'];
+
+  function furniture(id, cx, cy) {
+    switch (id) {
+      case 'office': return box(cx, cy, -0.55, -0.7, 0.35, -0.45, 34, '#a58a62', '#8a7150', '#7a6244') + box(cx, cy, -0.2, -0.05, 0.45, 0.3, 18, '#8a6a46', '#73573a', '#664c33') +
+        '<rect x="' + (cx + 4) + '" y="' + (cy - 26) + '" width="16" height="10" fill="#1d2735"/>' + person(cx - 2, cy + 22, '#2c3e66', '', '#55555f');
+      case 'meeting': return box(cx, cy, -0.45, -0.2, 0.45, 0.25, 14, '#c9b28e', '#a99470', '#998462') +
+        [[-0.35, -0.42], [0.1, -0.42], [-0.65, 0.05], [0.62, 0]].map((p, i) => { const q = P(cx, cy, p[0], p[1]); return person(q[0], q[1] + 6, SHIRTS[i], 'bob b' + (i + 1)); }).join('') +
+        '<polygon points="' + pts([P(cx, cy, 0.95, -0.9, 52), P(cx, cy, 0.95, -0.1, 52), P(cx, cy, 0.95, -0.1, 24), P(cx, cy, 0.95, -0.9, 24)]) + '" fill="#fdfdfb" stroke="#9aa9bb"/>';
+      case 'lounge': return box(cx, cy, -0.6, -0.3, 0.1, 0.05, 14, '#c86b5a', '#a85646', '#984c3e') + box(cx, cy, 0.35, -0.75, 0.6, -0.5, 30, '#55657a', '#45546a', '#3b485c') +
+        '<circle cx="' + P(cx, cy, 0.5, 0.45)[0] + '" cy="' + (P(cx, cy, 0.5, 0.45)[1] - 14) + '" r="11" fill="#4f9a5a"/>' + box(cx, cy, 0.42, 0.37, 0.58, 0.53, 8, '#c0873f', '#a0702f', '#906528');
+      case 'wetlab': return box(cx, cy, -0.75, -0.6, 0.55, -0.25, 16, '#f2f5f8', '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.75, 0.2, 0.2, 0.55, 16, '#f2f5f8', '#cdd6e0', '#bcc6d2') +
+        [[-0.4, -0.45, '#7fd0b0'], [0.1, -0.45, '#f2a0a0'], [-0.4, 0.38, '#a0c4f2']].map((f) => { const q = P(cx, cy, f[0], f[1], 16); return '<path d="M' + (q[0] - 3) + ' ' + (q[1] - 14) + ' h6 v5 l5 9 h-16 l5 -9 z" fill="' + f[2] + '" stroke="#7d8896"/>'; }).join('');
+      case 'server': {
+        let s = '';
+        [[-0.7, -0.7], [-0.25, -0.7], [0.2, -0.7]].forEach((p) => { s += box(cx, cy, p[0], p[1], p[0] + 0.32, p[1] + 0.3, 46, '#2d3646', '#202836', '#1a212d'); const q = P(cx, cy, p[0] + 0.32, p[1] + 0.15, 30); s += '<circle class="led" cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="#6fd39a"/><circle class="led l2" cx="' + q[0] + '" cy="' + (q[1] + 8) + '" r="2" fill="#ffd54a"/>'; });
+        return s;
+      }
+      case 'library': return [[-0.75, -0.75], [-0.3, -0.75], [0.15, -0.75]].map((p) => box(cx, cy, p[0], p[1], p[0] + 0.38, p[1] + 0.22, 44, '#8a6a46', '#73573a', '#664c33')).join('') +
+        box(cx, cy, -0.2, 0.1, 0.4, 0.4, 12, '#c9b28e', '#a99470', '#998462');
+      case 'clean': return box(cx, cy, -0.7, -0.5, 0.6, -0.2, 18, '#ffffff', '#dfe5ec', '#cfd7e0') + box(cx, cy, -0.7, 0.2, 0.2, 0.5, 18, '#ffffff', '#dfe5ec', '#cfd7e0') +
+        '<rect class="glow" x="' + (cx - 60) + '" y="' + (cy - 60) + '" width="120" height="6" fill="#9cc3f0" opacity="0.6"/>';
+      case 'bigequip': { const q = P(cx, cy, -0.1, -0.2); return '<ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="56" ry="26" fill="#8a7fb0"/><rect x="' + (q[0] - 56) + '" y="' + (q[1] - 50) + '" width="112" height="50" fill="#a497cf"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 50) + '" rx="56" ry="26" fill="#c3b8ea"/><ellipse class="glow" cx="' + q[0] + '" cy="' + (q[1] - 50) + '" rx="22" ry="10" fill="#ffd54a"/>'; }
+      case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<circle cx="' + q[0] + '" cy="' + (q[1] - 30) + '" r="26" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 26) + ' ' + (q[1] - 30) + ' h52 M' + q[0] + ' ' + (q[1] - 56) + ' v52" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 42) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + box(cx, cy, 0.25, 0.05, 0.75, 0.35, 14, '#c9b28e', '#a99470', '#998462'); }
+      default: return '';
+    }
+  }
+  // 학생 자리: 생산 공간에 앉은 학생 수만큼(최대 6명) 그린다
+  const SEATS = [[-0.45, -0.05], [0.0, -0.05], [-0.45, 0.75], [0.0, 0.75], [0.45, 0.4], [0.6, -0.1]];
+  function drawMap() {
+    const seat = E.seating(st), f = E.flow(st);
+    let s = '', signs = '';
+    const order = E.ROOMS.slice().sort((a, b) => (a.plot[0] + a.plot[1]) - (b.plot[0] + b.plot[1]));
+    order.forEach((r) => {
+      const [cx, cy] = center(r.plot[0], r.plot[1]);
+      const k = 0.94;
+      const top = [cx, cy - H * k], right = [cx + W * k, cy], bottom = [cx, cy + H * k], left = [cx - W * k, cy];
+      const built = E.built(st, r.id), open = E.unlocked(st, r.id);
+      const col = built ? ROOM_COLOR[r.id] : open ? '#eef2f6' : '#c9d1db';
+      s += '<g class="plot' + (sel === r.id ? ' sel' : '') + '" data-id="' + r.id + '" tabindex="0" role="button" aria-label="' + r.name + (built ? ' 레벨 ' + E.lv(st, r.id) : open ? ' 공사 가능' : ' 잠김') + '">';
+      // 뒤쪽 두 벽
+      s += '<polygon points="' + pts([left, top, [top[0], top[1] - WALL], [left[0], left[1] - WALL]]) + '" fill="' + (built ? '#b8c4d3' : '#d6dde6') + '"/>';
+      s += '<polygon points="' + pts([top, right, [right[0], right[1] - WALL], [top[0], top[1] - WALL]]) + '" fill="' + (built ? '#a5b3c4' : '#cbd3dd') + '"/>';
+      s += '<polygon class="floor" points="' + pts([top, right, bottom, left]) + '" fill="' + col + '" stroke="' + (built ? '#8a96a5' : '#9aa9bb') + '" stroke-width="1.5"' + (built ? '' : ' stroke-dasharray="6 5"') + '/>';
+      if (built) {
+        s += furniture(r.id, cx, cy);
+        if (r.role === 'A') { const n = Math.min(6, seat[r.id] || 0); for (let i = 0; i < n; i++) { const q = P(cx, cy, SEATS[i][0], SEATS[i][1]); s += person(q[0], q[1] + 4, SHIRTS[i % SHIRTS.length], 'bob b' + ((i % 4) + 1)); } }
+      } else {
+        s += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="15" font-weight="600" fill="#5a6879" font-family="IBM Plex Sans KR, sans-serif">' + (open ? '공사하기 · ' + fmt(E.upCost(st, r.id)) : '🔒 ' + E.TIERS[r.tier].name + '부터') + '</text>';
+      }
+      // 이름표
+      const label = r.name + (built ? ' Lv ' + E.lv(st, r.id) : '');
+      const lw = label.length * 12 + 14;
+      signs += '<g class="sign"><rect x="' + (cx - lw / 2) + '" y="' + (cy - H - 48) + '" width="' + lw + '" height="22" rx="3"/><text x="' + cx + '" y="' + (cy - H - 32) + '" text-anchor="middle">' + label + '</text></g>';
+      const isBott = built && ((f.bott === 'B' && r.id === 'meeting') || (f.bott === 'C' && r.id === 'office') || (f.bott === 'A' && r.role === 'A' && r.id === E.ROOMS.filter((x) => x.role === 'A' && E.built(st, x.id)).pop().id));
+      if (isBott) signs += '<g class="tag"><rect x="' + (cx + lw / 2 - 6) + '" y="' + (cy - H - 56) + '" width="36" height="17" rx="3"/><text x="' + (cx + lw / 2 + 12) + '" y="' + (cy - H - 43) + '" text-anchor="middle">병목</text></g>';
+      if (E.buffMult(st, r.id) > 1) signs += '<g class="tag boost"><rect x="' + (cx - lw / 2 - 30) + '" y="' + (cy - H - 56) + '" width="36" height="17" rx="3"/><text x="' + (cx - lw / 2 - 12) + '" y="' + (cy - H - 43) + '" text-anchor="middle">×' + E.buffMult(st, r.id) + '</text></g>';
+      s += '</g>';
+    });
+    // 걸어 다니는 학생 위에 이름표를 그려 가리지 않게 한다
+    s += '<g id="walkers"></g><g id="coins"></g><g pointer-events="none">' + signs + '</g>';
+    $('map').innerHTML = s;
+    $('map').querySelectorAll('.plot').forEach((g) => {
+      const pick = () => { sel = g.dataset.id; drawMap(); renderRoom(); };
+      g.addEventListener('click', pick);
+      g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    });
+    mapSig = sigOf();
+  }
+  let mapSig = '';
+  const sigOf = () => { const f = E.flow(st); return JSON.stringify(st.rooms) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join(); };
+
+  // ---------- 걸어 다니는 학생: 데이터는 회의실로, 논문은 교수실로 ----------
+  const walkers = [];
+  let spawnAcc = 0;
+  function spawnWalkers(dt) {
+    const f = E.flow(st);
+    if (f.t <= 0) return;
+    spawnAcc += dt * Math.min(2.2, 0.4 + Math.log10(1 + f.t) * 0.35);
+    while (spawnAcc >= 1 && walkers.length < 14) {
+      spawnAcc -= 1;
+      const prods = E.ROOMS.filter((r) => r.role === 'A' && E.built(st, r.id));
+      const from = prods[Math.floor(Math.random() * prods.length)];
+      walkers.push({ a: center(...from.plot), b: center(...E.room('meeting').plot), t: 0, kind: 'data', shirt: SHIRTS[Math.floor(Math.random() * SHIRTS.length)] });
+    }
+  }
+  function stepWalkers(dt) {
+    for (let i = walkers.length - 1; i >= 0; i--) {
+      const w = walkers[i];
+      w.t += dt / 3.2;
+      if (w.t >= 1) {
+        walkers.splice(i, 1);
+        if (w.kind === 'data') walkers.push({ a: center(...E.room('meeting').plot), b: center(...E.room('office').plot), t: 0, kind: 'paper', shirt: w.shirt });
+        else coinPop();
+      }
+    }
+    const g = $('walkers'); if (!g) return;
+    g.innerHTML = walkers.map((w) => {
+      const x = w.a[0] + (w.b[0] - w.a[0]) * w.t, y = w.a[1] + (w.b[1] - w.a[1]) * w.t + 30;
+      const icon = w.kind === 'data' ? '<rect x="' + (x + 4) + '" y="' + (y - 22) + '" width="9" height="9" fill="#5b8def" stroke="#2346a3"/>' : '<rect x="' + (x + 4) + '" y="' + (y - 24) + '" width="9" height="11" fill="#fff" stroke="#8a96a5"/>';
+      return person(x, y, w.shirt) + icon;
+    }).join('');
+  }
+  function coinPop() {
+    const g = $('coins'); if (!g) return;
+    const [cx, cy] = center(...E.room('office').plot);
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    el.setAttribute('class', 'coin');
+    el.innerHTML = '<circle cx="' + (cx + 30) + '" cy="' + (cy - 30) + '" r="8" fill="#f0c040" stroke="#a86a00" stroke-width="2"/><text x="' + (cx + 30) + '" y="' + (cy - 26) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#7a4a00">₩</text>';
+    g.appendChild(el); setTimeout(() => el.remove(), 1200);
+  }
+
+  // ---------- 패널 ----------
+  function say(t) { $('ticker').textContent = t; }
+  function roomEffect(id) {
+    const r = E.room(id), L = E.lv(st, id);
+    if (r.role === 'A') return ['학생 1명당 초당 데이터', fmt(E.perStudent(st, id)), '좌석', E.seats(st, id) + '석 (앉은 학생 ' + (E.seating(st)[id] || 0) + '명)'];
+    if (r.role === 'B') return ['논문화 용량', '초당 ' + fmt(E.capOf(st, 'meeting')), '', ''];
+    if (r.role === 'C') return ['투고 용량', '초당 ' + fmt(E.capOf(st, 'office')), '', ''];
+    if (r.role === 'M') return ['편하게 지낼 수 있는 학생', E.comfort(st) + '명', '', ''];
+    return ['연구비 배율', '+' + Math.round(E.CFG.libraryBonus * L * 100) + '%', '', ''];
+  }
+  function renderRoom() {
+    const r = E.room(sel), built = E.built(st, sel), open = E.unlocked(st, sel);
+    const box = $('roomCard');
+    if (!open) { box.innerHTML = '<h2>' + r.name + ' <small>잠김</small></h2><p class="note">' + r.note + '</p><p class="s">' + E.TIERS[r.tier].name + '로 승진하면 공사할 수 있다.</p>'; return; }
+    const eff = built ? roomEffect(sel) : null;
+    const can = E.canUpgrade(st, sel), cd = Math.max(0, Math.ceil((st.cooldown[sel] || 0) - st.time));
+    box.innerHTML = '<h2>' + r.name + ' <small class="num">' + (built ? 'Lv ' + E.lv(st, sel) : '미공사') + '</small></h2><p class="note">' + r.note + '</p>' +
+      (built ? '<dl class="kv num"><dt>' + eff[0] + '</dt><dd>' + eff[1] + '</dd>' + (eff[2] ? '<dt>' + eff[2] + '</dt><dd>' + eff[3] + '</dd>' : '') + '</dl>' : '') +
+      '<div class="btns"><button class="btn primary" id="upBtn"' + (can === true ? '' : ' disabled') + '><span class="t">' + (built ? '업그레이드' : '공사하기') + '</span><span class="s num">' + (can === true || can === '연구비 부족' ? fmt(E.upCost(st, sel)) : can) + '</span></button>' +
+      '<button class="btn" id="up10Btn"' + (built && can === true ? '' : ' disabled') + '><span class="t">×10 올리기</span><span class="s">살 수 있는 만큼</span></button>' +
+      '<button class="btn wide" id="cheerBtn"' + (built && !cd ? '' : ' disabled') + '><span class="t">독려하기</span><span class="s num">' + (cd ? '다시 독려까지 ' + cd + '초' : '15초 동안 이 방 2배') + '</span></button></div>';
+    $('upBtn').addEventListener('click', () => { if (E.upgrade(st, sel)) { save(); refresh(true); } });
+    $('up10Btn').addEventListener('click', () => { let n = 0; while (n < 10 && E.upgrade(st, sel)) n++; if (n) { say(r.name + ' 레벨을 ' + n + ' 올렸다.'); save(); refresh(true); } });
+    $('cheerBtn').addEventListener('click', () => { if (E.encourage(st, sel)) { say(r.name + '을(를) 독려했다. "다들 조금만 더 힘내자!"'); refresh(true); } });
+  }
+  let roomSig = '';
+  function refresh(force) {
+    const f = E.flow(st);
+    $('money').textContent = fmt(st.money);
+    $('moneyPs').textContent = '초당 ' + fmt(f.money);
+    $('fame').textContent = fmt(st.fame);
+    const need = E.nextNeed(st), prev = E.CFG.fameNeed[st.tier] || 0;
+    $('fameBar').style.width = (isFinite(need) ? Math.min(100, ((st.fame - prev) / (need - prev)) * 100) : 100) + '%';
+    $('fameNext').textContent = isFinite(need) ? E.TIERS[st.tier + 1].name + '까지 ' + fmt(Math.max(0, need - st.fame)) : '최고 직급';
+    $('studentsN').textContent = st.students.length;
+    $('seatsN').textContent = '자리 ' + E.maxStudents(st) + '석';
+    $('mood').textContent = Math.round(f.mood * 100) + '%';
+    $('moodNote').textContent = st.students.length > E.comfort(st) ? '휴게실 정원 ' + E.comfort(st) + '명 초과' : '휴게실 정원 ' + E.comfort(st) + '명';
+    $('papers').textContent = Math.floor(st.papers).toLocaleString('ko-KR') + '편';
+    $('laurelNote').textContent = st.laurels ? '월계관 ' + st.laurels + '개 (+' + Math.round(st.laurels * E.CFG.laurelBonus * 100) + '%)' : '';
+    $('tierName').textContent = E.TIERS[st.tier].name; $('tierTitle').textContent = E.TIERS[st.tier].title;
+    $('flow').innerHTML = '<div class="st' + (f.bott === 'A' ? ' bott' : '') + '">데이터 생산<b>' + fmt(f.a) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'B' ? ' bott' : '') + '">회의실 논문화<b>' + fmt(f.b) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'C' ? ' bott' : '') + '">교수실 투고<b>' + fmt(f.c) + '/s</b></div>';
+    const hc = E.canHire(st);
+    $('hireBtn').disabled = hc !== true;
+    $('hireCost').textContent = hc === '자리 부족' ? '빈자리가 없다 (생산 공간을 업그레이드하면 좌석이 는다)' : '연구비 ' + fmt(E.hireCost(st));
+    $('hireInfo').textContent = st.students.length + '/' + E.maxStudents(st) + '명';
+    $('promoteBtn').hidden = !E.canPromote(st);
+    if (E.canPromote(st)) $('promoteBtn').textContent = E.TIERS[st.tier + 1].name + '(으)로 승진하기';
+    $('record').innerHTML = '<dt>플레이 시간</dt><dd>' + hm(st.time) + '</dd><dt>누적 연구비</dt><dd>' + fmt(st.totalMoney) + '</dd><dt>정년 퇴임</dt><dd>' + st.runs + '번</dd><dt>월계관</dt><dd>' + st.laurels + '개</dd>';
+    const rs = sel + E.lv(st, sel) + E.canUpgrade(st, sel) + Math.ceil((st.cooldown[sel] || 0) - st.time) + st.tier;
+    if (force || rs !== roomSig) { roomSig = rs; renderRoom(); }
+    if (force || sigOf() !== mapSig) drawMap();
+    drainNotes();
+  }
+  function renderStudents() {
+    $('studentList').innerHTML = '';
+    st.students.slice().reverse().forEach((s) => { const li = document.createElement('li'); li.textContent = s.name; const sp = document.createElement('span'); sp.textContent = E.GRADES[s.grade]; li.appendChild(sp); $('studentList').appendChild(li); });
+  }
+  function drainNotes() { if (!st.notes.length) return; const n = st.notes.splice(0); say(n[n.length - 1].text); }
+  const hm = (sec) => { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; };
+
+  // ---------- 모달 ----------
+  const queue = [];
+  function openModal(html, buttons) { queue.push({ html, buttons }); if ($('modal').hidden) showNext(); }
+  function showNext() {
+    const m = queue.shift(); if (!m) { $('modal').hidden = true; return; }
+    $('dialog').innerHTML = m.html;
+    m.buttons.forEach((b) => { const el = document.createElement('button'); el.className = 'btn ' + (b.primary ? 'primary' : ''); el.style.textAlign = 'center'; el.innerHTML = '<span class="t">' + b.label + '</span>'; el.addEventListener('click', () => { showNext(); if (b.fn) b.fn(); }); $('dialog').appendChild(el); });
+    $('modal').hidden = false; const f = $('dialog').querySelector('button'); if (f) f.focus();
+  }
+  const UNLOCK_LINE = { 2: '서버실과 자료실을 지을 수 있다.', 3: '클린룸을 지을 수 있다.', 4: '대형 장비실과 국제 공동연구센터를 지을 수 있다.' };
+  $('promoteBtn').addEventListener('click', () => {
+    if (!E.promote(st)) return;
+    save(); refresh(true);
+    if (st.tier === E.LAST) {
+      const lr = E.laurelReward(st);
+      openModal('<span class="bigstamp">전설</span><h2>살아있는 교과서</h2><p class="hand">인류의 지성</p><p>연구실을 ' + hm(st.time) + ' 만에 세계 최고의 연구실로 키웠다. 졸업생들이 전 세계 연구실을 이끈다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 연구실에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%.</p>',
+        [{ label: '정년 퇴임하고 새 연구실로', primary: true, fn: () => { st = E.retire(st); sel = 'wetlab'; save(); renderStudents(); refresh(true); say('새 학교에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); } }, { label: '이대로 감상하기' }]);
+    } else {
+      openModal('<span class="bigstamp">승진</span><h2>' + E.TIERS[st.tier].name + '</h2><p class="hand">' + E.TIERS[st.tier].title + '</p><p>' + (UNLOCK_LINE[st.tier] || '') + ' 회의실·교수실 용량 ×1.6, 데이터 1당 연구비 ×' + E.CFG.tierValue + '.</p>', [{ label: '계속 운영한다', primary: true }]);
+    }
+  });
+  $('hireBtn').addEventListener('click', () => { if (E.hire(st)) { save(); renderStudents(); refresh(true); } });
+  $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
+  $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
+  $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; save(); renderStudents(); refresh(true); $('resetConfirm').hidden = true; say('새 학교에 조교수로 부임했다.'); });
+
+  // ---------- 돌발 이벤트 ----------
+  function showEvent() {
+    if (event || st.ended) return;
+    const id = E.pickEvent(st), ev = E.EVENTS[id];
+    const b = document.createElement('button');
+    b.className = 'event'; b.textContent = '! ' + ev.name + ' — 눌러서 처리';
+    b.addEventListener('click', () => { const v = E.applyEvent(st, id); if (id === 'grant') say('과제 선정! 연구비 +' + fmt(v)); b.remove(); event = null; refresh(true); });
+    $('mapbox').appendChild(b);
+    event = { id, el: b, until: st.time + 20 };
+  }
+  function checkEvent() {
+    if (event && st.time > event.until) { E.missEvent(st, event.id); event.el.remove(); event = null; refresh(true); }
+    if (!event && st.time >= nextEventAt) { showEvent(); nextEventAt = st.time + 90 + Math.random() * 60; }
+  }
+
+  // ---------- 저장·방치 ----------
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ st, at: Date.now() })); } catch (e) {} }
+  function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function grantOffline(sec) {
+    if (!(sec > 30)) return;
+    const r = E.offline(st, sec);
+    if (r.money <= 0) return;
+    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + hm(r.seconds) + ' 동안 (효율 50%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다.</p>' + (r.capped ? '<p class="s">최대 8시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
+    save();
+  }
+
+  // ---------- 루프 ----------
+  function frame(now) {
+    const dt = Math.min(1, Math.max(0, (now - lastFrame) / 1000)); lastFrame = now;
+    if (!document.hidden && $('modal').hidden) { E.tick(st, dt); spawnWalkers(dt); stepWalkers(dt); checkEvent(); }
+    requestAnimationFrame(frame);
+  }
+  setInterval(() => refresh(false), 200);
+  setInterval(save, 5000);
+  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); save(); return; }
+    if (hiddenAt) grantOffline((Date.now() - hiddenAt) / 1000);
+    lastFrame = performance.now();
+  });
+  function start(data) {
+    const saved = data && data.st ? data : load();
+    const restored = saved && E.migrate(saved.st);
+    st = restored || E.newGame();
+    if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
+    nextEventAt = st.time + 60;
+    renderStudents(); refresh(true);
+    const sc = $('mapscroll'); sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2; // 폰에서는 지도 가운데부터 보여 준다
+    requestAnimationFrame(frame);
+  }
+  window.claude?.hot?.snapshot?.(() => ({ st, at: Date.now() }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
