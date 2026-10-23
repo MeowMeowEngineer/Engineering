@@ -237,6 +237,16 @@ button.item:disabled { cursor: not-allowed; }
 .stats b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; }
 .danger { border-color: var(--stamp); color: var(--stamp); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } .prof { animation: none; left: 12px; } }
+/* 실시간 말풍선 가이드 */
+.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 12px; font: inherit; font-size: 0.9rem; cursor: pointer; text-align: left; width: 100%; }
+.guidebar b { white-space: nowrap; }
+.bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; animation: bub 1.2s ease-in-out infinite; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; left: 18px; bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
+.bubble.below::after { bottom: auto; top: -9px; border-top: 0; border-bottom: 8px solid #e0b030; }
+.bubble button { pointer-events: auto; position: absolute; right: 2px; top: 1px; border: 0; background: none; cursor: pointer; font-size: 0.9rem; color: #7a5a00; }
+@keyframes bub { 50% { transform: translateY(-3px); } }
+.gpulse { box-shadow: 0 0 0 3px #e0b030, 0 0 14px 4px #e0b03099 !important; }
+@media (prefers-reduced-motion: reduce) { .bubble { animation: none; } }
 </style>
 
 <div class="wrap">
@@ -249,6 +259,7 @@ button.item:disabled { cursor: not-allowed; }
     </div>
   </header>
 
+  <button class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span></button>
   <div class="main">
     <section class="left" aria-label="연구실">
       <div class="sheet meter">
@@ -297,6 +308,7 @@ button.item:disabled { cursor: not-allowed; }
   </div>
 </div>
 
+<div class="bubble" id="bubble" hidden><span></span><button type="button" id="bubbleX" aria-label="이 안내 1분 동안 숨기기">×</button></div>
 <div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
 
 <script src="engine.js"></script>
@@ -709,8 +721,9 @@ button.item:disabled { cursor: not-allowed; }
     box.innerHTML = '<div class="sheet"><div class="stats num"><span>플레이 시간<b>' + mmss(st.time) + '</b></span><span>총 탭<b>' + st.taps.toLocaleString('ko-KR') + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span><span>레벨<b>' + st.lv + '</b></span><span>받은 월계관<b>' + st.medals + '개</b></span><span>도감<b>' + colPct() + '%</b></span><span>최고 직급<b>' + E.TIERS[st.bestTier].name + '</b></span><span>재입학<b>' + st.life.runs + '번</b></span><span>끝낸 과제<b>' + st.life.projects + '건</b></span></div></div>' +
       '<div class="sheet"><b>전직 트리</b><div class="tree" id="treeBox" style="margin-top:8px"></div></div>' +
       '<div class="sheet"><b>이번 판 게재 논문</b><div class="log"><ol>' + titles + '</ol></div></div>' +
-      '<div class="sheet" style="display:grid;gap:8px"><button class="btn danger" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">진행·도감·월계관·쿠폰·구매 내역이 이 기기에서 지워집니다</span></button><div id="resetConfirm" hidden style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div></div>';
+      '<div class="sheet" style="display:grid;gap:8px"><button class="btn" id="guideToggle"><span class="t">말풍선 가이드 ' + (guideOff ? '켜기' : '끄기') + '</span><span class="s">지금 ' + (guideOff ? '꺼짐' : '켜짐') + '</span></button><button class="btn danger" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">진행·도감·월계관·쿠폰·구매 내역이 이 기기에서 지워집니다</span></button><div id="resetConfirm" hidden style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div></div>';
     buildTree();
+    $('guideToggle').addEventListener('click', () => { guideOff = !guideOff; try { localStorage.setItem(KEY + '.guide', guideOff ? 'off' : 'on'); } catch (e) {} buildRec(); updateGuide(); });
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
     $('resetYes').addEventListener('click', () => { st = E.newGame(); refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); pickGender(); });
@@ -777,7 +790,58 @@ button.item:disabled { cursor: not-allowed; }
     updateGens(); updateTap(); updateSkills(); updateBuffs(); updateAutos();
     drainNotes();
     if (tab === 'proj') updateProj();
+    updateGuide();
   }
+  // ---------- 실시간 말풍선 가이드 ----------
+  // 엔진의 guide()가 고른 할 일을 버튼 위 말풍선으로 가리키고, 그 버튼을 노랗게 빛낸다. 기록 탭에서 끌 수 있다.
+  let guideOff = false, guideKey = '', guideMuteKey = '', guideMuteUntil = 0, pulsed = null;
+  try { guideOff = localStorage.getItem(KEY + '.guide') === 'off'; } catch (e) {}
+  const vis = (el) => el && !el.disabled && el.offsetParent !== null;
+  function guideTarget(g) {
+    const q = (sel) => document.querySelector(sel), first = (sel) => Array.from(document.querySelectorAll(sel)).find(vis);
+    switch (g.kind) {
+      case 'tap': return $('tapper');
+      case 'promote': return $('promoteBtn');
+      case 'century': return $('centuryBtn');
+      case 'write': return $('writeBtn');
+      case 'drink': return $('drinkBtn');
+      case 'prof': return $('lab').querySelector('.prof');
+      case 'skill': return $('skill-' + g.id);
+      case 'auto': return $('auto-' + g.id);
+      case 'gen': return tab === 'gens' ? $('buy-' + g.id) : $('tab-gens');
+      case 'tapUp': return tab === 'gens' ? $('tapBuy') : $('tab-gens');
+      case 'tab': {
+        if (tab !== g.tab) return $('tab-' + g.tab);
+        return first({ shop: '#attendBtn', proj: '[id^="pbtn-"]:not([disabled])', laurel: '[data-up]:not([disabled])', avatar: '[data-gender], .gbtn' }[g.tab] || '#none');
+      }
+      default: return null;
+    }
+  }
+  function clearPulse() { if (pulsed) { pulsed.classList.remove('gpulse'); pulsed = null; } }
+  function updateGuide() {
+    const bub = $('bubble');
+    const g = guideOff || !$('modal').hidden ? null : E.guide(st, { prof: !!$('lab').querySelector('.prof') });
+    const key = g ? g.kind + (g.id || g.tab || '') : '';
+    guideKey = key;
+    $('guidebar').hidden = !g;
+    if (g && $('guidetext').textContent !== g.text) $('guidetext').textContent = g.text;
+    const el = g && g.kind !== 'wait' && !(key === guideMuteKey && Date.now() < guideMuteUntil) ? guideTarget(g) : null;
+    if (!el || !vis(el)) { bub.hidden = true; clearPulse(); return; }
+    if (pulsed !== el) { clearPulse(); el.classList.add('gpulse'); pulsed = el; }
+    const r = el.getBoundingClientRect(), below = r.top < 90;
+    bub.hidden = false; bub.className = 'bubble' + (below ? ' below' : '');
+    if (bub.firstChild.textContent !== g.text) bub.firstChild.textContent = g.text;
+    const w = bub.offsetWidth || 200;
+    // 큰 대상(캐릭터)은 가운데, 버튼은 왼쪽 위에 붙인다
+    const x = r.width > 260 ? r.left + r.width / 2 - w / 2 : r.left + 6;
+    bub.style.left = Math.max(8, Math.min(window.scrollX + x, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
+    bub.style.top = (below ? window.scrollY + r.bottom + 10 : window.scrollY + r.top - bub.offsetHeight - 10) + 'px';
+  }
+  $('bubbleX').addEventListener('click', (e) => { e.stopPropagation(); guideMuteKey = guideKey; guideMuteUntil = Date.now() + 60000; updateGuide(); });
+  $('guidebar').addEventListener('click', () => { const g = E.guide(st, { prof: !!$('lab').querySelector('.prof') }), el = g && guideTarget(g); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  window.addEventListener('resize', () => updateGuide());
+  window.addEventListener('scroll', () => updateGuide(), { passive: true });
+
   function toast(text) {
     const el = document.createElement('div');
     el.className = 'toast'; el.textContent = text;

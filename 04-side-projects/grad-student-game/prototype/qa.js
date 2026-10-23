@@ -113,6 +113,8 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('첫 실행 출석 모달', m1.includes('출석 1일째'), m1.split('\n')[0]);
   await clickModal(p, '받기');
   ok('출석 쿠폰 지급', (await p.textContent('#coupons')) === '5');
+  await p.waitForTimeout(300);
+  ok('말풍선 가이드: 처음엔 대학원생을 탭하라고 가리킨다', !(await p.$eval('#bubble', (e) => e.hidden)) && (await p.textContent('#bubble')).includes('탭') && (await p.$eval('#tapper', (e) => e.classList.contains('gpulse'))) && (await p.textContent('#guidebar')).includes('탭'));
   // 2. 오토클리커 제한
   await p.evaluate(() => { const t = document.getElementById('tapper'); for (let i = 0; i < 40; i++) t.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300, bubbles: true })); });
   await p.waitForTimeout(300);
@@ -249,6 +251,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   // 11. 폰 너비
   const p11 = await page();
   ok('폰 너비 가로 스크롤 없음', (await p11.evaluate(() => document.documentElement.scrollWidth)) <= 400);
+  { const g = E.newGame(); g.taps = 20; g.data = 1e3; const a1 = E.guide(g); g.skills.night = 1e9; const a2 = E.guide(g, { prof: true }); ok('가이드 엔진: 논문을 쓸 수 있으면 논문, 교수님이 지나가면 교수님', a1 && a1.kind === 'write' && a2 && a2.kind === 'prof', JSON.stringify([a1 && a1.kind, a2 && a2.kind])); }
   ok('콘솔 오류 없음', errors.length === 0, errors.join(' | '));
   console.log(results.join('\n'));
   console.log('스크린샷: ' + SP);

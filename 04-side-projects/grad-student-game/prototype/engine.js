@@ -689,6 +689,36 @@
   }
   const spent = (st) => st.shop.purchases.reduce((a, p) => a + p.price, 0);
 
+  // ---------- 실시간 가이드 ----------
+  // 지금 먼저 할 일 하나를 고른다. ctx.prof: 화면에 교수님이 지나가는 중인지(화면이 알려 줌)
+  const jo = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b); };
+  function guide(st, ctx) {
+    const c = ctx || {};
+    if (st.ended) return null;
+    if (st.taps < 10 && st.papers === 0) return { kind: 'tap', text: '대학원생을 탭해서 연구 데이터를 모으세요.' };
+    if (canPromote(st)) return { kind: 'promote', text: '논문이 다 모였어요. ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직하세요!' };
+    if (c.prof) return { kind: 'prof', text: '교수님이 지나가요! 놓치기 전에 누르세요.' };
+    if (st.tier === LAST - 1 && !st.century && st.papers >= CFG.needs[LAST] && st.data >= CFG.century) return { kind: 'century', text: '세기의 연구를 완성할 수 있어요.' };
+    if (st.papers < nextNeed(st) && st.data >= paperCost(st)) return { kind: 'write', text: '논문을 쓸 수 있어요. 전직까지 ' + (nextNeed(st) - st.papers) + '편 남았어요.' };
+    if (attendReady(st)) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상(커피 쿠폰)을 받으세요.' };
+    const sk = Object.keys(SKILLS).find((id) => skillReady(st, id));
+    if (sk) return { kind: 'skill', id: sk, text: jo(SKILLS[sk].name, '을', '를') + ' 쓰면 ' + SKILLS[sk].desc + '예요.' };
+    const au = Object.keys(AUTOS).find((id) => st.tier >= AUTOS[id].tier && !st.auto[id]);
+    if (au) return { kind: 'auto', id: au, text: jo(AUTOS[au].name, '을', '를') + ' 켜 두면 ' + AUTOS[au].desc + '.' };
+    if (st.drinks > 0 && !st.buffs.some((b) => b.src === DRINK.src && b.until > st.time)) return { kind: 'drink', text: '에너지 드링크가 있어요. 마시면 5분 동안 2배예요.' };
+    if (st.projects.length < projSlots(st) && PROJECTS.some((p) => projState(st, p.id) === true)) return { kind: 'tab', tab: 'proj', text: '과제 슬롯이 비었어요. 과제를 따 오세요.' };
+    // 동료·장비: 데이터 대비 효율이 가장 좋은 것
+    const best = GENS.filter((g) => genUnlocked(st, g.id)).map((g) => ({ g, c: genCost(st, g.id) })).sort((a, b) => genRate(st, b.g) / b.c - genRate(st, a.g) / a.c)[0];
+    if (best && st.data >= best.c) return { kind: 'gen', id: best.g.id, text: jo(best.g.name, '을', '를') + (['intern', 'junior', 'postdoc'].includes(best.g.id) ? ' 뽑으세요' : ' 들이세요') + '. 지금 가장 효율이 좋아요.' };
+    if (st.data >= tapCost(st) && tapCost(st) < (best ? best.c : Infinity) * 0.5) return { kind: 'tapUp', text: '타자 속도를 올리면 탭이 2배가 돼요.' };
+    if (st.laurels > 0 && Object.keys(LAUREL_UPS).some((id) => upLv(st, id) < LAUREL_UPS[id].max && st.laurels >= LAUREL_UPS[id].cost(upLv(st, id)))) return { kind: 'tab', tab: 'laurel', text: '월계관으로 영구 강화를 살 수 있어요.' };
+    if (!st.look || !st.look.gender) return { kind: 'tab', tab: 'avatar', text: '아바타 탭에서 모습을 정해 보세요.' };
+    const ps = perSec(st);
+    if (st.papers < nextNeed(st) && ps > 0) return { kind: 'wait', text: '다음 논문까지 데이터를 모으는 중 (약 ' + Math.max(1, Math.ceil((paperCost(st) - st.data) / ps)) + '초). 탭하면 더 빨라요.' };
+    if (best && ps > 0) return { kind: 'wait', text: best.g.name + '까지 데이터를 모으는 중 (약 ' + Math.max(1, Math.ceil((best.c - st.data) / ps)) + '초).' };
+    return { kind: 'tap', text: '탭해서 데이터를 모으세요. 동료·장비를 들이면 자동으로 쌓여요.' };
+  }
+
   return {
     CFG, TIERS, LAST, GENS, SKILLS, AUTOS, MILESTONES, PRODUCTS, COUPON_ITEMS, AD_LIMITS, ATTEND, fmt,
     COLLECTION, RARITY, TOPICS, TOPIC_STARS, PITY, AV_SLOTS, AVATAR_KEYS, AV_VALUE, AV_PRICE, AV_SET, SLOTS,
@@ -697,6 +727,6 @@
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
     buyGen, buyTap, writePaper, canPromote, promote, buyCentury, skillReady, useSkill, setAuto, profReward, offline,
-    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent,
+    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide,
   };
 });
