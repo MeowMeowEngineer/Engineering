@@ -45,6 +45,10 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
 .badge span { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); }
 .coupon { border: 2px solid var(--gold); color: var(--gold); background: var(--card); padding: 2px 10px; cursor: pointer; font-weight: 600; }
+.drinkbox { display: inline-flex; align-items: stretch; border: 2px solid var(--good); background: var(--card); }
+.drinkbox span { padding: 2px 8px; color: var(--good); font-weight: 600; }
+.drinkbox button { border: 0; border-left: 2px solid var(--good); background: var(--good); color: var(--card); padding: 2px 10px; font-weight: 600; cursor: pointer; }
+.drinkbox button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .main { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 860px) { .main { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); align-items: start; } .left { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); } }
@@ -160,7 +164,32 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; margin-top: 8px; }
 .item { border: 1px solid var(--line); padding: 6px 8px; font-size: 0.85rem; background: var(--card); display: grid; gap: 2px; min-width: 0; }
 .item .rar { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; }
-.item .rar.c { color: var(--muted); } .item .rar.r { color: var(--accent); } .item .rar.l { color: var(--gold); }
+.item .rar.c { color: var(--muted); } .item .rar.r { color: var(--accent); } .item .rar.e { color: #8a4fd1; } .item .rar.l { color: var(--gold); }
+.item.e.owned { border: 2px solid #8a4fd1; }
+/* 눈 충혈: f1~f3 단계마다 흰자가 붉어지고 실핏줄이 짙어지며, 3단계에서 눈꺼풀이 반쯤 감긴다 */
+.scene.f1 .sclera { fill: #ffe6e6; } .scene.f1 .veins { opacity: 0.35; }
+.scene.f2 .sclera { fill: #ffcccc; } .scene.f2 .veins { opacity: 0.75; }
+.scene.f3 .sclera { fill: #ffaaaa; } .scene.f3 .veins { opacity: 1; } .scene.f3 .lid { opacity: 1; }
+.scene .steam { animation: rise 1.8s linear infinite; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+.tier[role="button"] { cursor: pointer; } .tier[role="button"]:hover { background: var(--soft); }
+.wardrobe { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: center; }
+@media (max-width: 480px) { .wardrobe { grid-template-columns: 1fr; justify-items: center; } }
+.wardrobe svg { width: 150px; height: 166px; }
+.avstats { display: grid; gap: 2px; font-size: 0.86rem; }
+.gender { display: flex; gap: 6px; flex-wrap: wrap; }
+.gender button { border: 1px solid var(--line); background: var(--card); padding: 4px 12px; cursor: pointer; }
+.gender button[aria-pressed="true"] { border: 2px solid var(--accent); font-weight: 600; }
+button.item { font: inherit; color: inherit; text-align: left; cursor: pointer; }
+button.item:disabled { cursor: not-allowed; }
+.item.wearing { border: 2px solid var(--good); }
+.item .wear { font-size: 0.72rem; color: var(--good); font-weight: 600; }
+.item .price { font-size: 0.78rem; color: var(--gold); font-weight: 600; }
+.picks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.picks div { display: grid; justify-items: center; gap: 4px; }
+.picks svg { width: 120px; height: 133px; }
+.preview { text-align: left; display: grid; gap: 4px; font-size: 0.9rem; }
+.preview li { margin-left: 1em; }
 .item.l.owned { border: 2px solid var(--gold); }
 .item.missing { background: var(--soft); color: var(--muted); }
 .item .q { font-family: var(--font-hand); font-size: 1.15rem; line-height: 1.15; }
@@ -215,6 +244,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     <h1 class="brand">대학원생 키우기 <small>석사 입학부터 살아있는 교과서까지</small></h1>
     <div class="topright">
       <button class="coupon num" id="couponBtn" aria-label="커피 쿠폰, 상점 열기">☕ <span id="coupons">0</span></button>
+      <div class="drinkbox num" title="에너지 드링크: 마시면 5분 동안 탭·자동 생산 2배"><span>🥤 <span id="drinks">0</span></span><button id="drinkBtn" aria-label="에너지 드링크 마시기">마시기</button></div>
       <div class="badge"><b id="tierName">석사과정</b><span id="tierTitle">랩실 막내</span></div>
     </div>
   </header>
@@ -239,7 +269,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     <section class="right" aria-label="성장">
       <div class="sheet paper">
         <button class="btn primary" id="writeBtn"><span class="t">논문 쓰기</span><span class="s num" id="writeCost">비용</span></button>
-        <div class="next"><span id="nextLabel">다음 전직</span><span class="num" id="nextCount"></span></div>
+        <div class="next"><button class="linkbtn" id="nextLabel" aria-label="다음 전직 보상 미리보기">다음 전직</button><span class="num" id="nextCount"></span></div>
         <div class="bar" aria-hidden="true"><i id="nextBar" style="background: var(--accent)"></i></div>
         <div class="autos" id="autos"></div>
         <button class="btn" id="centuryBtn" hidden><span class="t">세기의 연구 완성하기</span><span class="s num" id="centuryCost"></span></button>
@@ -248,6 +278,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       <nav class="tabs" role="tablist">
         <button role="tab" id="tab-gens" aria-selected="true" data-tab="gens">동료·장비</button>
         <button role="tab" id="tab-proj" aria-selected="false" data-tab="proj">과제</button>
+        <button role="tab" id="tab-avatar" aria-selected="false" data-tab="avatar">아바타</button>
         <button role="tab" id="tab-col" aria-selected="false" data-tab="col">도감</button>
         <button role="tab" id="tab-laurel" aria-selected="false" data-tab="laurel">월계관</button>
         <button role="tab" id="tab-rank" aria-selected="false" data-tab="rank">랭킹</button>
@@ -256,6 +287,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       </nav>
       <div id="panel-gens" class="list"><div id="tapRows" class="list"></div><div id="genRows" class="list"></div></div>
       <div id="panel-proj" class="list" hidden></div>
+      <div id="panel-avatar" class="list" hidden></div>
       <div id="panel-col" class="list" hidden></div>
       <div id="panel-laurel" class="list" hidden></div>
       <div id="panel-rank" class="list" hidden></div>
@@ -285,22 +317,53 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   const shiftDay = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return dayKey(d); };
   const refreshDay = () => E.refreshDay(st, today(), shiftDay(-1));
 
-  // ---------- 캐릭터 (직급마다 머리·옷이 바뀐다) ----------
+  // ---------- 캐릭터 (직급·성별·아바타에 따라 머리·옷·소품이 바뀐다) ----------
   const HAIR = { dark: '#2a2a33', grey: '#8e949c', white: '#eceef2' };
   const LOOK = [null,
-    { hair: 'neat', outfit: 'hoodie', glasses: false, tired: false },
-    { hair: 'messy', outfit: 'hoodie2', glasses: true, tired: true },
-    { hair: 'shaggy', outfit: 'check', glasses: true, tired: true },
-    { hair: 'messy', outfit: 'cardigan', glasses: true, tired: true },
-    { hair: 'part', outfit: 'suit1', glasses: true, tired: false },
-    { hair: 'partGrey', outfit: 'suit2', glasses: true, tired: false },
-    { hair: 'grey', outfit: 'suit3', glasses: true, tired: false },
-    { hair: 'white', outfit: 'gown', glasses: true, tired: false },
-    { hair: 'sage', outfit: 'robe', glasses: true, tired: false, beard: true },
+    { hair: 'neat', fhair: 'fLong', outfit: 'hoodie', glasses: false, tired: false },
+    { hair: 'messy', fhair: 'fPony', outfit: 'hoodie2', glasses: true, tired: true },
+    { hair: 'shaggy', fhair: 'fPonyMessy', outfit: 'check', glasses: true, tired: true },
+    { hair: 'messy', fhair: 'fBun', outfit: 'cardigan', glasses: true, tired: true },
+    { hair: 'part', fhair: 'fBob', outfit: 'suit1', glasses: true, tired: false },
+    { hair: 'partGrey', fhair: 'fBobStreak', outfit: 'suit2', glasses: true, tired: false },
+    { hair: 'grey', fhair: 'fBobGrey', outfit: 'suit3', glasses: true, tired: false },
+    { hair: 'white', fhair: 'fWhiteBun', outfit: 'gown', glasses: true, tired: false },
+    { hair: 'sage', fhair: 'fSage', outfit: 'robe', glasses: true, tired: false, beard: true },
   ];
-  function hair(kind) {
+  function laurel() {
+    let leaves = '';
+    for (let i = 0; i <= 12; i++) {
+      const a = Math.PI * (1.08 + 0.84 * i / 12), x = 100 + 50 * Math.cos(a), y = 98 + 50 * Math.sin(a);
+      leaves += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="8" ry="3.6" transform="rotate(' + ((a * 180) / Math.PI + 90 + (i % 2 ? 28 : -28)).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="#d4a72c" stroke="#9c7a17" stroke-width="1"/>';
+    }
+    return leaves;
+  }
+  // 얼굴 뒤에 그리는 머리(긴 머리·포니테일·단발의 뒷부분)
+  function hairBack(kind) {
+    const long = (c) => '<path d="M50 96 Q42 172 72 194 L128 194 Q158 172 150 96 Z" fill="' + c + '"/>';
+    const bob = (c) => '<path d="M49 96 Q45 142 62 152 L138 152 Q155 142 151 96 Z" fill="' + c + '"/>';
+    const pony = (c) => '<path d="M138 66 Q184 84 166 156 Q156 120 140 100 Z" fill="' + c + '"/><circle cx="146" cy="72" r="5" fill="#c3303a"/>';
+    switch (kind) {
+      case 'fLong': return long(HAIR.dark);
+      case 'fPony': case 'fPonyMessy': return pony(HAIR.dark);
+      case 'fBob': case 'fBobStreak': return bob(HAIR.dark);
+      case 'fBobGrey': return bob(HAIR.grey);
+      case 'fSage': return long(HAIR.white);
+      default: return '';
+    }
+  }
+  // 얼굴 위에 그리는 머리(앞머리·정수리)
+  function hair(kind, covered) {
     const cap = (c) => '<path d="M52 98 Q52 50 100 47 Q148 50 148 98 Q138 72 100 70 Q62 72 52 98 Z" fill="' + c + '"/>';
+    const bangs = (c) => '<path d="M52 100 Q50 50 100 47 Q150 50 148 100 Q142 76 120 70 Q104 88 78 80 Q62 82 52 100 Z" fill="' + c + '"/>';
     const spikes = '<path d="M64 62 L58 40 L78 56 L84 34 L98 54 L110 32 L116 54 L134 38 L132 62 Z" fill="' + HAIR.dark + '"/>';
+    // 비니·학사모를 쓰면 정수리 장식(삐친 머리·똥머리·월계관)은 모자에 가려 그리지 않는다
+    if (covered) {
+      const c = /grey|Grey/.test(kind) ? HAIR.grey : /white|White|sage|Sage/.test(kind) ? HAIR.white : HAIR.dark;
+      if (kind === 'white' || kind === 'sage') return '<ellipse cx="54" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/><ellipse cx="146" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/>';
+      return kind.startsWith('f') ? '<path d="M52 100 Q50 50 100 47 Q150 50 148 100 Q142 76 120 70 Q104 88 78 80 Q62 82 52 100 Z" fill="' + c + '"/>' : cap(c);
+    }
+    const bun = (c, pencil) => '<circle cx="100" cy="42" r="17" fill="' + c + '"/>' + (pencil ? '<path d="M78 30 L124 52" stroke="#e8b730" stroke-width="5" stroke-linecap="round"/><path d="M122 51 l6 3" stroke="#2a2a33" stroke-width="5"/>' : '');
     switch (kind) {
       case 'neat': return cap(HAIR.dark);
       case 'messy': return cap(HAIR.dark) + spikes;
@@ -309,15 +372,16 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       case 'partGrey': return cap(HAIR.dark) + '<path d="M58 84 Q62 60 84 52 Q72 66 66 86 Z" fill="' + HAIR.grey + '"/>';
       case 'grey': return cap(HAIR.grey);
       case 'white': return '<ellipse cx="54" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><ellipse cx="146" cy="92" rx="10" ry="18" fill="' + HAIR.white + '"/><path d="M70 60 Q100 50 130 60" stroke="' + HAIR.white + '" stroke-width="6" fill="none" stroke-linecap="round"/>';
-      default: {
-        // 살아있는 교과서: 옆머리만 남은 흰 머리에 황금 월계관
-        let leaves = '';
-        for (let i = 0; i <= 12; i++) {
-          const a = Math.PI * (1.08 + 0.84 * i / 12), x = 100 + 50 * Math.cos(a), y = 98 + 50 * Math.sin(a);
-          leaves += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="8" ry="3.6" transform="rotate(' + ((a * 180) / Math.PI + 90 + (i % 2 ? 28 : -28)).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="#d4a72c" stroke="#9c7a17" stroke-width="1"/>';
-        }
-        return '<ellipse cx="54" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/><ellipse cx="146" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/>' + leaves;
-      }
+      case 'sage': return '<ellipse cx="54" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/><ellipse cx="146" cy="96" rx="9" ry="16" fill="' + HAIR.white + '"/>' + laurel();
+      // 여성 직급별 머리: 긴 머리 → 포니테일 → 똥머리+연필 → 단발 → 회색 단발 → 흰 올림머리 → 흰 긴 머리+월계관
+      case 'fLong': case 'fPony': case 'fBob': return bangs(HAIR.dark);
+      case 'fPonyMessy': return bangs(HAIR.dark) + '<path d="M70 52 L66 38 L82 50 M112 48 L120 34 L124 52" stroke="' + HAIR.dark + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+      case 'fBun': return bun(HAIR.dark, true) + bangs(HAIR.dark);
+      case 'fBobStreak': return bangs(HAIR.dark) + '<path d="M60 90 Q64 62 90 52 Q76 70 70 92 Z" fill="' + HAIR.grey + '"/>';
+      case 'fBobGrey': return bangs(HAIR.grey);
+      case 'fWhiteBun': return bun(HAIR.white, false) + bangs(HAIR.white);
+      case 'fSage': return bangs(HAIR.white) + laurel();
+      default: return '';
     }
   }
   function outfit(kind) {
@@ -333,29 +397,79 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       case 'suit2': return suit('#383b47', '#b23a48');
       case 'suit3': return suit('#1e2230', '#c79a2e');
       case 'gown': return body('#7d1f2c') + '<path d="M70 160 Q100 196 130 160" stroke="#d4a72c" stroke-width="7" fill="none"/>';
+      // 아바타 상의
+      case 'tee': return body('#3d8a5a') + '<rect x="78" y="180" width="44" height="22" rx="4" fill="#f4f6fa"/><path d="M84 188 h32 M84 195 h22" stroke="#3d8a5a" stroke-width="3"/>';
+      case 'labcoat': return body('#f4f6fa') + '<path d="M88 158 L100 192 L112 158 Z" fill="#6f8fb8"/><path d="M100 160 V222" stroke="#c9d1db" stroke-width="2"/><path d="M84 160 L98 196 L76 180 Z M116 160 L102 196 L124 180 Z" fill="#e3e8ef" stroke="#c9d1db"/><rect x="120" y="196" width="18" height="14" fill="none" stroke="#c9d1db" stroke-width="2"/><path d="M124 196 v-8 M130 196 v-6" stroke="#2346a3" stroke-width="2.5"/>';
+      case 'vest': return body('#f4f6fa') + '<path d="M58 172 Q60 160 86 158 L100 196 L114 158 Q140 160 142 172 L146 222 H54 Z" fill="#b99a6a"/><path d="M62 190 h76 M60 206 h80" stroke="#a3855a" stroke-width="2"/>';
+      case 'suit': return suit('#383b47', '#b23a48');
       default: return body('#24345c') + '<path d="M80 160 L100 222 L120 160" stroke="#d4a72c" stroke-width="6" fill="none"/>';
     }
   }
-  function charParts(t) {
-    const L = LOOK[t];
-    let s = outfit(L.outfit) + '<rect x="88" y="138" width="24" height="22" fill="#e7b995"/>';
-    s += '<circle cx="51" cy="104" r="9" fill="#efc29f"/><circle cx="149" cy="104" r="9" fill="#efc29f"/><circle cx="100" cy="100" r="48" fill="#f3cba8"/>';
-    s += hair(L.hair);
-    s += '<circle cx="82" cy="104" r="4.5" fill="#1d1d24"/><circle cx="118" cy="104" r="4.5" fill="#1d1d24"/>';
-    if (L.tired) s += '<path d="M73 114 q9 6 18 0 M109 114 q9 6 18 0" stroke="#8b6c9c" stroke-width="2.5" fill="none" opacity="0.7"/>';
-    if (L.glasses) s += '<circle cx="82" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><circle cx="118" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><path d="M95 104 H105" stroke="#24242c" stroke-width="2.5"/>';
-    if (L.beard) s += '<path d="M64 112 Q66 176 100 198 Q134 176 136 112 Q122 132 100 130 Q78 132 64 112 Z" fill="' + HAIR.white + '" stroke="#c9ced6" stroke-width="1.5"/><path d="M90 126 Q100 132 110 126" stroke="#7a3b2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
-    else s += L.tired ? '<path d="M90 128 H110" stroke="#7a3b2e" stroke-width="3" stroke-linecap="round"/>' : '<path d="M88 125 Q100 135 112 125" stroke="#7a3b2e" stroke-width="3" fill="none" stroke-linecap="round"/>';
-    return s;
+  // 머리 장식(아바타 머리 부위)
+  function headItem(key) {
+    switch (key) {
+      case 'beanie': return '<path d="M52 92 Q52 42 100 40 Q148 42 148 92 Z" fill="#c3303a"/><rect x="50" y="82" width="100" height="14" rx="5" fill="#a32a33"/><circle cx="100" cy="38" r="8" fill="#f4f6fa"/>';
+      case 'band': return '<path d="M54 80 Q100 56 146 80" stroke="#e86aa0" stroke-width="9" fill="none" stroke-linecap="round"/>';
+      case 'phones': return '<path d="M50 100 Q50 34 100 34 Q150 34 150 100" stroke="#24242c" stroke-width="7" fill="none"/><rect x="40" y="90" width="16" height="28" rx="6" fill="#2d3646"/><rect x="144" y="90" width="16" height="28" rx="6" fill="#2d3646"/>';
+      case 'gradcap': return '<path d="M100 22 L156 42 L100 62 L44 42 Z" fill="#1b2838"/><path d="M70 50 V64 Q100 76 130 64 V50" fill="#24345c"/><path d="M100 42 L148 54 V76" stroke="#d4a72c" stroke-width="3" fill="none"/><circle cx="148" cy="78" r="4" fill="#d4a72c"/>';
+      default: return '';
+    }
   }
-  function charSVG(t) { return '<svg viewBox="0 0 200 222" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터">' + charParts(t) + '</svg>'; }
+  // 아바타 아이템 키: 입지 않았으면 null
+  const avKey = (lk, slot) => (lk[slot] >= 0 && E.AVATAR_KEYS[lk[slot]] ? E.AVATAR_KEYS[lk[slot]][1] : null);
+  function charParts(t, over) {
+    const L = LOOK[t], lk = Object.assign({}, st ? st.look : { gender: 'm' }, over || {});
+    const fem = lk.gender === 'f', top = avKey(lk, 'top'), head = avKey(lk, 'head'), face = avKey(lk, 'face'), pos = avKey(lk, 'posture');
+    const topKind = { check: 'check', tee: 'tee', labcoat: 'labcoat', vest: 'vest', suit: 'suit', gown: 'gown' }[top] || L.outfit;
+    let s = outfit(topKind) + (pos === 'turtle' ? '' : '<rect x="88" y="138" width="24" height="22" fill="#e7b995"/>');
+    // 거북목은 얼굴이 앞으로 숙여 내려오고, 바른 자세는 턱을 들어 올린다
+    const tf = pos === 'turtle' ? 'translate(-5,20) scale(1.05)' : pos === 'straight' ? 'translate(0,-6)' : '';
+    s += '<g' + (tf ? ' transform="' + tf + '"' : '') + '>';
+    s += fem ? hairBack(L.fhair) : '';
+    s += '<circle cx="51" cy="104" r="9" fill="#efc29f"/><circle cx="149" cy="104" r="9" fill="#efc29f"/><circle cx="100" cy="100" r="48" fill="#f3cba8"/>';
+    const covered = head === 'beanie' || head === 'gradcap';
+    s += fem ? hair(L.fhair, covered) : hair(L.hair, covered);
+    // 눈: 흰자·실핏줄·눈꺼풀. 충혈 단계는 장면의 CSS가 정한다.
+    [82, 118].forEach((x) => {
+      s += '<ellipse class="sclera" cx="' + x + '" cy="104" rx="7.5" ry="6.5" fill="#ffffff"/>' +
+        '<g class="veins" opacity="0" stroke="#d2313c" stroke-width="1.4" fill="none"><path d="M' + (x - 7) + ' 103 l3 1 l2 -1 M' + (x + 7) + ' 105 l-3 -1 l-1 2 M' + (x - 5) + ' 108 l3 -2"/></g>' +
+        '<circle cx="' + x + '" cy="104" r="3.8" fill="#1d1d24"/>' +
+        '<path class="lid" opacity="0" d="M' + (x - 8) + ' 104 Q' + x + ' 95 ' + (x + 8) + ' 104 Z" fill="#f0c4a0"/>';
+      if (fem) s += '<path d="M' + (x - 8) + ' 100 l-4 -3 M' + (x + 8) + ' 100 l4 -3" stroke="#1d1d24" stroke-width="2" stroke-linecap="round"/>';
+    });
+    if (L.tired) s += '<path d="M73 114 q9 6 18 0 M109 114 q9 6 18 0" stroke="#8b6c9c" stroke-width="2.5" fill="none" opacity="0.7"/>';
+    // 안경: 얼굴 아이템이 있으면 그것으로 바꾼다
+    const gl = face === 'horn' ? 'horn' : face === 'blue' ? 'blue' : face === 'sun' ? 'sun' : L.glasses ? 'round' : null;
+    if (gl === 'round') s += '<circle cx="82" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><circle cx="118" cy="104" r="13" fill="none" stroke="#24242c" stroke-width="2.5"/><path d="M95 104 H105" stroke="#24242c" stroke-width="2.5"/>';
+    if (gl === 'horn') s += '<rect x="68" y="94" width="28" height="20" rx="4" fill="none" stroke="#1b1b1f" stroke-width="5"/><rect x="104" y="94" width="28" height="20" rx="4" fill="none" stroke="#1b1b1f" stroke-width="5"/><path d="M96 102 H104" stroke="#1b1b1f" stroke-width="4"/>';
+    if (gl === 'blue') s += '<circle cx="82" cy="104" r="13" fill="#7fb4ff" fill-opacity="0.35" stroke="#2346a3" stroke-width="2.5"/><circle cx="118" cy="104" r="13" fill="#7fb4ff" fill-opacity="0.35" stroke="#2346a3" stroke-width="2.5"/><path d="M95 104 H105" stroke="#2346a3" stroke-width="2.5"/>';
+    if (gl === 'sun') s += '<path d="M66 96 H98 Q98 116 82 116 Q66 116 66 96 Z M102 96 H134 Q134 116 118 116 Q102 116 102 96 Z" fill="#1b1b1f"/><path d="M98 100 H102" stroke="#1b1b1f" stroke-width="4"/>';
+    if (face === 'bandage') s += '<g transform="rotate(-20 128 122)"><rect x="116" y="117" width="24" height="10" rx="4" fill="#f2d2a8" stroke="#d4a77a"/><path d="M126 119 v6 M130 119 v6" stroke="#d4a77a"/></g>';
+    if (L.beard && !fem) s += '<path d="M64 112 Q66 176 100 198 Q134 176 136 112 Q122 132 100 130 Q78 132 64 112 Z" fill="' + HAIR.white + '" stroke="#c9ced6" stroke-width="1.5"/><path d="M90 126 Q100 132 110 126" stroke="#7a3b2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+    else if (face !== 'mask') s += L.tired ? '<path d="M90 128 H110" stroke="#7a3b2e" stroke-width="3" stroke-linecap="round"/>' : '<path d="M88 125 Q100 135 112 125" stroke="#7a3b2e" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    if (face === 'mask') s += '<path d="M68 114 Q100 108 132 114 L128 136 Q100 148 72 136 Z" fill="#f4f6fa" stroke="#c9d1db"/><path d="M68 116 L52 106 M132 116 L148 106" stroke="#c9d1db" stroke-width="2"/>';
+    s += headItem(head);
+    return s + '</g>';
+  }
+  function charSVG(t, over) { return '<svg viewBox="0 0 200 222" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터">' + charParts(t, over) + '</svg>'; }
   // 소매 색: 옷 색과 맞춘다
-  const SLEEVE = { hoodie: '#6f8fb8', hoodie2: '#4f6684', check: '#b5574f', cardigan: '#7d6a52', suit1: '#2c3e66', suit2: '#383b47', suit3: '#1e2230', gown: '#7d1f2c', robe: '#24345c' };
+  const SLEEVE = { hoodie: '#6f8fb8', hoodie2: '#4f6684', check: '#b5574f', cardigan: '#7d6a52', suit1: '#2c3e66', suit2: '#383b47', suit3: '#1e2230', gown: '#7d1f2c', robe: '#24345c', tee: '#3d8a5a', labcoat: '#f4f6fa', vest: '#f4f6fa', suit: '#383b47' };
+  // 책상 소품(아바타 소품 부위): 키보드 왼쪽에 놓는다
+  function propSVG(key) {
+    switch (key) {
+      case 'tumbler': return '<rect x="128" y="222" width="16" height="25" rx="3" fill="#4f9a8a"/><rect x="126" y="219" width="20" height="5" rx="2" fill="#2d6a5e"/>';
+      case 'energy': return '<rect x="129" y="224" width="13" height="23" rx="2" fill="#2d3646"/><path d="M131 230 l5 8 l-3 0 l4 7" stroke="#6fd39a" stroke-width="2" fill="none"/><rect x="129" y="222" width="13" height="3" fill="#9aa9bb"/>';
+      case 'ramen': return '<path d="M122 230 H150 L146 247 H126 Z" fill="#f4f1e8" stroke="#c3303a" stroke-width="2"/><path d="M122 234 H150" stroke="#c3303a" stroke-width="3"/><path class="steam" d="M130 224 q-4 -6 0 -12 M140 224 q4 -6 0 -12" stroke="#c9d1db" stroke-width="2" fill="none"/>';
+      case 'plant': return '<path d="M126 236 H148 L145 247 H129 Z" fill="#c0873f"/><ellipse cx="137" cy="230" rx="6" ry="9" fill="#4f9a5a"/><ellipse cx="130" cy="232" rx="5" ry="7" fill="#5fb06a" transform="rotate(-30 130 232)"/><ellipse cx="144" cy="232" rx="5" ry="7" fill="#5fb06a" transform="rotate(30 144 232)"/>';
+      default: return '';
+    }
+  }
   // 연구실 장면: 화이트보드·선반·책상 앞에서 캐릭터가 논문 쓰기, 실험, 데이터 분석, 생각을 번갈아 한다.
   function sceneSVG(t) {
-    const c = SLEEVE[LOOK[t].outfit], skin = '#efc29f';
+    const top = avKey(st.look, 'top'), prop = avKey(st.look, 'prop');
+    const c = SLEEVE[{ check: 'check', tee: 'tee', labcoat: 'labcoat', vest: 'vest', suit: 'suit', gown: 'gown' }[top] || LOOK[t].outfit], skin = '#efc29f';
     const arm = (cls, d, hx, hy) => '<g class="' + cls + '"><path d="' + d + '" stroke="' + c + '" stroke-width="15" fill="none" stroke-linecap="round"/><circle cx="' + hx + '" cy="' + hy + '" r="7.5" fill="' + skin + '"/></g>';
-    let s = '<svg id="scene" class="scene mode-type" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터가 연구실에서 일하는 장면">';
+    let s = '<svg id="scene" class="scene mode-type f0" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + E.TIERS[t].name + ' 캐릭터가 연구실에서 일하는 장면">';
     // 화이트보드와 선반
     s += '<rect x="14" y="18" width="122" height="80" rx="4" fill="#fdfdfb" stroke="#9aa9bb" stroke-width="3"/>' +
       '<path class="scribble" d="M26 38 h44 M26 52 q10 -10 20 0 t20 0 M84 38 h30 M26 70 h76 M26 84 h40" stroke="#2346a3" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
@@ -376,10 +490,12 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       '<rect x="74" y="214" width="12" height="32" fill="#eaf4ff" stroke="#7d8896"/><rect x="74" y="230" width="12" height="16" fill="#f2a0a0"/><rect x="92" y="220" width="12" height="26" fill="#eaf4ff" stroke="#7d8896"/><rect x="92" y="232" width="12" height="14" fill="#a0c4f2"/></g>';
     // 책상 (몸 아래쪽을 가린다)
     s += '<rect x="0" y="246" width="400" height="54" fill="#b98d5c"/><rect x="0" y="246" width="400" height="7" fill="#a07444"/>';
-    // 논문 쓰기: 왼쪽 모니터에 문서, 책상 위 키보드
+    // 논문 쓰기: 왼쪽 모니터에 문서, 책상 위 키보드(황금 키보드 아바타면 금색)
+    const kb = prop === 'goldkb' ? ['#f0c040', '#a86a00'] : ['#dfe5ec', '#8a96a5'];
     s += '<g class="m-type"><rect x="22" y="160" width="100" height="72" rx="5" fill="#f7f9fc" stroke="#55657a" stroke-width="3"/>' +
       '<path class="screen" d="M32 176 h70 M32 188 h80 M32 200 h60 M32 212 h74" stroke="#8a96a5" stroke-width="3" stroke-linecap="round"/><rect x="64" y="232" width="16" height="14" fill="#55657a"/>' +
-      '<rect x="160" y="238" width="80" height="9" rx="2" fill="#dfe5ec" stroke="#8a96a5"/></g>';
+      '<rect x="160" y="238" width="80" height="9" rx="2" fill="' + kb[0] + '" stroke="' + kb[1] + '"/></g>';
+    s += propSVG(prop);
     // 팔: 모드마다 다르다
     s += '<g class="m-type">' + arm('a1', 'M152 208 Q156 228 182 236', 182, 236) + arm('a2', 'M248 208 Q244 228 218 236', 218, 236) + '</g>';
     s += '<g class="m-exp">' + arm('', 'M152 208 Q156 236 170 244', 170, 244) + arm('', 'M248 208 Q276 206 288 180', 288, 180) + '</g>';
@@ -391,10 +507,20 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   }
   const MODES = { type: '논문 쓰는 중…', exp: '실험하는 중…', an: '데이터 분석 중…', think: '아이디어 구상 중…' };
   let mode = 'type', modeUntil = 0;
-  function setMode(m, hold) {
-    mode = m; modeUntil = performance.now() + (hold || 7000);
-    const sc = $('scene'); if (sc) sc.setAttribute('class', 'scene mode-' + m);
-    if (st && st.taps > 0) $('hint').textContent = MODES[m];
+  // 눈 충혈: 탭할수록 피로가 쌓이고, 탭을 멈추면 서서히 풀린다. 밤샘 중에는 최대. 화면 표시만 바뀐다.
+  let fatigue = 0, fatLv = 0, lastTapAt = 0;
+  const FAT_STEPS = [25, 60, 110];
+  function caption() { return fatLv >= 3 ? '눈이 충혈됐다… 잠깐 쉬자' : MODES[mode]; }
+  function applySceneClass() {
+    const sc = $('scene'); if (sc) sc.setAttribute('class', 'scene mode-' + mode + ' f' + fatLv);
+    if (st && st.taps > 0) $('hint').textContent = caption();
+  }
+  function setMode(m, hold) { mode = m; modeUntil = performance.now() + (hold || 7000); applySceneClass(); }
+  function updateFatigue(dt) {
+    if (performance.now() - lastTapAt > 2500) fatigue = Math.max(0, fatigue - 6 * dt);
+    const night = st.buffs.some((b) => b.src === E.SKILLS.night.name && b.until > st.time);
+    const lvl = night ? 3 : FAT_STEPS.filter((x) => fatigue >= x).length;
+    if (lvl !== fatLv) { fatLv = lvl; applySceneClass(); }
   }
   const CAT_SVG = '<svg class="cat" viewBox="0 0 64 56" aria-hidden="true"><path d="M50 50 Q62 44 58 30" stroke="#e0a24c" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="36" cy="40" rx="18" ry="14" fill="#f0b45a"/><circle cx="34" cy="20" r="12" fill="#f0b45a"/><path d="M24 14 L24 2 L32 10 Z M44 14 L44 2 L36 10 Z" fill="#f0b45a"/><circle cx="30" cy="20" r="1.8" fill="#222"/><circle cx="38" cy="20" r="1.8" fill="#222"/><path d="M32 25 Q34 27 36 25" stroke="#222" stroke-width="1.2" fill="none"/><g class="paw"><ellipse cx="18" cy="44" rx="6" ry="4" fill="#f7c97e"/></g></svg>';
 
@@ -443,7 +569,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   }
 
   // ---------- 화면 갱신 ----------
-  let renderedTier = 0, genRows = {}, petShown = null;
+  let renderedTier = 0, genRows = {}, petShown = null, lookShown = '';
   function say(text) { $('ticker').textContent = text; }
 
   function buildGens() {
@@ -498,7 +624,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     h += '<p class="h3">출석</p><div class="row"><div><div class="name">' + (st.daily.streak || 1) + '일째 출석</div><div class="meta">7일 주기로 커피 쿠폰 5·5·10·10·15·15·30' + (st.subActive ? ', 구독 중이라 매일 +20' : '') + '</div></div><button class="buy gold" id="attendBtn"><b class="num">+' + E.attendReward(st) + '</b><small>' + (E.attendReady(st) ? '받기' : '받음') + '</small></button></div>';
     h += '<p class="h3">광고 보상 <span class="meta num">(오늘 ' + (E.AD_LIMITS.total - st.daily.ads) + '/' + E.AD_LIMITS.total + '회 남음)</span></p>';
     h += '<div class="row"><div><div class="name">연구 지원금</div><div class="meta">30분 동안 자동 생산 2배</div></div><button class="buy" id="adBuff"><b>2배</b><small>' + adBtn('buff') + '</small></button></div>';
-    h += '<div class="row"><div><div class="name">에너지 드링크</div><div class="meta">밤샘·마감 버프를 바로 다시 쓸 수 있다</div></div><button class="buy" id="adSkill"><b>초기화</b><small>' + adBtn('skill') + '</small></button></div>';
+    h += '<div class="row"><div><div class="name">에너지 드링크 1개 받기</div><div class="meta">가방에 들어간다. 마시면 5분 동안 탭·자동 생산 2배</div></div><button class="buy" id="adSkill"><b>🥤 +1</b><small>' + adBtn('skill') + '</small></button></div>';
     h += '<p class="h3">커피 쿠폰 쓰기</p>';
     Object.keys(C).forEach((id) => {
       const it = C[id], owned = id === 'pet' && st.pet;
@@ -518,7 +644,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     $('adBuff').disabled = E.adLeft(st, 'buff') <= 0;
     $('adSkill').disabled = E.adLeft(st, 'skill') <= 0;
     $('adBuff').addEventListener('click', () => watchAd('buff', 0, () => { say('연구 지원금! 30분 동안 자동 생산 2배'); buildShop(); }));
-    $('adSkill').addEventListener('click', () => watchAd('skill', 0, () => { say('에너지 드링크를 마셨다. 스킬을 다시 쓸 수 있다.'); buildShop(); }));
+    $('adSkill').addEventListener('click', () => watchAd('skill', 0, () => { say('광고 보상으로 에너지 드링크를 받았다. 가방에 ' + st.drinks + '개.'); buildShop(); }));
     box.querySelectorAll('[data-coupon]').forEach((b) => b.addEventListener('click', () => {
       const id = b.dataset.coupon;
       if (E.spendCoupon(st, id)) { say(id === 'pet' ? '야옹을 입양했다. 앞발로 대신 탭해 준다.' : '시간 가속! 자동 생산 2시간 치를 받았다.'); save(); update(); buildShop(); }
@@ -543,7 +669,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       if (c.items) {
         c.items.forEach((it, i) => {
           const own = st.col[k][i], rar = E.RARITY[it[1]];
-          h += '<div class="item ' + it[1] + (own ? ' owned' : ' missing') + '"><span class="rar ' + it[1] + '">' + rar.name + ' · ' + E.dropRate(k, i).toFixed(1) + '%</span>' +
+          h += '<div class="item ' + it[1] + (own ? ' owned' : ' missing') + '"><span class="rar ' + it[1] + '">' + rar.name + ' · ' + E.dropRate(k, i, st.tier).toFixed(1) + '%</span>' +
             (own ? '<span class="' + (k === 'quotes' ? 'q' : '') + '">' + (k === 'quotes' ? '“' + esc(it[0]) + '”' : esc(it[0])) + '</span>' + (own > 1 ? '<span class="colmeta num">×' + own + '</span>' : '') : '<span>???</span>') + '</div>';
         });
       } else if (k === 'topics') {
@@ -568,6 +694,9 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       const info = E.TIERS[t], reached = st.promotedAt.filter((p) => p.tier === t).pop();
       const el = document.createElement('div');
       el.className = 'tier' + (reached ? ' done' : '') + (t === st.tier ? ' now' : '');
+      el.setAttribute('role', 'button'); el.tabIndex = 0; el.setAttribute('aria-label', (t) + '단계 전직 보상 미리보기');
+      el.addEventListener('click', () => showTierPreview(t));
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showTierPreview(t); } });
       const hidden = !reached && t > st.tier + 1 && t >= E.LAST - 1 && st.bestTier < t;
       const cond = t === 1 ? '입학' : '논문 ' + E.CFG.needs[t] + '편' + (t === E.LAST ? ' + 세기의 연구' : '');
       el.innerHTML = '<span class="n">' + t + '</span><div><b>' + (hidden ? '???' : info.name) + '</b> <span class="meta">' + (hidden ? '' : info.title) + '</span><div class="meta">' + (hidden ? '조건 비공개' : cond) + '</div></div><span class="meta num">' + (reached ? mmss(reached.time) : '') + '</span>';
@@ -584,7 +713,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     buildTree();
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
-    $('resetYes').addEventListener('click', () => { st = E.newGame(); refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(); refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); pickGender(); });
   }
   function buildAutos() {
     const box = $('autos'); box.innerHTML = '';
@@ -614,11 +743,13 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const rn = E.rankName(st); if ($('tierName').textContent !== rn) $('tierName').textContent = rn;
     if (performance.now() > modeUntil) { const ms = Object.keys(MODES).filter((m) => m !== mode); setMode(ms[Math.floor(Math.random() * ms.length)]); }
     $('coupons').textContent = st.coupons;
+    $('drinks').textContent = st.drinks || 0; $('drinkBtn').disabled = !(st.drinks > 0) || st.ended;
     $('lv').textContent = 'Lv ' + st.lv;
     $('expBar').style.width = Math.min(100, (st.exp / E.expNeed(st.lv)) * 100) + '%';
     $('lvBonus').textContent = '생산·탭 +' + Math.round(E.CFG.levelBonus * 100 * st.lv) + '%';
-    if (renderedTier !== st.tier || petShown !== st.pet) {
-      renderedTier = st.tier; petShown = st.pet;
+    const lookSig = JSON.stringify(st.look);
+    if (renderedTier !== st.tier || petShown !== st.pet || lookShown !== lookSig) {
+      renderedTier = st.tier; petShown = st.pet; lookShown = lookSig;
       $('tierTitle').textContent = E.TIERS[st.tier].title;
       $('tapper').innerHTML = sceneSVG(st.tier) + (st.pet ? CAT_SVG : '');
       setMode(mode);
@@ -659,7 +790,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const last = notes[notes.length - 1];
     say(last.text);
     const got = notes.filter((n) => n.kind === 'collect');
-    if (got.length) { toast(got.length > 1 ? got[got.length - 1].text + ' 외 ' + (got.length - 1) + '건' : got[0].text); if (tab === 'col') buildCol(); }
+    if (got.length) { toast(got.length > 1 ? got[got.length - 1].text + ' 외 ' + (got.length - 1) + '건' : got[0].text); if (tab === 'col') buildCol(); if (tab === 'avatar') buildAvatar(); }
     if (notes.some((n) => n.kind === 'level')) { const r = $('lab').getBoundingClientRect(); floatAt(r.width / 2, 40, 'LEVEL UP', 'lvup'); }
     if (notes.some((n) => n.kind === 'paper') && tab === 'rec') buildRec();
     const yr = notes.filter((n) => n.kind === 'year').pop();
@@ -710,6 +841,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     if (tapTimes.length >= MAX_TPS) return;
     tapTimes.push(now);
     const v = E.tap(st);
+    fatigue = Math.min(160, fatigue + 0.9); lastTapAt = now;
     const t = $('tapper'); t.classList.add('hit'); setTimeout(() => t.classList.remove('hit'), 70);
     floatAt(x, y, '+' + fmt(v));
     if (st.taps === 1) $('hint').textContent = MODES[mode];
@@ -723,6 +855,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   });
   $('tapper').addEventListener('click', (e) => e.preventDefault());
   $('couponBtn').addEventListener('click', () => $('tab-shop').click());
+  $('drinkBtn').addEventListener('click', () => { if (E.drink(st)) { say('에너지 드링크를 마셨다! 5분 동안 탭·자동 생산 2배. 남은 드링크 ' + st.drinks + '개.'); fatigue = Math.max(0, fatigue - 40); save(); update(); } });
 
   $('writeBtn').addEventListener('click', () => { const title = E.writePaper(st); if (title) { say('논문 게재: 「' + title + '」'); setMode('type'); update(); if (tab === 'rec') buildRec(); } });
   $('centuryBtn').addEventListener('click', () => { if (E.buyCentury(st)) { say('세기의 연구가 완성됐다. 전 세계 연구실이 재현 실험을 시작했다.'); update(); } });
@@ -736,7 +869,8 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
     tab = b.dataset.tab;
     document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
-    ['gens', 'proj', 'col', 'laurel', 'rank', 'shop', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== tab; });
+    ['gens', 'proj', 'avatar', 'col', 'laurel', 'rank', 'shop', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== tab; });
+    if (tab === 'avatar') buildAvatar();
     if (tab === 'col') buildCol();
     if (tab === 'proj') buildProj();
     if (tab === 'laurel') buildLaurel();
@@ -936,6 +1070,63 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     });
   }
 
+  // ---------- 성별 선택 ----------
+  function pickGender() {
+    queue_front('<h2>어떤 대학원생을 키울까요?</h2><p class="hand">아바타 탭에서 언제든 바꿀 수 있습니다</p><div class="picks"><div>' + charSVG(1, { gender: 'm', top: -1, head: -1, face: -1, posture: -1 }) + '<b>남성</b></div><div>' + charSVG(1, { gender: 'f', top: -1, head: -1, face: -1, posture: -1 }) + '<b>여성</b></div></div>',
+      [{ label: '남성으로 시작', primary: true, fn: () => { E.setGender(st, 'm'); save(); update(true); } }, { label: '여성으로 시작', primary: true, fn: () => { E.setGender(st, 'f'); save(); update(true); } }]);
+  }
+  function queue_front(html, buttons) { modalQueue.unshift({ html, buttons }); if ($('modal').hidden) showNextModal(); }
+
+  // ---------- 아바타 (옷장) ----------
+  function buildAvatar() {
+    const box = $('panel-avatar'), C = E.COLLECTION.avatar, av = E.avatarStats(st);
+    let h = '<div class="notice">아바타는 전직할 때마다 1개 확정, 5레벨마다 1개, 과제를 끝내면 25% 확률로 얻습니다. 커피 쿠폰으로는 원하는 아이템을 골라서 살 수 있고, 무작위 뽑기는 없습니다. 중복이 나오면 쿠폰 1개로 바뀝니다.</div>';
+    h += '<div class="sheet wardrobe"><div>' + charSVG(st.tier) + '</div><div style="display:grid;gap:8px;min-width:0"><div class="gender" role="group" aria-label="성별"><button data-g="m" aria-pressed="' + (st.look.gender === 'm') + '">남성</button><button data-g="f" aria-pressed="' + (st.look.gender === 'f') + '">여성</button></div>' +
+      '<div class="avstats num">' + Object.keys(E.AV_SLOTS).map((k) => { const sl = E.AV_SLOTS[k]; return '<span>' + sl.name + ' → ' + sl.statName + ' <b>+' + Math.round(av[sl.stat] * 100) + sl.unit + '</b>' + (E.avSlotDone(st, k) ? ' · 세트 완성' : '') + '</span>'; }).join('') + '</div>' +
+      '<span class="meta num">수집 ' + E.colCount(st, 'avatar') + '/' + E.colTotal('avatar') + ' · 커피 쿠폰 ☕ ' + st.coupons + '</span></div></div>';
+    Object.keys(E.AV_SLOTS).forEach((slot) => {
+      const sl = E.AV_SLOTS[slot], idxs = E.AVATAR_KEYS.map((k, i) => [k[0], i]).filter((x) => x[0] === slot).map((x) => x[1]);
+      const have = idxs.filter((i) => st.col.avatar[i]).length;
+      h += '<div class="sheet"><div class="colhead"><b>' + sl.name + '</b><span class="num">' + have + '/' + idxs.length + '</span></div><div class="colmeta">' + sl.statName + ' · 일반 2% · 희귀 4% · 영웅 8% · 전설 15% · 다 모으면 +10%' + (E.avSlotDone(st, slot) ? ' <span class="done">(세트 완성)</span>' : '') + '</div><div class="grid">';
+      idxs.forEach((i) => {
+        const [name, rar] = C.items[i], own = st.col.avatar[i], wearing = st.look[slot] === i, R = E.RARITY[rar];
+        if (own) h += '<button class="item ' + rar + ' owned' + (wearing ? ' wearing' : '') + '" data-equip="' + i + '" aria-pressed="' + wearing + '"><span class="rar ' + rar + '">' + R.name + ' · +' + Math.round(E.AV_VALUE[rar] * 100) + sl.unit + '</span><span>' + name + '</span><span class="wear">' + (wearing ? '입는 중 (누르면 벗기)' : '누르면 입기') + '</span></button>';
+        else h += '<div class="item ' + rar + ' missing"><span class="rar ' + rar + '">' + R.name + ' · ' + E.dropRate('avatar', i, st.tier).toFixed(1) + '%</span><span>???</span><button class="buy gold" data-avbuy="' + i + '"' + (st.coupons < E.avPrice(i) ? ' disabled' : '') + ' style="min-width:0;text-align:center"><span class="price num">☕ ' + E.avPrice(i) + '로 사기</span></button></div>';
+      });
+      h += '</div></div>';
+    });
+    box.innerHTML = h;
+    box.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => { E.setGender(st, b.dataset.g); save(); update(); buildAvatar(); }));
+    box.querySelectorAll('[data-equip]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.equip; E.equip(st, i); say(st.look[E.AVATAR_KEYS[i][0]] === i ? '「' + C.items[i][0] + '」을(를) 입었다.' : '「' + C.items[i][0] + '」을(를) 벗었다.'); save(); update(); buildAvatar(); }));
+    box.querySelectorAll('[data-avbuy]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.avbuy; if (E.buyAvatar(st, i)) { E.equip(st, i); save(); update(); buildAvatar(); } }));
+  }
+
+  // ---------- 전직 보상 미리보기 ----------
+  function showTierPreview(t) {
+    const info = E.TIERS[t], reached = st.promotedAt.some((p) => p.tier === t) || st.bestTier >= t;
+    const hidden = !reached && t > st.tier + 1 && t >= E.LAST - 1;
+    if (hidden) { openModal('<h2>???</h2><p class="hand">아직 알 수 없는 직급</p><p>더 높이 올라가면 조건과 보상이 공개됩니다.</p>', [{ label: '닫기', primary: true }]); return; }
+    const li = [];
+    const gens = E.GENS.filter((g) => g.tier === t).map((g) => g.name);
+    if (gens.length) li.push('새 동료·장비: ' + gens.join(', '));
+    const pj = E.PROJECTS.filter((p) => p.tier === t).map((p) => p.kind + '(' + p.grade + ') 「' + p.name + '」');
+    if (pj.length) li.push('새 과제: ' + pj.join(', '));
+    Object.keys(E.AUTOS).filter((k) => E.AUTOS[k].tier === t).forEach((k) => li.push('자동화: ' + E.AUTOS[k].name + ' — ' + E.AUTOS[k].desc));
+    Object.keys(E.SKILLS).filter((k) => E.SKILLS[k].tier === t && t > 1).forEach((k) => li.push('스킬: ' + E.SKILLS[k].name + ' — ' + E.SKILLS[k].desc));
+    if (E.SLOTS[t] !== E.SLOTS[t - 1] && t > 1) li.push('과제 슬롯: ' + E.SLOTS[t - 1] + '개 → ' + E.SLOTS[t] + '개');
+    if (t === 1) li.push('연차: 석사 1~2년차 (논문 2편째에 2년차, 자동 생산 +10%)');
+    if (t === 2) li.push('연차: 박사 1~4년차 (논문 1편마다 1년, 자동 생산 +10%씩)');
+    if (t === 3) li.push('탭 1번에 초당 생산의 2%가 더해진다');
+    if (t > 1) li.push('자동 생산 ×' + E.CFG.tierProd + ', 탭 ×' + E.CFG.tierTap);
+    if (t > 1) li.push(st.bestTier >= t ? '첫 도달 보상 커피 쿠폰 +10 (이미 받음)' : '첫 도달 보상: 커피 쿠폰 +10');
+    if (t > 1) li.push('아바타 1개 확정');
+    li.push('도감: 「' + info.name + '」 기념사진' + (st.col.photos[t] ? ' (보유)' : ''));
+    if (t === E.LAST) li.push('엔딩: 재입학하면 황금 월계관 3개 이상');
+    const cond = t === 1 ? '입학' : '누적 논문 ' + E.CFG.needs[t] + '편' + (t === E.LAST ? ' + 세기의 연구' : '');
+    openModal(charSVG(t, { top: -1 }) + '<h2>' + info.name + '</h2><p class="hand">' + info.title + '</p><p class="meta">조건: ' + cond + (t === st.tier ? ' · 지금 직급' : '') + '</p><ul class="preview">' + li.map((x) => '<li>' + x + '</li>').join('') + '</ul>', [{ label: '닫기', primary: true }]);
+  }
+  $('nextLabel').addEventListener('click', () => showTierPreview(Math.min(E.LAST, st.tier + 1)));
+
   // ---------- 전직·엔딩 ----------
   const PROMO_LINES = {
     2: '박사과정 1년차가 되었다. 후배와 공용 실험 장비를 들일 수 있고, 후배에게 논문 자동 투고를 맡길 수 있다. 중소기업 주관 국가과제에 참여할 수 있다.',
@@ -991,7 +1182,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   }
   function maybeAttend() {
     if (!E.attendReady(st)) return;
-    openModal('<h2>출석 ' + st.daily.streak + '일째</h2><p class="hand">오늘도 연구실에 나왔다</p><p>커피 쿠폰 <b class="num">+' + E.attendReward(st) + '</b></p>',
+    openModal('<h2>출석 ' + st.daily.streak + '일째</h2><p class="hand">오늘도 연구실에 나왔다</p><p>커피 쿠폰 <b class="num">+' + E.attendReward(st) + '</b>' + (E.attendDrink(st) ? ' · 에너지 드링크 <b class="num">+1</b>' : '') + '</p>',
       [{ label: '받기', primary: true, fn: () => { const v = E.claimAttend(st); say('출석 보상: 커피 쿠폰 +' + v); save(); update(); if (tab === 'shop') buildShop(); } }]);
   }
 
@@ -1001,8 +1192,9 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     lastFrame = now;
     if (!document.hidden && $('modal').hidden) {
       E.tick(st, dt);
+      updateFatigue(dt);
       if (st.pet && !st.ended) { petClock += dt; if (petClock >= 1) { petClock = 0; const r = $('lab').getBoundingClientRect(); floatAt(r.width - 50, r.height - 70, '+' + fmt(E.CFG.petTps * E.perTap(st)), 'pet'); } }
-      if (st.time >= nextProfAt) { spawnProf(); nextProfAt = st.time + (60 + Math.random() * 60) * (1 - 0.1 * E.upLv(st, 'network')); }
+      if (st.time >= nextProfAt) { spawnProf(); nextProfAt = st.time + (60 + Math.random() * 60) * (1 - 0.1 * E.upLv(st, 'network')) * (1 - E.colBonus(st).profFreq); }
     }
     requestAnimationFrame(frame);
   }
@@ -1025,6 +1217,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     st = restored || E.newGame();
     refreshDay();
     if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
+    else pickGender();
     maybeAttend();
     nextProfAt = st.time + 40;
     try { const t = localStorage.getItem(KEY + '.tab'); if (t) { const b = document.querySelector('.tabs button[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) {}

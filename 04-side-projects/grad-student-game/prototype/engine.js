@@ -10,7 +10,7 @@
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 전직 속도를 맞춘다.
   const CFG = {
     needs: [0, 0, 3, 7, 11, 16, 22, 29, 37, 45], // 직급별 전직에 필요한 누적 논문 편수
-    paperBase: 30000, paperGrowth: 1.45, paperBonus: 0.03, tierProd: 1.5, tierTap: 1.5, century: 1e10,
+    paperBase: 36000, paperGrowth: 1.45, paperBonus: 0.03, tierProd: 1.5, tierTap: 1.5, century: 1e10,
     levelBonus: 0.03, expBase: 60, expGrowth: 1.2, tapExp: 0.5,
     offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3, laurelBonus: 0.2, laurelBase: 3,
   };
@@ -68,7 +68,10 @@
   const COUPON_ITEMS = {
     warp: { name: '시간 가속', cost: 30, desc: '자동 생산 2시간 치를 바로 받는다' },
     pet: { name: '야옹 입양', cost: 150, desc: '야옹이 1초에 3번 대신 탭한다 (방치 중에도)' },
+    drink: { name: '에너지 드링크', cost: 20, desc: '가방에 1개 들어간다. 마시면 5분 동안 탭·자동 생산 2배' },
   };
+  // 에너지 드링크: 가방에 쌓이는 소모품. 마시면 5분 동안 탭·자동 생산 2배, 겹쳐 마시면 시간만 늘어난다.
+  const DRINK = { dur: 300, mult: 2, src: '에너지 드링크' };
   const AD_LIMITS = { total: 10, buff: 5, skill: 5 };
 
   // ---------- 월계관 영구 강화 ----------
@@ -117,8 +120,9 @@
 
   // ---------- 랩실 도감 (수집형) ----------
   // 모든 항목은 플레이로만 얻는다(결제로 얻는 방법 없음). 재입학해도 유지된다.
-  // 희귀도별 가중치: 일반 6, 희귀 3, 전설 1. 도감 화면에 항목별 확률을 공개한다.
-  const RARITY = { c: { name: '일반', w: 6 }, r: { name: '희귀', w: 3 }, l: { name: '전설', w: 1 } };
+  // 희귀도별 가중치: 일반 6, 희귀 3, 영웅 2, 전설 1. 도감 화면에 항목별 확률을 공개한다.
+  // 영웅 등급은 아바타에만 있어서, 다른 도감의 확률은 영웅을 넣기 전과 같다.
+  const RARITY = { c: { name: '일반', w: 6 }, r: { name: '희귀', w: 3 }, e: { name: '영웅', w: 2 }, l: { name: '전설', w: 1 } };
   const COLLECTION = {
     quotes: {
       name: '교수님 어록', source: '지나가는 교수님을 잡으면', chance: 0.6,
@@ -151,6 +155,48 @@
       name: '과제 협약서', source: '그 과제를 처음 끝내면', chance: 1,
       each: '협약서 1장당 과제 보상 +5%', set: '과제 슬롯 +1',
     },
+    avatar: {
+      name: '아바타', source: '전직할 때마다 1개 확정, 5레벨마다 1개, 과제 완료 시 25%', chance: 1,
+      each: '부위별 능력치 일반 2%·희귀 4%·영웅 8%·전설 15%', set: '부위를 다 모으면 그 능력치 +10%',
+      items: [
+        ['체크셔츠', 'c'], ['과티', 'c'], ['실험 가운', 'r'], ['니트 조끼', 'r'], ['정장', 'e'], ['학위복', 'l'],
+        ['비니', 'c'], ['헤어밴드', 'r'], ['헤드폰', 'r'], ['학사모', 'l'],
+        ['뿔테 안경', 'c'], ['마스크', 'c'], ['반창고', 'c'], ['블루라이트 안경', 'r'], ['선글라스', 'e'],
+        ['거북목', 'c'], ['바른 자세', 'e'],
+        ['텀블러', 'c'], ['음료 캔', 'c'], ['컵라면', 'r'], ['다육이 화분', 'r'], ['황금 키보드', 'l'],
+      ],
+    },
+    // 상장·학회 발표는 논문을 낼 때 떨어지고, 직급이 높을수록 높은 등급이 잘 나온다(tierScaled).
+    awards: {
+      name: '상장·수상', source: '논문을 낼 때', chance: 0.15, tierScaled: true,
+      each: '상장 1개당 논문 비용 -1%', set: '엔딩 때 받는 월계관 +1',
+      items: [
+        ['학과 공모전 장려상', 'c'], ['학과 공모전 우수상', 'c'], ['교내 학술대회 포스터상', 'c'], ['우수 조교상', 'c'],
+        ['학과 공모전 최우수상', 'r'], ['Best Poster Award', 'r'], ['학회 우수 발표상', 'r'],
+        ['학회장상', 'e'], ['Best Paper Award', 'e'], ['학회 논문지 우수 논문상', 'e'],
+        ['장관상', 'l'], ['국제학회 최우수 논문상', 'l'],
+      ],
+    },
+    talks: {
+      name: '학회 발표 기록', source: '논문을 낼 때', chance: 0.25, tierScaled: true,
+      each: '발표 1건당 교수님 보상 +3%', set: '교수님이 20% 더 자주 지나감',
+      items: [
+        ['국내학회 포스터 발표', 'c'], ['국내학회 구두 발표', 'c'], ['교내 세미나 발표', 'c'], ['연구실 저널클럽 발표', 'c'],
+        ['국제학회 포스터 발표', 'r'], ['국제학회 구두 발표', 'r'], ['워크숍 패널 토론', 'r'],
+        ['초청 강연', 'e'], ['튜토리얼 강연', 'e'], ['세션 좌장', 'e'],
+        ['기조연설', 'l'], ['국제학회 기념 강연', 'l'],
+      ],
+    },
+    scholar: {
+      name: '장학생', source: '연차가 오르거나 전직할 때 70%', chance: 0.7, tierScaled: true,
+      each: '장학금 1개당 자동 생산 +1%', set: '재입학할 때 에너지 드링크 3개',
+      items: [
+        ['학과 성적 장학금', 'c'], ['근로 장학금', 'c'], ['연구실 연구 장학생', 'c'], ['학회 참가 지원 장학생', 'c'],
+        ['학과 연구 장학생', 'r'], ['학술 연구 지원 장학생', 'r'], ['산학 장학생', 'r'],
+        ['국가 장학생', 'e'], ['해외 연수 장학생', 'e'],
+        ['대통령급 과학장학생', 'l'], ['국외 박사과정 전액 장학생', 'l'],
+      ],
+    },
     cats: {
       name: '야옹 사진', source: '야옹과 1시간 이상 방치하고 돌아오면', chance: 1,
       each: '사진 1장당 방치 효율 +3%p', set: '방치 보상 최대 시간 +2시간',
@@ -162,6 +208,27 @@
     },
   };
   const TOPIC_STARS = [1, 4, 10];
+
+  // ---------- 아바타 (부위별 능력치, 입으면 캐릭터 외형이 바뀐다) ----------
+  // AVATAR_KEYS는 COLLECTION.avatar.items와 같은 순서다. key는 화면이 그림을 고를 때 쓴다.
+  const AV_SLOTS = {
+    top: { name: '상의', stat: 'prod', statName: '자동 생산', unit: '%' },
+    head: { name: '머리', stat: 'tap', statName: '탭', unit: '%' },
+    face: { name: '얼굴', stat: 'exp', statName: '경험치', unit: '%' },
+    posture: { name: '자세', stat: 'offline', statName: '방치 효율', unit: '%p' },
+    prop: { name: '책상 소품', stat: 'projReward', statName: '과제 보상', unit: '%' },
+  };
+  const AVATAR_KEYS = [
+    ['top', 'check'], ['top', 'tee'], ['top', 'labcoat'], ['top', 'vest'], ['top', 'suit'], ['top', 'gown'],
+    ['head', 'beanie'], ['head', 'band'], ['head', 'phones'], ['head', 'gradcap'],
+    ['face', 'horn'], ['face', 'mask'], ['face', 'bandage'], ['face', 'blue'], ['face', 'sun'],
+    ['posture', 'turtle'], ['posture', 'straight'],
+    ['prop', 'tumbler'], ['prop', 'energy'], ['prop', 'ramen'], ['prop', 'plant'], ['prop', 'goldkb'],
+  ];
+  const AV_VALUE = { c: 0.02, r: 0.04, e: 0.08, l: 0.15 };
+  const AV_PRICE = { c: 40, r: 80, e: 160, l: 320 }; // 커피 쿠폰으로 원하는 아이템을 골라서 산다(무작위 뽑기 없음)
+  const AV_SET = 0.1;
+  const DEFAULT_LOOK = () => ({ gender: 'm', top: -1, head: -1, face: -1, posture: -1, prop: -1 });
 
   const TOPICS = ['기후 변화 예측', '신약 후보 물질', '자율주행 인식', '차세대 배터리', '양자 컴퓨팅', '유전체 분석', '대규모 언어 모델', '신소재 합성', '뇌 신호 해석', '도시 교통 최적화'];
   const METHODS = ['설계', '실험적 검증', '대규모 데이터 분석', '머신러닝 기반 최적화', '이론적 고찰', '성능 개선', '시뮬레이션', '메타 분석'];
@@ -192,10 +259,12 @@
       shop: keep.shop || { noAds: false, starter: false, subUntil: '', purchases: [] },
       daily: keep.daily || { day: '', streak: 0, claimed: '', ads: 0, adBuff: 0, adSkill: 0 },
       subActive: !!keep.subActive,
-      col: keep.col || { quotes: {}, goods: {}, topics: {}, photos: { 1: true }, cats: {}, projects: {} },
+      col: keep.col || { quotes: {}, goods: {}, topics: {}, photos: { 1: true }, cats: {}, projects: {}, avatar: {}, awards: {}, talks: {}, scholar: {} },
+      look: keep.look || DEFAULT_LOOK(), drinks: keep.drinks || 0,
     };
     GENS.forEach((g) => (st.gens[g.id] = 0));
     if (colSetDone(st, 'photos')) { st.gens.coffee = 10; st.gens.intern = 5; }
+    if (prev && colSetDone(st, 'scholar')) st.drinks += 3;
     if (upLv(st, 'early')) { st.tier = 2; st.papers = CFG.needs[2]; st.promotedAt.push({ tier: 2, time: 0 }); }
     return st;
   }
@@ -219,6 +288,11 @@
     st.tier = Math.min(LAST, Math.max(1, st.tier | 0));
     (st.promotedAt || []).forEach((x) => { st.col.photos[x.tier] = true; });
     if (!st.col.projects) st.col.projects = {};
+    ['avatar', 'awards', 'talks', 'scholar'].forEach((k) => { if (!st.col[k]) st.col[k] = {}; });
+    if (typeof st.drinks !== 'number' || !(st.drinks >= 0)) st.drinks = 0;
+    if (!st.look || typeof st.look !== 'object') st.look = DEFAULT_LOOK();
+    Object.keys(DEFAULT_LOOK()).forEach((k) => { if (st.look[k] === undefined) st.look[k] = DEFAULT_LOOK()[k]; });
+    if (st.look.gender !== 'f') st.look.gender = 'm';
     return st;
   }
 
@@ -239,21 +313,38 @@
   };
   const colTotal = (k) => (k === 'topics' ? TOPICS.length * 3 : k === 'photos' ? TIERS.length - 1 : k === 'projects' ? PROJECTS.length : COLLECTION[k].items.length);
   function colSetDone(st, k) { return colCount(st, k) >= colTotal(k); }
+  // 아바타 부위별 능력치 합계: 가진 아이템의 등급 값 + 부위를 다 모으면 +10%
+  function avatarStats(st) {
+    const out = { prod: 0, tap: 0, exp: 0, offline: 0, projReward: 0 }, have = {}, all = {};
+    const owned = (st.col && st.col.avatar) || {};
+    AVATAR_KEYS.forEach(([slot], i) => {
+      all[slot] = (all[slot] || 0) + 1;
+      if (owned[i]) { have[slot] = (have[slot] || 0) + 1; out[AV_SLOTS[slot].stat] += AV_VALUE[COLLECTION.avatar.items[i][1]]; }
+    });
+    Object.keys(AV_SLOTS).forEach((slot) => { if (have[slot] === all[slot]) out[AV_SLOTS[slot].stat] += AV_SET; });
+    return out;
+  }
+  const avSlotDone = (st, slot) => AVATAR_KEYS.every(([sl], i) => sl !== slot || !!st.col.avatar[i]);
   function colBonus(st) {
+    const av = avatarStats(st);
     return {
-      tap: 0.02 * colCount(st, 'quotes'), prod: 0.02 * colCount(st, 'goods') + 0.01 * colCount(st, 'topics'),
-      exp: 0.03 * colCount(st, 'photos'), offline: 0.03 * colCount(st, 'cats'),
-      profMult: colSetDone(st, 'quotes') ? 2 : 1, paperDiscount: colSetDone(st, 'goods') ? 0.1 : 0,
+      tap: 0.02 * colCount(st, 'quotes') + av.tap, prod: 0.02 * colCount(st, 'goods') + 0.01 * colCount(st, 'topics') + 0.01 * colCount(st, 'scholar') + av.prod,
+      exp: 0.03 * colCount(st, 'photos') + av.exp, offline: 0.03 * colCount(st, 'cats') + av.offline, projReward: av.projReward,
+      profMult: (colSetDone(st, 'quotes') ? 2 : 1) * (1 + 0.03 * colCount(st, 'talks')), profFreq: colSetDone(st, 'talks') ? 0.2 : 0,
+      paperDiscount: Math.min(0.5, (colSetDone(st, 'goods') ? 0.1 : 0) + 0.01 * colCount(st, 'awards')),
       paperBonus: CFG.paperBonus + (colSetDone(st, 'topics') ? 0.01 : 0), capH: colSetDone(st, 'cats') ? 2 : 0,
     };
   }
   // 희귀도 가중치로 항목 하나를 뽑는다. 이미 가진 항목이면 커피 쿠폰 1개로 바꿔 준다.
   // 중복 보정: 중복이 PITY번 쌓이면 다음 드롭은 아직 없는 항목 중에서 확정으로 나온다.
   const PITY = 4;
-  function weightedPick(st, items, list) {
-    const total = list.reduce((a, i) => a + RARITY[items[i][1]].w, 0);
+  // 직급이 오를수록 희귀 +15%, 영웅 +30%, 전설 +50%씩 가중치가 커진다(tierScaled 도감만).
+  const TIER_W = { c: 0, r: 0.15, e: 0.3, l: 0.5 };
+  const weightOf = (k, rar, tier) => RARITY[rar].w * (COLLECTION[k].tierScaled ? 1 + TIER_W[rar] * ((tier || 1) - 1) : 1);
+  function weightedPick(st, items, list, k) {
+    const total = list.reduce((a, i) => a + weightOf(k, items[i][1], st.tier), 0);
     let r = rnd(st) * total;
-    for (const i of list) { r -= RARITY[items[i][1]].w; if (r <= 0) return i; }
+    for (const i of list) { r -= weightOf(k, items[i][1], st.tier); if (r <= 0) return i; }
     return list[list.length - 1];
   }
   function dropItem(st, k) {
@@ -263,7 +354,7 @@
     const missing = all.filter((i) => !st.col[k][i]);
     if (!st.col.pity) st.col.pity = {};
     const pity = st.col.pity[k] || 0;
-    const idx = pity >= PITY && missing.length ? weightedPick(st, c.items, missing) : weightedPick(st, c.items, all);
+    const idx = pity >= PITY && missing.length ? weightedPick(st, c.items, missing, k) : weightedPick(st, c.items, all, k);
     const [name, rar] = c.items[idx];
     const isNew = !st.col[k][idx];
     st.col.pity[k] = isNew ? 0 : pity + 1;
@@ -272,11 +363,11 @@
     else { st.coupons += 1; note(st, 'dupe', '[' + c.name + '] 「' + name + '」 중복 → 커피 쿠폰 +1'); }
     return { k, idx, name, rar, isNew };
   }
-  // 도감 화면용: 항목별 확률(%)
-  function dropRate(k, idx) {
+  // 도감 화면용: 항목별 확률(%). 직급에 따라 바뀌는 도감은 tier(지금 직급) 기준.
+  function dropRate(k, idx, tier) {
     const c = COLLECTION[k];
-    const total = c.items.reduce((a, it) => a + RARITY[it[1]].w, 0);
-    return c.chance * RARITY[c.items[idx][1]].w / total * 100;
+    const total = c.items.reduce((a, it) => a + weightOf(k, it[1], tier), 0);
+    return c.chance * weightOf(k, c.items[idx][1], tier) / total * 100;
   }
 
   // ---------- 배율 ----------
@@ -308,6 +399,7 @@
       st.exp -= expNeed(st.lv); st.lv++;
       if (st.lv % 10 === 0) { st.coupons += 5; note(st, 'level', '레벨 ' + st.lv + ' 달성! 커피 쿠폰 +5'); }
       else note(st, 'level', '레벨 업! Lv ' + st.lv + ' (생산·탭 +' + Math.round(CFG.levelBonus * 100 * st.lv) + '%)');
+      if (st.lv % 5 === 0) { dropItem(st, 'avatar'); giveDrink(st, 1, '레벨 ' + st.lv); }
     }
   }
 
@@ -349,14 +441,14 @@
     const c = paperCost(st); if (st.data < c) return null;
     const yearBefore = yearOf(st);
     st.data -= c; st.papers++; st.life.papers++;
-    if (yearOf(st) > yearBefore) note(st, 'year', rankName(st) + '으로 진급했다! 자동 생산 +10%');
+    if (yearOf(st) > yearBefore) { note(st, 'year', rankName(st) + '으로 진급했다! 자동 생산 +10%'); dropItem(st, 'scholar'); }
     const ti = Math.floor(rnd(st) * TOPICS.length);
     const title = TOPICS[ti] + '의 ' + METHODS[Math.floor(rnd(st) * METHODS.length)];
     st.paperTitles.push(title);
     const n = (st.col.topics[ti] || 0) + 1;
     st.col.topics[ti] = n;
     if (TOPIC_STARS.includes(n)) note(st, 'collect', '[연구 주제] 「' + TOPICS[ti] + '」 ★' + (TOPIC_STARS.indexOf(n) + 1) + ' (' + colCount(st, 'topics') + '/' + colTotal('topics') + ')');
-    dropItem(st, 'goods');
+    dropItem(st, 'goods'); dropItem(st, 'awards'); dropItem(st, 'talks');
     return title;
   }
   function canPromote(st) {
@@ -366,6 +458,7 @@
   function promote(st) {
     if (!canPromote(st)) return false;
     st.tier++; st.promotedAt.push({ tier: st.tier, time: st.time });
+    dropItem(st, 'avatar'); dropItem(st, 'scholar'); giveDrink(st, 1, '전직 축하');
     if (!st.col.photos[st.tier]) { st.col.photos[st.tier] = true; note(st, 'collect', '[직급 기념사진] ' + TIERS[st.tier].name + ' (' + colCount(st, 'photos') + '/' + colTotal('photos') + ')'); }
     if (st.tier > st.bestTier) { st.bestTier = st.tier; st.coupons += 10; note(st, 'coupon', '처음 오른 직급이라 커피 쿠폰 +10'); }
     if (st.tier === LAST) st.ended = true;
@@ -442,7 +535,7 @@
   const projSelect = (st, p) => (p.select >= 1 ? 1 : Math.min(0.95, p.select + 0.05 * upLv(st, 'grant')));
   const projUnit = (st) => Math.max(perSecBase(st) / (1 + projBuff(st)), perTapBase(st) * 2, 1) * 60; // 자동 생산 1분 치(과제 보너스 제외)
   const projCost = (st, p) => Math.ceil(Math.max(50, projUnit(st) * p.costMin));
-  const projReward = (st, p) => Math.ceil(Math.max(300, projUnit(st) * p.rewardMin) * (1 + 0.05 * colCount(st, 'projects')));
+  const projReward = (st, p) => Math.ceil(Math.max(300, projUnit(st) * p.rewardMin) * (1 + 0.05 * colCount(st, 'projects') + colBonus(st).projReward));
   function projState(st, id) {
     const p = PROJECTS.find((x) => x.id === id);
     if (st.tier < p.tier) return TIERS[p.tier].name + '부터';
@@ -471,6 +564,8 @@
       if (x.endAt > st.time) return true;
       const p = PROJECTS.find((q) => q.id === x.id);
       earn(st, x.reward); st.coupons += x.coupons; st.life.projects++;
+      if (rnd(st) < 0.25) dropItem(st, 'avatar');
+      giveDrink(st, 1, '과제 완료');
       note(st, 'project', '「' + p.name + '」 과제 완료! 데이터 +' + fmt(x.reward) + ', 커피 쿠폰 +' + x.coupons);
       if (!st.col.projects[x.id]) { st.col.projects[x.id] = true; note(st, 'collect', '[과제 협약서] 「' + p.name + '」 (' + colCount(st, 'projects') + '/' + colTotal('projects') + ')' + (colSetDone(st, 'projects') ? ' 세트 완성: 과제 슬롯 +1' : '')); }
       return false;
@@ -480,7 +575,8 @@
   // ---------- 월계관과 재입학 ----------
   function laurelReward(st) {
     const extra = Math.min(5, Math.floor(Math.max(0, st.papers - CFG.needs[LAST]) / 5));
-    return { base: CFG.laurelBase, extra, honor: upLv(st, 'honor'), total: CFG.laurelBase + extra + upLv(st, 'honor') };
+    const award = colSetDone(st, 'awards') ? 1 : 0;
+    return { base: CFG.laurelBase, extra, honor: upLv(st, 'honor'), award, total: CFG.laurelBase + extra + upLv(st, 'honor') + award };
   }
   // 엔딩 후 재입학: 월계관을 받고 새 판을 연다. 평생 기록은 이어진다.
   function retire(st) {
@@ -499,6 +595,24 @@
     if (!u || lv >= u.max || st.laurels < u.cost(lv)) return false;
     st.laurels -= u.cost(lv); st.ups[id] = lv + 1; return true;
   }
+
+  // ---------- 아바타 구매·장착 ----------
+  function avPrice(idx) { return AV_PRICE[COLLECTION.avatar.items[idx][1]]; }
+  function buyAvatar(st, idx) {
+    const it = COLLECTION.avatar.items[idx];
+    if (!it || st.col.avatar[idx] || st.coupons < avPrice(idx)) return false;
+    st.coupons -= avPrice(idx); st.col.avatar[idx] = 1;
+    note(st, 'collect', '[아바타] ' + RARITY[it[1]].name + ' 「' + it[0] + '」 구매! (' + colCount(st, 'avatar') + '/' + colTotal('avatar') + ')');
+    return true;
+  }
+  // 가진 아이템을 입는다. 이미 입고 있으면 벗는다.
+  function equip(st, idx) {
+    if (!st.col.avatar[idx]) return false;
+    const slot = AVATAR_KEYS[idx][0];
+    st.look[slot] = st.look[slot] === idx ? -1 : idx;
+    return true;
+  }
+  function setGender(st, g) { st.look.gender = g === 'f' ? 'f' : 'm'; return true; }
 
   // ---------- 랭킹 점수 ----------
   function colPct(st) {
@@ -521,9 +635,12 @@
   }
   const attendReady = (st) => !!st.daily.day && st.daily.claimed !== st.daily.day;
   const attendReward = (st) => ATTEND[(Math.max(1, st.daily.streak) - 1) % 7] + (st.subActive ? 20 : 0);
+  const attendDrink = (st) => [3, 7].includes(((Math.max(1, st.daily.streak) - 1) % 7) + 1);
   function claimAttend(st) {
     if (!attendReady(st)) return 0;
-    const v = attendReward(st); st.coupons += v; st.daily.claimed = st.daily.day; return v;
+    const v = attendReward(st); st.coupons += v; st.daily.claimed = st.daily.day;
+    if (attendDrink(st)) giveDrink(st, 1, '출석');
+    return v;
   }
   function adLeft(st, kind) {
     const total = AD_LIMITS.total - st.daily.ads;
@@ -536,7 +653,7 @@
     if (adLeft(st, kind) <= 0) return false;
     st.daily.ads++;
     if (kind === 'buff') { st.daily.adBuff++; st.buffs.push({ kind: 'prod', mult: 2, until: st.time + 1800, src: '연구 지원금' }); }
-    else if (kind === 'skill') { st.daily.adSkill++; st.skills.night = st.time; st.skills.deadline = st.time; }
+    else if (kind === 'skill') { st.daily.adSkill++; giveDrink(st, 1, '광고 보상'); }
     else if (kind === 'offline') earn(st, payload || 0);
     return true;
   }
@@ -557,13 +674,25 @@
     st.coupons -= it.cost;
     if (id === 'warp') earn(st, perSecBase(st) * 7200);
     if (id === 'pet') st.pet = true;
+    if (id === 'drink') st.drinks++;
+    return true;
+  }
+  function giveDrink(st, n, why) { st.drinks = (st.drinks || 0) + n; note(st, 'drink', '에너지 드링크 +' + n + ' (' + why + ') · 가방에 ' + st.drinks + '개'); }
+  // 마시기: 이미 마신 효과가 남아 있으면 시간만 5분 늘린다
+  function drink(st) {
+    if (st.ended || !(st.drinks > 0)) return false;
+    st.drinks--;
+    const cur = st.buffs.filter((b) => b.src === DRINK.src && b.until > st.time);
+    if (cur.length) cur.forEach((b) => { b.until += DRINK.dur; });
+    else { st.buffs.push({ kind: 'tap', mult: DRINK.mult, until: st.time + DRINK.dur, src: DRINK.src }); st.buffs.push({ kind: 'prod', mult: DRINK.mult, until: st.time + DRINK.dur, src: DRINK.src }); }
     return true;
   }
   const spent = (st) => st.shop.purchases.reduce((a, p) => a + p.price, 0);
 
   return {
     CFG, TIERS, LAST, GENS, SKILLS, AUTOS, MILESTONES, PRODUCTS, COUPON_ITEMS, AD_LIMITS, ATTEND, fmt,
-    COLLECTION, RARITY, TOPICS, TOPIC_STARS, PITY, LAUREL_UPS, PROJECTS, YEARS, upLv, laurelMult, projBuff, yearOf, rankName,
+    COLLECTION, RARITY, TOPICS, TOPIC_STARS, PITY, AV_SLOTS, AVATAR_KEYS, AV_VALUE, AV_PRICE, AV_SET, SLOTS,
+    avatarStats, avSlotDone, avPrice, buyAvatar, equip, setGender, DRINK, drink, giveDrink, attendDrink, LAUREL_UPS, PROJECTS, YEARS, upLv, laurelMult, projBuff, yearOf, rankName,
     projSlots, projSelect, projCost, projReward, projState, startProject, laurelReward, retire, buyUpgrade, colPct, scoreCard, colCount, colTotal, colSetDone, colBonus, dropRate,
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
