@@ -261,7 +261,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   { const ps = await page(undefined, JSON.stringify({ st: Object.assign(E.newGame(), { tier: E.LAST, ended: true, century: true, papers: 45, paperTitles: [E.FINAL_TITLE, '다른 논문'] }), at: Date.now() }));
     await ps.waitForTimeout(300); for (let k = 0; k < 5 && !(await ps.isHidden('#modal')); k++) { if (!(await clickModal(ps, '받기')) && !(await clickModal(ps, '닫기'))) break; await ps.waitForTimeout(150); }
     ok('엔딩을 닫아도 재입학 버튼이 남는다', (await ps.textContent('#promoteBtn')).includes('재입학') && !(await ps.isHidden('#promoteBtn')));
-    await ps.click('#promoteBtn'); await ps.waitForTimeout(200);
+    await ps.click('#promoteBtn', { force: true }); await ps.waitForTimeout(200);
     ok('엔딩 제목은 세기의 연구', (await modalText(ps)).includes(E.FINAL_TITLE + '」이')); }
   ok('콘솔 오류 없음', errors.length === 0, errors.join(' | '));
   console.log(results.join('\n'));
