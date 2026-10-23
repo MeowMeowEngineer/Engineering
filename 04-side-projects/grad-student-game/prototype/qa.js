@@ -252,6 +252,15 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   const p11 = await page();
   ok('폰 너비 가로 스크롤 없음', (await p11.evaluate(() => document.documentElement.scrollWidth)) <= 400);
   { const g = E.newGame(); g.taps = 20; g.data = 1e3; const a1 = E.guide(g); g.skills.night = 1e9; const a2 = E.guide(g, { prof: true }); ok('가이드 엔진: 논문을 쓸 수 있으면 논문, 교수님이 지나가면 교수님', a1 && a1.kind === 'write' && a2 && a2.kind === 'prof', JSON.stringify([a1 && a1.kind, a2 && a2.kind])); }
+  // QA 에이전트가 찾은 버그 회귀 검사
+  { const g = E.newGame(); g.buffs.push({ kind: 'prod', mult: 2, until: g.time + 1800, src: '연구 지원금' }); E.offline(g, 60); ok('자리를 비워도 버프가 남는다 (남은 시간만 줄어듦)', g.buffs.length === 1 && Math.round(g.buffs[0].until - g.time) === 1740); }
+  { const g = E.newGame(); g.tier = 3; g.data = 1e6; E.startProject(g, 'i1'); g.gens.lab = 300; const before = g.total; g.time = g.projects[0].endAt - 0.01; E.tick(g, 0.02); ok('과제 보상은 끝날 때의 생산 기준', g.total - before >= E.projReward(g, E.PROJECTS[0]) * 0.99); }
+  { let okm = true; try { const m = E.migrate({ v: 2, col: null, gens: null, daily: null, buffs: null, papers: '5' }); E.tick(m, 1); E.refreshDay(m, '2026-10-23', '2026-10-22'); okm = m.papers === 5; } catch (e) { okm = false; } ok('깨진 저장본(null 칸, 문자열 숫자)도 열린다', okm); }
+  { const ps = await page(undefined, JSON.stringify({ st: Object.assign(E.newGame(), { tier: E.LAST, ended: true, century: true, papers: 45, paperTitles: [E.FINAL_TITLE, '다른 논문'] }), at: Date.now() }));
+    await ps.waitForTimeout(300); while (await clickModal(ps, '받기') || await clickModal(ps, '닫기')) await ps.waitForTimeout(150);
+    ok('엔딩을 닫아도 재입학 버튼이 남는다', (await ps.textContent('#promoteBtn')).includes('재입학') && !(await ps.isHidden('#promoteBtn')));
+    await ps.click('#promoteBtn'); await ps.waitForTimeout(200);
+    ok('엔딩 제목은 세기의 연구', (await modalText(ps)).includes(E.FINAL_TITLE + '」이')); }
   ok('콘솔 오류 없음', errors.length === 0, errors.join(' | '));
   console.log(results.join('\n'));
   console.log('스크린샷: ' + SP);

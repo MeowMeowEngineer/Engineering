@@ -10,7 +10,7 @@
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 전직 속도를 맞춘다.
   const CFG = {
     needs: [0, 0, 3, 7, 11, 16, 22, 29, 37, 45], // 직급별 전직에 필요한 누적 논문 편수
-    paperBase: 36000, paperGrowth: 1.45, paperBonus: 0.03, tierProd: 1.5, tierTap: 1.5, century: 1e10,
+    paperBase: 36000, paperGrowth: 1.48, paperBonus: 0.03, tapShare: 0.05, tierProd: 1.5, tierTap: 1.5, century: 1e10,
     levelBonus: 0.03, expBase: 60, expGrowth: 1.2, tapExp: 0.5,
     offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3, laurelBonus: 0.2, laurelBase: 3,
   };
@@ -42,7 +42,7 @@
     { id: 'postdoc', name: '포닥 연구원', note: '내가 포닥일 때보다 일을 잘한다', base: 3.3e8, rate: 44000, tier: 5 },
     { id: 'consortium', name: '국제 공동연구단', note: '시차 덕분에 24시간 연구', base: 5.1e9, rate: 260000, tier: 6 },
     { id: 'telescope', name: '국가 대형 연구시설', note: '가속기·망원경·데이터센터 사용 시간을 따냈다', base: 7.5e10, rate: 1.6e6, tier: 7 },
-    { id: 'institute', name: '석학 연구원', note: '이름을 딴 연구원이 생겼다', base: 1e12, rate: 1e7, tier: 8 },
+    { id: 'institute', name: '석학 연구원', note: '이름을 딴 연구원이 생겼다', base: 1e12, rate: 4e7, tier: 8 },
   ];
   const GEN_GROWTH = 1.15;
   const MILESTONES = [10, 25, 50, 100]; // 이만큼 보유하면 그 생산원 효율 2배
@@ -265,7 +265,7 @@
     GENS.forEach((g) => (st.gens[g.id] = 0));
     if (colSetDone(st, 'photos')) { st.gens.coffee = 10; st.gens.intern = 5; }
     if (prev && colSetDone(st, 'scholar')) st.drinks += 3;
-    if (upLv(st, 'early')) { st.tier = 2; st.papers = CFG.needs[2]; st.promotedAt.push({ tier: 2, time: 0 }); }
+    if (upLv(st, 'early')) { st.tier = 2; st.papers = CFG.needs[2]; st.promotedAt.push({ tier: 2, time: 0 }); st.col.photos[2] = true; }
     return st;
   }
   // 저장본을 현재 구조로 맞춘다. 알 수 없는 저장본이면 null.
@@ -281,6 +281,9 @@
     }
     if (st.v !== 2) return null;
     if (st.laurels === undefined) st.laurels = st.medals || 0;
+    // 깨진 저장본: 객체·배열이어야 할 칸이 null이거나 숫자가 문자열이면 새 값으로 바꾼다
+    const fresh0 = newGame({});
+    Object.keys(fresh0).forEach((k) => { const a = fresh0[k], b = st[k]; if (b === undefined) return; if (a && typeof a === 'object' && (!b || typeof b !== 'object' || Array.isArray(a) !== Array.isArray(b))) st[k] = a; else if (typeof a === 'number' && typeof b !== 'number') st[k] = Number(b) >= 0 ? Number(b) : a; });
     const fresh = newGame({ medals: st.medals, laurels: st.laurels });
     Object.keys(fresh).forEach((k) => { if (st[k] === undefined) st[k] = fresh[k]; });
     GENS.forEach((g) => { if (typeof st.gens[g.id] !== 'number') st.gens[g.id] = 0; });
@@ -385,7 +388,7 @@
   function perSec(st) { return perSecBase(st) * buffMult(st, 'prod'); }
   function perTapBase(st) {
     const base = Math.pow(2, st.tapLv) * Math.pow(CFG.tierTap, st.tier - 1) * laurelMult(st) * (1 + 0.5 * upLv(st, 'finger')) * levelMult(st) * (1 + colBonus(st).tap);
-    const share = st.tier >= 3 ? perSecBase(st) * 0.02 : 0; // 포닥부터 탭 1번에 초당 생산의 2%가 더해진다
+    const share = st.tier >= 2 ? perSecBase(st) * CFG.tapShare : 0; // 박사과정부터 탭 1번에 초당 생산의 일부가 더해진다
     return base + share;
   }
   const perTap = (st) => perTapBase(st) * buffMult(st, 'tap');
@@ -441,7 +444,7 @@
     const c = paperCost(st); if (st.data < c) return null;
     const yearBefore = yearOf(st);
     st.data -= c; st.papers++; st.life.papers++;
-    if (yearOf(st) > yearBefore) { note(st, 'year', rankName(st) + '으로 진급했다! 자동 생산 +10%'); dropItem(st, 'scholar'); }
+    if (yearOf(st) > yearBefore) { note(st, 'year', jo(rankName(st), '으로', '로') + ' 진급했다! 자동 생산 +10%'); dropItem(st, 'scholar'); }
     const ti = Math.floor(rnd(st) * TOPICS.length);
     const title = TOPICS[ti] + '의 ' + METHODS[Math.floor(rnd(st) * METHODS.length)];
     st.paperTitles.push(title);
@@ -476,7 +479,7 @@
     st.skills[id] = st.time + s.cd;
     return true;
   }
-  function setAuto(st, id, on) { if (st.tier < AUTOS[id].tier) return false; st.auto[id] = !!on; return true; }
+  function setAuto(st, id, on) { if (st.tier < AUTOS[id].tier) return false; st.auto[id] = !!on; if (on) { st.autoEver = st.autoEver || {}; st.autoEver[id] = true; } return true; }
   // 자동 투고와 자동 고용. 매 틱과 방치 계산 중에 부른다.
   function autoActions(st) {
     if (st.ended) return;
@@ -514,7 +517,6 @@
     const s = Math.min(Math.max(0, raw), cap);
     const before = { total: st.total, lv: st.lv, papers: st.papers, projects: st.life.projects };
     if (s > 0 && !st.ended) {
-      st.buffs = [];
       const n = 100, dt = s / n;
       for (let i = 0; i < n; i++) {
         earn(st, (perSecBase(st) + (st.pet ? CFG.petTps * perTapBase(st) : 0)) * dt * eff);
@@ -526,6 +528,7 @@
       if (st.pet && s >= 3600) dropItem(st, 'cats');
       // 자리를 비운 동안 교수님이 2시간마다 다녀가며 어록을 남긴다(최대 4번)
       for (let i = 0; i < Math.min(4, Math.floor(s / 7200)); i++) dropItem(st, 'quotes');
+      st.buffs = st.buffs.filter((b) => b.until > st.time); // 버프는 지워지지 않고, 자리를 비운 시간만큼 줄어든다
     }
     return { seconds: s, capH: cap / 3600, capped: raw > cap, eff, gain: st.total - before.total, levels: st.lv - before.lv, papers: st.papers - before.papers, projects: st.life.projects - before.projects };
   }
@@ -563,10 +566,11 @@
     st.projects = st.projects.filter((x) => {
       if (x.endAt > st.time) return true;
       const p = PROJECTS.find((q) => q.id === x.id);
-      earn(st, x.reward); st.coupons += x.coupons; st.life.projects++;
+      const v = projReward(st, p); // 끝날 때의 생산 기준으로 준다(시작 때 정하면 그새 커진 생산에 묻힌다)
+      earn(st, v); st.coupons += x.coupons; st.life.projects++;
       if (rnd(st) < 0.25) dropItem(st, 'avatar');
       giveDrink(st, 1, '과제 완료');
-      note(st, 'project', '「' + p.name + '」 과제 완료! 데이터 +' + fmt(x.reward) + ', 커피 쿠폰 +' + x.coupons);
+      note(st, 'project', '「' + p.name + '」 과제 완료! 데이터 +' + fmt(v) + ', 커피 쿠폰 +' + x.coupons);
       if (!st.col.projects[x.id]) { st.col.projects[x.id] = true; note(st, 'collect', '[과제 협약서] 「' + p.name + '」 (' + colCount(st, 'projects') + '/' + colTotal('projects') + ')' + (colSetDone(st, 'projects') ? ' 세트 완성: 과제 슬롯 +1' : '')); }
       return false;
     });
@@ -692,30 +696,35 @@
   // ---------- 실시간 가이드 ----------
   // 지금 먼저 할 일 하나를 고른다. ctx.prof: 화면에 교수님이 지나가는 중인지(화면이 알려 줌)
   const jo = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b); };
+  const dur = (sec) => { const t = Math.max(1, Math.ceil(sec)); return t >= 3600 ? Math.floor(t / 3600) + '시간 ' + Math.round((t % 3600) / 60) + '분' : t >= 60 ? Math.round(t / 60) + '분' : t + '초'; };
   function guide(st, ctx) {
-    const c = ctx || {};
-    if (st.ended) return null;
+    const c = ctx || {}, ps = perSec(st);
+    if (st.ended) return { kind: 'retire', text: '살아있는 교과서가 되었어요! 월계관을 받고 재입학하세요.' };
     if (st.taps < 10 && st.papers === 0) return { kind: 'tap', text: '대학원생을 탭해서 연구 데이터를 모으세요.' };
     if (canPromote(st)) return { kind: 'promote', text: '논문이 다 모였어요. ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직하세요!' };
     if (c.prof) return { kind: 'prof', text: '교수님이 지나가요! 놓치기 전에 누르세요.' };
-    if (st.tier === LAST - 1 && !st.century && st.papers >= CFG.needs[LAST] && st.data >= CFG.century) return { kind: 'century', text: '세기의 연구를 완성할 수 있어요.' };
-    if (st.papers < nextNeed(st) && st.data >= paperCost(st)) return { kind: 'write', text: '논문을 쓸 수 있어요. 전직까지 ' + (nextNeed(st) - st.papers) + '편 남았어요.' };
+    if (st.tier === LAST - 1 && !st.century && st.papers >= CFG.needs[LAST]) {
+      if (st.data >= CFG.century) return { kind: 'century', text: '세기의 연구를 완성할 수 있어요.' };
+      return { kind: 'wait', text: '세기의 연구에 데이터 ' + fmt(CFG.century) + '이 필요해요' + (ps > 0 ? ' (약 ' + dur((CFG.century - st.data) / ps) + ')' : '') + '.' + (st.auto.hire ? ' 자동 고용을 잠시 끄면 더 빨리 모여요.' : '') };
+    }
+    const need = nextNeed(st), pc = paperCost(st);
+    if (st.papers < need && st.data >= pc) return { kind: 'write', text: '논문을 쓸 수 있어요. 전직까지 ' + (need - st.papers) + '편 남았어요.' };
+    // 논문이 곧이면(20초 안) 다른 데 쓰지 말고 기다리게 한다
+    if (st.papers < need && ps > 0 && (pc - st.data) / ps <= 20) return { kind: 'wait', text: '곧 논문을 쓸 수 있어요 (약 ' + dur((pc - st.data) / ps) + '). 데이터를 아껴 두세요.' };
     if (attendReady(st)) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상(커피 쿠폰)을 받으세요.' };
-    const sk = Object.keys(SKILLS).find((id) => skillReady(st, id));
-    if (sk) return { kind: 'skill', id: sk, text: jo(SKILLS[sk].name, '을', '를') + ' 쓰면 ' + SKILLS[sk].desc + '예요.' };
-    const au = Object.keys(AUTOS).find((id) => st.tier >= AUTOS[id].tier && !st.auto[id]);
-    if (au) return { kind: 'auto', id: au, text: jo(AUTOS[au].name, '을', '를') + ' 켜 두면 ' + AUTOS[au].desc + '.' };
+    const AUTO_TXT = { paper: '후배가 데이터가 모이는 대로 논문을 내 줘요', hire: '데이터 절반 안에서 효율 좋은 동료·장비를 알아서 들여요' };
+    const au = Object.keys(AUTOS).find((id) => st.tier >= AUTOS[id].tier && !st.auto[id] && !(st.autoEver && st.autoEver[id]));
+    if (au) return { kind: 'auto', id: au, text: jo(AUTOS[au].name, '을', '를') + ' 켜면 ' + AUTO_TXT[au] + '.' };
     if (st.drinks > 0 && !st.buffs.some((b) => b.src === DRINK.src && b.until > st.time)) return { kind: 'drink', text: '에너지 드링크가 있어요. 마시면 5분 동안 2배예요.' };
-    if (st.projects.length < projSlots(st) && PROJECTS.some((p) => projState(st, p.id) === true)) return { kind: 'tab', tab: 'proj', text: '과제 슬롯이 비었어요. 과제를 따 오세요.' };
-    // 동료·장비: 데이터 대비 효율이 가장 좋은 것
+    if (st.papers >= 1 && st.projects.length < projSlots(st) && PROJECTS.some((p) => projState(st, p.id) === true)) return { kind: 'tab', tab: 'proj', text: '과제 슬롯이 비었어요. 과제를 따 오세요.' };
     const best = GENS.filter((g) => genUnlocked(st, g.id)).map((g) => ({ g, c: genCost(st, g.id) })).sort((a, b) => genRate(st, b.g) / b.c - genRate(st, a.g) / a.c)[0];
     if (best && st.data >= best.c) return { kind: 'gen', id: best.g.id, text: jo(best.g.name, '을', '를') + (['intern', 'junior', 'postdoc'].includes(best.g.id) ? ' 뽑으세요' : ' 들이세요') + '. 지금 가장 효율이 좋아요.' };
-    if (st.data >= tapCost(st) && tapCost(st) < (best ? best.c : Infinity) * 0.5) return { kind: 'tapUp', text: '타자 속도를 올리면 탭이 2배가 돼요.' };
+    if (st.data >= tapCost(st)) { const t0 = perTapBase(st); st.tapLv++; const t1 = perTapBase(st); st.tapLv--; if (t1 / t0 > 1.3) return { kind: 'tapUp', text: '타자 속도를 올리면 탭이 ' + (t1 / t0).toFixed(1) + '배가 돼요.' }; }
+    const sk = Object.keys(SKILLS).find((id) => skillReady(st, id));
+    if (sk) return { kind: 'skill', id: sk, text: jo(SKILLS[sk].name, '을', '를') + ' 쓰면 ' + SKILLS[sk].desc + '예요.' };
     if (st.laurels > 0 && Object.keys(LAUREL_UPS).some((id) => upLv(st, id) < LAUREL_UPS[id].max && st.laurels >= LAUREL_UPS[id].cost(upLv(st, id)))) return { kind: 'tab', tab: 'laurel', text: '월계관으로 영구 강화를 살 수 있어요.' };
-    if (!st.look || !st.look.gender) return { kind: 'tab', tab: 'avatar', text: '아바타 탭에서 모습을 정해 보세요.' };
-    const ps = perSec(st);
-    if (st.papers < nextNeed(st) && ps > 0) return { kind: 'wait', text: '다음 논문까지 데이터를 모으는 중 (약 ' + Math.max(1, Math.ceil((paperCost(st) - st.data) / ps)) + '초). 탭하면 더 빨라요.' };
-    if (best && ps > 0) return { kind: 'wait', text: best.g.name + '까지 데이터를 모으는 중 (약 ' + Math.max(1, Math.ceil((best.c - st.data) / ps)) + '초).' };
+    if (st.papers < need && ps > 0) return { kind: 'wait', text: '다음 논문까지 데이터를 모으는 중 (약 ' + dur((pc - st.data) / ps) + '). 탭하면 더 빨라요.' };
+    if (best && ps > 0) return { kind: 'wait', text: best.g.name + '까지 데이터를 모으는 중 (약 ' + dur((best.c - st.data) / ps) + ').' };
     return { kind: 'tap', text: '탭해서 데이터를 모으세요. 동료·장비를 들이면 자동으로 쌓여요.' };
   }
 
@@ -727,6 +736,6 @@
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
     buyGen, buyTap, writePaper, canPromote, promote, buyCentury, skillReady, useSkill, setAuto, profReward, offline,
-    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide,
+    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide, jo, FINAL_TITLE,
   };
 });

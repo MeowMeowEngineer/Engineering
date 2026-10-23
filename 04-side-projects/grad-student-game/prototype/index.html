@@ -238,12 +238,15 @@ button.item:disabled { cursor: not-allowed; }
 .danger { border-color: var(--stamp); color: var(--stamp); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } .prof { animation: none; left: 12px; } }
 /* 실시간 말풍선 가이드 */
-.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 12px; font: inherit; font-size: 0.9rem; cursor: pointer; text-align: left; width: 100%; }
+.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 8px 6px 12px; font-size: 0.9rem; }
+.guidebar span { flex: 1; min-width: 0; }
+.gdo { flex: none; border: 2px solid #a86a00; background: #e0b030; color: #2a1d00; font: inherit; font-weight: 700; padding: 4px 10px; cursor: pointer; }
+.gdo:disabled { opacity: 0.5; cursor: not-allowed; }
 .guidebar b { white-space: nowrap; }
 .bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; animation: bub 1.2s ease-in-out infinite; pointer-events: none; }
-.bubble::after { content: ""; position: absolute; left: 18px; bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
+.bubble::after { content: ""; position: absolute; left: var(--ax, 18px); bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
 .bubble.below::after { bottom: auto; top: -9px; border-top: 0; border-bottom: 8px solid #e0b030; }
-.bubble button { pointer-events: auto; position: absolute; right: 2px; top: 1px; border: 0; background: none; cursor: pointer; font-size: 0.9rem; color: #7a5a00; }
+.bubble button { pointer-events: auto; position: absolute; right: 0; top: 0; width: 30px; height: 30px; border: 0; background: none; cursor: pointer; font-size: 1.1rem; color: #7a5a00; }
 @keyframes bub { 50% { transform: translateY(-3px); } }
 .gpulse { box-shadow: 0 0 0 3px #e0b030, 0 0 14px 4px #e0b03099 !important; }
 @media (prefers-reduced-motion: reduce) { .bubble { animation: none; } }
@@ -259,7 +262,7 @@ button.item:disabled { cursor: not-allowed; }
     </div>
   </header>
 
-  <button class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span></button>
+  <div class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span><button type="button" class="gdo" id="guideDo" hidden></button></div>
   <div class="main">
     <section class="left" aria-label="연구실">
       <div class="sheet meter">
@@ -542,10 +545,13 @@ button.item:disabled { cursor: not-allowed; }
   function load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
 
   // ---------- 모달 (차례로 띄운다) ----------
+  const jo = E.jo;
   const modalQueue = [];
+  let curModal = null;
   function openModal(html, buttons) { modalQueue.push({ html, buttons }); if ($('modal').hidden) showNextModal(); }
   function showNextModal() {
     const m = modalQueue.shift();
+    curModal = m || null;
     if (!m) { $('modal').hidden = true; return; }
     $('dialog').innerHTML = m.html;
     m.buttons.forEach((b) => {
@@ -560,11 +566,14 @@ button.item:disabled { cursor: not-allowed; }
     const first = $('dialog').querySelector('button:not(:disabled)'); if (first) first.focus();
   }
 
+  // 다른 모달 위에 광고·결제 창을 띄울 때, 보이던 모달을 대기열 앞에 돌려놓아 사라지지 않게 한다
+  function keepCurrent() { if (!$('modal').hidden && curModal) modalQueue.unshift(curModal); }
   // 광고 시뮬레이션: 5초 카운트다운 뒤 보상. 광고 제거를 샀으면 바로 보상.
   function watchAd(kind, payload, onDone) {
     if (E.adLeft(st, kind) <= 0) { say('오늘 볼 수 있는 광고를 다 봤다. 내일 다시 열린다.'); return; }
     if (st.shop.noAds) { if (E.adReward(st, kind, payload)) { onDone && onDone(); update(); save(); } return; }
     let left = 5, timer;
+    keepCurrent();
     modalQueue.unshift({ html: '<p class="hand">광고 (시뮬레이션)</p><div class="adbox num" id="adCount">5</div><p>실제 광고는 나오지 않습니다. 정식 버전에서는 이 자리에 30초 이하 보상형 광고가 나옵니다.</p>',
       buttons: [{ label: '건너뛰기 (보상 없음)', fn: () => clearInterval(timer) }] });
     showNextModal();
@@ -573,10 +582,17 @@ button.item:disabled { cursor: not-allowed; }
       if (left <= 0) { clearInterval(timer); if (E.adReward(st, kind, payload)) { onDone && onDone(); save(); } showNextModal(); update(); }
     }, 1000);
   }
+  // 구독 연장: 아직 남은 기간이 있으면 그 끝에서 30일을 더한다
+  function subEnd() {
+    if (!(st.shop.subUntil && st.shop.subUntil >= today())) return shiftDay(29);
+    const d = new Date(st.shop.subUntil + 'T00:00:00'); d.setDate(d.getDate() + 30);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
   function mockPay(sku) {
     const p = E.PRODUCTS[sku];
+    keepCurrent();
     modalQueue.unshift({ html: '<h2>가상 결제</h2><p><b>' + p.name + '</b><br>' + won(p.price) + '</p><p>프로토타입이라 실제 결제는 일어나지 않습니다. 정식 버전에서는 이 자리에 앱 마켓 결제 창이 뜹니다.</p>',
-      buttons: [{ label: '가상 결제 완료', primary: true, fn: () => { if (E.mockBuy(st, sku, today(), shiftDay(29))) { say(p.name + ' 구매 완료 (가상).'); save(); update(true); buildShop(); } } }, { label: '취소' }] });
+      buttons: [{ label: '가상 결제 완료', primary: true, fn: () => { if (E.mockBuy(st, sku, today(), subEnd())) { say(p.name + ' 구매 완료 (가상).'); save(); update(true); buildShop(); } } }, { label: '취소' }] });
     showNextModal();
   }
 
@@ -596,7 +612,7 @@ button.item:disabled { cursor: not-allowed; }
       row.innerHTML = '<div><div class="name">' + g.name + '<span class="own num"></span></div><div class="note">' + g.note + '</div><div class="meta num"></div></div>' +
         '<button class="buy" id="buy-' + g.id + '"><b class="num"></b><small></small></button>';
       const btn = row.querySelector('button');
-      btn.addEventListener('click', () => { if (E.buyGen(st, g.id)) { say(g.name + (['intern', 'junior', 'postdoc'].includes(g.id) ? '을(를) 뽑았다.' : '을(를) 들였다.')); setMode(['intern', 'junior', 'postdoc'].includes(g.id) ? 'think' : 'exp'); update(); } });
+      btn.addEventListener('click', () => { if (E.buyGen(st, g.id)) { say(jo(g.name, '을', '를') + (['intern', 'junior', 'postdoc'].includes(g.id) ? ' 뽑았다.' : ' 들였다.')); setMode(['intern', 'junior', 'postdoc'].includes(g.id) ? 'think' : 'exp'); update(); } });
       box.appendChild(row);
       genRows[g.id] = { own: row.querySelector('.own'), meta: row.querySelector('.meta'), btn, cost: btn.querySelector('b'), small: btn.querySelector('small'), unlocked };
     });
@@ -615,7 +631,7 @@ button.item:disabled { cursor: not-allowed; }
     });
   }
   function buildTap() {
-    $('tapRows').innerHTML = '<div class="row"><div><div class="name">타자 속도 <span class="own num" id="tapLv"></span></div><div class="note">손가락이 빨라지면 탭 1번에 데이터 2배</div><div class="meta num" id="tapMeta"></div></div><button class="buy" id="tapBuy"><b class="num" id="tapCost"></b><small>강화</small></button></div>' +
+    $('tapRows').innerHTML = '<div class="row"><div><div class="name">타자 속도 <span class="own num" id="tapLv"></span></div><div class="note">손가락이 빨라지면 탭 1번의 기본 데이터가 2배</div><div class="meta num" id="tapMeta"></div></div><button class="buy" id="tapBuy"><b class="num" id="tapCost"></b><small>강화</small></button></div>' +
       '<div class="row"><div><div class="name">지금 붙어 있는 배율</div><div class="meta" id="tierBonus"></div></div><span></span></div>';
     $('tapBuy').addEventListener('click', () => { if (E.buyTap(st)) { say('타자 연습을 했다. 탭이 2배 강해졌다.'); update(); } });
   }
@@ -659,7 +675,7 @@ button.item:disabled { cursor: not-allowed; }
     $('adSkill').addEventListener('click', () => watchAd('skill', 0, () => { say('광고 보상으로 에너지 드링크를 받았다. 가방에 ' + st.drinks + '개.'); buildShop(); }));
     box.querySelectorAll('[data-coupon]').forEach((b) => b.addEventListener('click', () => {
       const id = b.dataset.coupon;
-      if (E.spendCoupon(st, id)) { say(id === 'pet' ? '야옹을 입양했다. 앞발로 대신 탭해 준다.' : '시간 가속! 자동 생산 2시간 치를 받았다.'); save(); update(); buildShop(); }
+      if (E.spendCoupon(st, id)) { say(id === 'pet' ? '야옹을 입양했다. 앞발로 대신 탭해 준다.' : id === 'drink' ? '에너지 드링크를 샀다. 가방에 ' + st.drinks + '개.' : '시간 가속! 자동 생산 2시간 치를 받았다.'); save(); update(); buildShop(); }
     }));
     box.querySelectorAll('[data-sku]').forEach((b) => b.addEventListener('click', () => mockPay(b.dataset.sku)));
   }
@@ -699,7 +715,7 @@ button.item:disabled { cursor: not-allowed; }
     });
     box.innerHTML = h;
   }
-  function mmss(sec) { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; }
+  function mmss(sec) { const m = Math.floor(sec / 60); if (m < 1) return Math.floor(sec) + '초'; return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; }
   function buildTree() {
     const box = $('treeBox'); if (!box) return; box.innerHTML = '';
     for (let t = 1; t <= E.LAST; t++) {
@@ -726,7 +742,7 @@ button.item:disabled { cursor: not-allowed; }
     $('guideToggle').addEventListener('click', () => { guideOff = !guideOff; try { localStorage.setItem(KEY + '.guide', guideOff ? 'off' : 'on'); } catch (e) {} buildRec(); updateGuide(); });
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
-    $('resetYes').addEventListener('click', () => { st = E.newGame(); refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); pickGender(); });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(); nextProfAt = st.time + 40; refreshDay(); renderedTier = 0; save(); say('새 학기, 새 연구실. 다시 석사과정이다.'); update(true); buildRec(); pickGender(); });
   }
   function buildAutos() {
     const box = $('autos'); box.innerHTML = '';
@@ -782,26 +798,39 @@ button.item:disabled { cursor: not-allowed; }
     $('centuryBtn').hidden = !showCentury;
     if (showCentury) {
       const ready = st.papers >= E.CFG.needs[E.LAST];
-      $('centuryCost').textContent = ready ? '데이터 ' + fmt(E.CFG.century) + '로 세기의 연구를 완성한다' : '논문 ' + E.CFG.needs[E.LAST] + '편을 채우면 시작할 수 있다';
+      $('centuryCost').textContent = ready ? '데이터 ' + jo(fmt(E.CFG.century), '으로', '로') + ' 세기의 연구를 완성한다' : '논문 ' + E.CFG.needs[E.LAST] + '편을 채우면 시작할 수 있다';
       $('centuryBtn').disabled = !ready || st.data < E.CFG.century;
     }
-    $('promoteBtn').hidden = !E.canPromote(st);
-    if (nt && E.canPromote(st)) $('promoteBtn').textContent = nt.name + '(으)로 전직하기';
+    $('promoteBtn').hidden = !E.canPromote(st) && !st.ended;
+    if (st.ended) $('promoteBtn').textContent = '월계관 받고 재입학하기';
+    else if (nt && E.canPromote(st)) $('promoteBtn').textContent = jo(nt.name, '으로', '로') + ' 전직하기';
     updateGens(); updateTap(); updateSkills(); updateBuffs(); updateAutos();
     drainNotes();
     if (tab === 'proj') updateProj();
     updateGuide();
   }
   // ---------- 실시간 말풍선 가이드 ----------
-  // 엔진의 guide()가 고른 할 일을 버튼 위 말풍선으로 가리키고, 그 버튼을 노랗게 빛낸다. 기록 탭에서 끌 수 있다.
-  let guideOff = false, guideKey = '', guideMuteKey = '', guideMuteUntil = 0, pulsed = null;
-  try { guideOff = localStorage.getItem(KEY + '.guide') === 'off'; } catch (e) {}
-  const vis = (el) => el && !el.disabled && el.offsetParent !== null;
+  // 엔진의 guide()가 고른 할 일을 위쪽 가이드 줄에 쓰고, 그 버튼을 노랗게 빛낸다.
+  // 떠다니는 말풍선은 종류마다 처음 2번과 중요한 순간(전직·교수님·세기의 연구·재입학)에만 띄운다.
+  // 가이드 줄의 버튼을 누르면 화면 밖 버튼도 바로 실행된다. 기록 탭에서 끌 수 있다.
+  let guideOff = false, guideMuteKey = '', guideMuteUntil = 0, pulsed = null, shown = null, shownAt = 0, seen = {};
+  try { guideOff = localStorage.getItem(KEY + '.guide') === 'off'; seen = JSON.parse(localStorage.getItem(KEY + '.seen') || '{}') || {}; } catch (e) {}
+  const ALWAYS = { promote: 1, prof: 1, century: 1, retire: 1, tap: 1 };
+  const RANK = ['retire', 'tap', 'promote', 'prof', 'century', 'write', 'tab', 'auto', 'drink', 'gen', 'tapUp', 'skill', 'wait'];
+  const DO_LABEL = { retire: '재입학', promote: '전직하기', century: '완성하기', write: '논문 쓰기', drink: '마시기', skill: '쓰기', auto: '켜기', gen: '사기', tapUp: '강화', tab: '열기', prof: '잡기' };
+  // 화면에 실제로 보이는지: 숨김·비활성이 아니고, 가로로 밀리는 탭 줄이나 연구실 장면 밖으로 잘리지 않았는지
+  function vis(el) {
+    if (!el || el.disabled || el.offsetParent === null) return false;
+    const box = el.closest('.tabs, .lab');
+    if (!box) return true;
+    const r = el.getBoundingClientRect(), b = box.getBoundingClientRect();
+    return r.left >= b.left - 2 && r.right <= b.right + 2;
+  }
   function guideTarget(g) {
-    const q = (sel) => document.querySelector(sel), first = (sel) => Array.from(document.querySelectorAll(sel)).find(vis);
+    const first = (sel) => Array.from(document.querySelectorAll(sel)).find((x) => x && !x.disabled && x.offsetParent !== null);
     switch (g.kind) {
       case 'tap': return $('tapper');
-      case 'promote': return $('promoteBtn');
+      case 'retire': case 'promote': return $('promoteBtn');
       case 'century': return $('centuryBtn');
       case 'write': return $('writeBtn');
       case 'drink': return $('drinkBtn');
@@ -810,41 +839,66 @@ button.item:disabled { cursor: not-allowed; }
       case 'auto': return $('auto-' + g.id);
       case 'gen': return tab === 'gens' ? $('buy-' + g.id) : $('tab-gens');
       case 'tapUp': return tab === 'gens' ? $('tapBuy') : $('tab-gens');
-      case 'tab': {
-        if (tab !== g.tab) return $('tab-' + g.tab);
-        return first({ shop: '#attendBtn', proj: '[id^="pbtn-"]:not([disabled])', laurel: '[data-up]:not([disabled])', avatar: '[data-gender], .gbtn' }[g.tab] || '#none');
-      }
+      case 'tab': if (tab !== g.tab) return $('tab-' + g.tab); return first({ shop: '#attendBtn', proj: '[id^="pbtn-"]', laurel: '[data-up]' }[g.tab] || '#none');
       default: return null;
     }
+  }
+  // 가이드 줄 버튼이 누를 실제 버튼(탭으로 가야 하면 탭)
+  function guideAction(g) {
+    if (g.kind === 'gen') return $('buy-' + g.id);
+    if (g.kind === 'tapUp') return $('tapBuy');
+    if (g.kind === 'tab') return tab === g.tab ? guideTarget(g) : $('tab-' + g.tab);
+    if (g.kind === 'tap' || g.kind === 'wait') return null;
+    return guideTarget(g);
   }
   function clearPulse() { if (pulsed) { pulsed.classList.remove('gpulse'); pulsed = null; } }
   function updateGuide() {
     const bub = $('bubble');
-    const g = guideOff || !$('modal').hidden ? null : E.guide(st, { prof: !!$('lab').querySelector('.prof') });
-    const key = g ? g.kind + (g.id || g.tab || '') : '';
-    guideKey = key;
+    const ctx = { prof: !!$('lab').querySelector('.prof') }, keyOf = (x) => (x ? x.kind + (x.id || x.tab || '') : '');
+    let g = guideOff || !$('modal').hidden ? null : E.guide(st, ctx);
+    // 같은 안내를 6초는 유지한다. 더 급한 종류가 생기거나 원래 안내를 더는 할 수 없으면 바로 바꾼다.
+    if (shown && g && keyOf(g) !== shown.key && Date.now() - shownAt < 6000 && RANK.indexOf(g.kind) >= RANK.indexOf(shown.g.kind)) {
+      const a = guideAction(shown.g);
+      if (shown.g.kind === 'wait' || shown.g.kind === 'tap' || (a && !a.disabled)) g = shown.g;
+    }
+    const key = keyOf(g);
+    if (!shown || key !== shown.key) {
+      shown = g ? { key, g } : null; shownAt = Date.now();
+      if (g && !ALWAYS[g.kind]) { seen[g.kind] = (seen[g.kind] || 0) + 1; try { localStorage.setItem(KEY + '.seen', JSON.stringify(seen)); } catch (e) {} }
+    }
     $('guidebar').hidden = !g;
-    if (g && $('guidetext').textContent !== g.text) $('guidetext').textContent = g.text;
-    const el = g && g.kind !== 'wait' && !(key === guideMuteKey && Date.now() < guideMuteUntil) ? guideTarget(g) : null;
+    if (!g) { bub.hidden = true; clearPulse(); return; }
+    if ($('guidetext').textContent !== g.text) $('guidetext').textContent = g.text;
+    const act = guideAction(g), doBtn = $('guideDo');
+    doBtn.hidden = !act;
+    if (act) { const lab = DO_LABEL[g.kind] || '하기'; if (doBtn.textContent !== lab) doBtn.textContent = lab; doBtn.disabled = act.disabled; }
+    const el = g.kind !== 'wait' ? guideTarget(g) : null;
+    if (el && el.closest('.tabs') && !vis(el)) { const nav = el.closest('.tabs'); nav.scrollLeft += el.getBoundingClientRect().left - nav.getBoundingClientRect().left - 8; }
     if (!el || !vis(el)) { bub.hidden = true; clearPulse(); return; }
     if (pulsed !== el) { clearPulse(); el.classList.add('gpulse'); pulsed = el; }
+    const muted = key === guideMuteKey && Date.now() < guideMuteUntil;
+    const float = !muted && (ALWAYS[g.kind] || (seen[g.kind] || 0) <= 2);
+    if (!float) { bub.hidden = true; return; }
     const r = el.getBoundingClientRect(), below = r.top < 90;
     bub.hidden = false; bub.className = 'bubble' + (below ? ' below' : '');
     if (bub.firstChild.textContent !== g.text) bub.firstChild.textContent = g.text;
     const w = bub.offsetWidth || 200;
-    // 큰 대상(캐릭터)은 가운데, 버튼은 왼쪽 위에 붙인다
-    const x = r.width > 260 ? r.left + r.width / 2 - w / 2 : r.left + 6;
-    bub.style.left = Math.max(8, Math.min(window.scrollX + x, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
+    const want = r.width > 260 ? r.left + r.width / 2 - w / 2 : r.left + 6;
+    const left = Math.max(8, Math.min(window.scrollX + want, window.scrollX + document.documentElement.clientWidth - w - 8));
+    bub.style.left = left + 'px';
     bub.style.top = (below ? window.scrollY + r.bottom + 10 : window.scrollY + r.top - bub.offsetHeight - 10) + 'px';
+    // 꼬리가 대상 가운데를 가리키게 한다
+    bub.style.setProperty('--ax', Math.max(8, Math.min(w - 26, window.scrollX + r.left + Math.min(r.width, 60) / 2 - left - 8)) + 'px');
   }
-  $('bubbleX').addEventListener('click', (e) => { e.stopPropagation(); guideMuteKey = guideKey; guideMuteUntil = Date.now() + 60000; updateGuide(); });
-  $('guidebar').addEventListener('click', () => { const g = E.guide(st, { prof: !!$('lab').querySelector('.prof') }), el = g && guideTarget(g); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  $('bubbleX').addEventListener('click', (e) => { e.stopPropagation(); if (shown) { guideMuteKey = shown.key; guideMuteUntil = Date.now() + 60000; } updateGuide(); });
+  $('guideDo').addEventListener('click', () => { const g = shown && shown.g; const act = g && guideAction(g); if (act && !act.disabled) { act.click(); shownAt = 0; updateGuide(); } });
   window.addEventListener('resize', () => updateGuide());
   window.addEventListener('scroll', () => updateGuide(), { passive: true });
 
   function toast(text) {
     const el = document.createElement('div');
     el.className = 'toast'; el.textContent = text;
+    el.style.top = (8 + $('lab').querySelectorAll('.toast').length * 44) + 'px'; // 여러 개면 아래로 쌓는다
     $('lab').appendChild(el);
     setTimeout(() => el.remove(), 2800);
   }
@@ -924,6 +978,7 @@ button.item:disabled { cursor: not-allowed; }
   $('writeBtn').addEventListener('click', () => { const title = E.writePaper(st); if (title) { say('논문 게재: 「' + title + '」'); setMode('type'); update(); if (tab === 'rec') buildRec(); } });
   $('centuryBtn').addEventListener('click', () => { if (E.buyCentury(st)) { say('세기의 연구가 완성됐다. 전 세계 연구실이 재현 실험을 시작했다.'); update(); } });
   $('promoteBtn').addEventListener('click', () => {
+    if (st.ended) { showEnding(); return; }
     const from = st.tier;
     if (!E.promote(st)) return;
     save(); update(true); pushScore(true);
@@ -1161,7 +1216,7 @@ button.item:disabled { cursor: not-allowed; }
     });
     box.innerHTML = h;
     box.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => { E.setGender(st, b.dataset.g); save(); update(); buildAvatar(); }));
-    box.querySelectorAll('[data-equip]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.equip; E.equip(st, i); say(st.look[E.AVATAR_KEYS[i][0]] === i ? '「' + C.items[i][0] + '」을(를) 입었다.' : '「' + C.items[i][0] + '」을(를) 벗었다.'); save(); update(); buildAvatar(); }));
+    box.querySelectorAll('[data-equip]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.equip; E.equip(st, i); say('「' + C.items[i][0] + '」' + jo(C.items[i][0], '을', '를').slice(C.items[i][0].length) + (st.look[E.AVATAR_KEYS[i][0]] === i ? ' 입었다.' : ' 벗었다.')); save(); update(); buildAvatar(); }));
     box.querySelectorAll('[data-avbuy]').forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.avbuy; if (E.buyAvatar(st, i)) { E.equip(st, i); save(); update(); buildAvatar(); } }));
   }
 
@@ -1206,14 +1261,15 @@ button.item:disabled { cursor: not-allowed; }
     const unlocked = E.GENS.filter((g) => g.tier === t).map((g) => g.name).join(', ');
     openModal('<span class="bigstamp">전직</span>' + charSVG(t) + '<h2>' + info.name + '</h2><p class="hand">' + info.title + '</p><p>' + PROMO_LINES[t] + '</p>' +
       (unlocked ? '<p><b>새로 열림:</b> ' + unlocked + '</p>' : '') + '<p>도감에 「' + info.name + '」 기념사진이 붙었다.</p><p class="num">자동 생산 ×' + E.CFG.tierProd + ', 탭 ×' + E.CFG.tierTap + '</p>', [{ label: '계속 연구한다', primary: true }]);
-    say(E.TIERS[from].name + '에서 ' + info.name + '(으)로 전직했다!');
+    say(E.TIERS[from].name + '에서 ' + jo(info.name, '으로', '로') + ' 전직했다!');
   }
+  const endTitle = () => (st.paperTitles.includes(E.FINAL_TITLE) ? E.FINAL_TITLE : st.paperTitles[st.paperTitles.length - 1] || E.FINAL_TITLE);
   function showEnding() {
     const lr = E.laurelReward(st);
-    openModal('<span class="bigstamp">전설</span>' + charSVG(E.LAST) + '<h2>살아있는 교과서</h2><p class="hand">인류의 지성</p><p>「' + st.paperTitles[st.paperTitles.length - 1] + '」이 교과서 첫 장에 실렸다.</p>' +
+    openModal('<span class="bigstamp">전설</span>' + charSVG(E.LAST) + '<h2>살아있는 교과서</h2><p class="hand">인류의 지성</p><p>「' + endTitle() + '」' + jo(endTitle(), '이', '가').slice(endTitle().length) + ' 교과서 첫 장에 실렸다.</p>' +
       '<div class="stats num"><span>걸린 시간<b>' + mmss(st.time) + '</b></span><span>논문<b>' + st.papers + '편</b></span><span>레벨<b>' + st.lv + '</b></span><span>누적 데이터<b>' + fmt(st.total) + '</b></span></div>' +
       '<p>재입학하면 황금 월계관 <b class="num">' + lr.total + '개</b>를 받습니다 (기본 ' + lr.base + (lr.extra ? ' + 추가 논문 ' + lr.extra : '') + (lr.honor ? ' + 명예 교수 ' + lr.honor : '') + '). 가진 월계관은 1개당 생산·탭 +20%이고, 월계관 탭에서 영구 강화로 바꿀 수 있습니다. 랩실 도감·쿠폰·야옹·구매 내역은 그대로 남습니다.</p>',
-      [{ label: '월계관을 받고 재입학', primary: true, fn: () => { st = E.retire(st); refreshDay(); renderedTier = 0; save(); pushScore(true); say('월계관을 쓰고 다시 석사과정에 입학했다. 동기들이 수군거린다.'); update(true); toast('황금 월계관 +' + lr.total + '. 월계관 탭에서 영구 강화를 살 수 있다.'); } },
+      [{ label: '월계관을 받고 재입학', primary: true, fn: () => { st = E.retire(st); nextProfAt = st.time + 40; refreshDay(); renderedTier = 0; save(); pushScore(true); say('월계관을 쓰고 다시 석사과정에 입학했다. 동기들이 수군거린다.'); update(true); toast('황금 월계관 +' + lr.total + '. 월계관 탭에서 영구 강화를 살 수 있다.'); } },
        { label: '이대로 감상하기' }]);
   }
 
@@ -1241,7 +1297,7 @@ button.item:disabled { cursor: not-allowed; }
     const capNote = r.capped ? '<p class="meta">' + r.capH + '시간까지만 쌓였다.' + (st.subActive ? '' : ' 정기구독이면 12시간, 효율 100%.') + '</p>' : '';
     const adOk = E.adLeft(st, 'offline') > 0;
     openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + mmss(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>' + lines.join('<br>') + '</p>' + capNote,
-      [{ label: '받기', primary: true }, { label: (st.shop.noAds ? '데이터 2배로 받기' : '광고 보고 데이터 2배') + (adOk ? '' : ' (오늘 광고 소진)'), disabled: !adOk, fn: () => watchAd('offline', r.gain, () => say('방치 보상을 2배로 받았다. 데이터 +' + fmt(r.gain))) }]);
+      [{ label: '받기', primary: true }].concat(r.gain <= 0 ? [] : [{ label: (st.shop.noAds ? '데이터 2배로 받기' : '광고 보고 데이터 2배') + (adOk ? '' : ' (오늘 광고 소진)'), disabled: !adOk, fn: () => watchAd('offline', r.gain, () => say('방치 보상을 2배로 받았다. 데이터 +' + fmt(r.gain))) }]));
     save();
   }
   function maybeAttend() {
