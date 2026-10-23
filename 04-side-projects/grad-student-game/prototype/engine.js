@@ -80,7 +80,7 @@
     know: { name: '연구 노하우', desc: '자동 생산 +30%', max: 10, cost: (lv) => lv + 1 },
     finger: { name: '타자 장인', desc: '탭 +50%', max: 5, cost: (lv) => lv + 1 },
     jokbo: { name: '선배의 족보', desc: '논문 비용 -6%', max: 5, cost: (lv) => 2 * (lv + 1) },
-    network: { name: '교수님 인맥', desc: '교수님 보상 +50%, 더 자주 지나감', max: 3, cost: (lv) => 2 * (lv + 1) },
+    network: { name: '인맥 관리', desc: '지나가는 윗분 보상 +50%, 더 자주 지나감', max: 3, cost: (lv) => 2 * (lv + 1) },
     leave: { name: '휴학계', desc: '방치 보상 최대 시간 +2시간', max: 3, cost: (lv) => 2 * (lv + 1) },
     grant: { name: '과제 수주 노하우', desc: '국가과제 선정률 +5%p', max: 4, cost: (lv) => 2 * (lv + 1) },
     slot: { name: '연구실 확장', desc: '과제 슬롯 +1', max: 2, cost: (lv) => 5 * (lv + 1) },
@@ -125,8 +125,8 @@
   const RARITY = { c: { name: '일반', w: 6 }, r: { name: '희귀', w: 3 }, e: { name: '영웅', w: 2 }, l: { name: '전설', w: 1 } };
   const COLLECTION = {
     quotes: {
-      name: '교수님 어록', source: '지나가는 교수님을 잡으면', chance: 0.6,
-      each: '어록 1개당 탭 +2%', set: '교수님 보상 2배',
+      name: '은사님 어록', source: '지나가는 윗분(지도교수님·학장님·총장님 등)을 잡으면', chance: 0.6,
+      each: '어록 1개당 탭 +2%', set: '지나가는 윗분 보상 2배',
       items: [
         ['이거 그냥 하면 되잖아?', 'c'], ['다음 주까지 되지?', 'c'], ['데이터가 말해 주겠지.', 'c'], ['그 그림, 축 단위 어디 갔어?', 'c'],
         ['요즘 연구실에서 잘 안 보이던데?', 'c'], ['내가 학생 때는 이거 손으로 했어.', 'c'], ['논문은 엉덩이로 쓰는 거야.', 'c'], ['일단 돌려 봐.', 'c'],
@@ -179,7 +179,7 @@
     },
     talks: {
       name: '학회 발표 기록', source: '논문을 낼 때', chance: 0.25, tierScaled: true,
-      each: '발표 1건당 교수님 보상 +3%', set: '교수님이 20% 더 자주 지나감',
+      each: '발표 1건당 지나가는 윗분 보상 +3%', set: '윗분이 20% 더 자주 지나감',
       items: [
         ['국내학회 포스터 발표', 'c'], ['국내학회 구두 발표', 'c'], ['교내 세미나 발표', 'c'], ['연구실 저널클럽 발표', 'c'],
         ['국제학회 포스터 발표', 'r'], ['국제학회 구두 발표', 'r'], ['워크숍 패널 토론', 'r'],
@@ -487,7 +487,7 @@
       for (let i = 0; i < 20; i++) {
         const need = st.papers < nextNeed(st) ? 1 : 3; // 전직에 필요한 만큼은 바로, 그 뒤로는 여유 있을 때만
         if (st.data < paperCost(st) * need) break;
-        const t = writePaper(st); if (t) note(st, 'paper', '후배가 대신 투고했다: 「' + t + '」');
+        const t = writePaper(st); if (t) note(st, 'paper', junior(st) + '가 대신 투고했다: 「' + t + '」');
       }
     }
     if (st.auto.hire && st.tier >= AUTOS.hire.tier) {
@@ -498,12 +498,27 @@
       }
     }
   }
-  // 화면에 가끔 지나가는 교수님을 누르면 받는 보상 (거지키우기의 보물 거지 자리)
+  // 화면에 가끔 지나가는 윗분(거지키우기의 보물 거지 자리). 플레이어보다 한 단계 위 사람이 지나간다(SETTING.md 2절).
+  const VISITORS = [
+    null,
+    { name: '지도교수님', emoji: '🧑‍🏫', money: '연구비를 풀었다', idea: '한마디에 영감이 왔다' },
+    { name: '지도교수님', emoji: '🧑‍🏫', money: '연구비를 풀었다', idea: '한마디에 영감이 왔다' },
+    { name: '책임교수님', emoji: '👩‍🔬', money: '장비 예산을 나눠 줬다', idea: '새 연구 주제를 툭 던졌다' },
+    { name: '학과장님', emoji: '🧑‍💼', money: '강의료를 올려 줬다', idea: '다음 학기 강의를 맡겼다' },
+    { name: '학장님', emoji: '🧑‍💼', money: '학과 예산을 몰아줬다', idea: '융합 연구를 제안했다' },
+    { name: '학장님', emoji: '🧑‍💼', money: '학과 예산을 몰아줬다', idea: '융합 연구를 제안했다' },
+    { name: '총장님', emoji: '🎓', money: '특별 연구비를 내렸다', idea: '대학 중점 연구로 정했다' },
+    { name: '노벨상 수상자', emoji: '🏅', money: '공동연구비를 보냈다', idea: '함께 쓸 논문 아이디어를 줬다' },
+    { name: '노벨상 수상자', emoji: '🏅', money: '공동연구비를 보냈다', idea: '함께 쓸 논문 아이디어를 줬다' },
+  ];
+  const visitor = (st) => VISITORS[Math.min(LAST, Math.max(1, st.tier))];
+  // 같이 일하는 사람 호칭: 조교수부터는 제자, 그 전에는 후배
+  const junior = (st) => (st.tier >= 5 ? '제자' : '후배');
   function profReward(st) {
     const r = rnd(st), m = colBonus(st).profMult * (1 + 0.5 * upLv(st, 'network'));
     let out;
-    if (r < 0.5) { const v = Math.max(perSec(st) * 60, perTap(st) * 30, 50) * m; earn(st, v); out = { kind: 'data', text: '교수님이 연구비를 풀었다! 데이터 +' + fmt(v) }; }
-    else if (r < 0.8) { st.buffs.push({ kind: 'tap', mult: 7 * m, until: st.time + 20, src: '영감' }); out = { kind: 'tap', text: '교수님 한마디에 영감이 왔다. 20초 동안 탭 ' + +(7 * m).toFixed(1) + '배' }; }
+    if (r < 0.5) { const v = Math.max(perSec(st) * 60, perTap(st) * 30, 50) * m; earn(st, v); out = { kind: 'data', text: jo(visitor(st).name, '이', '가') + ' ' + visitor(st).money + '! 데이터 +' + fmt(v) }; }
+    else if (r < 0.8) { st.buffs.push({ kind: 'tap', mult: 7 * m, until: st.time + 20, src: '영감' }); out = { kind: 'tap', text: jo(visitor(st).name, '이', '가') + ' ' + visitor(st).idea + '. 20초 동안 탭 ' + +(7 * m).toFixed(1) + '배' }; }
     else { st.buffs.push({ kind: 'prod', mult: 5 * m, until: st.time + 20, src: '과제 선정' }); out = { kind: 'prod', text: '과제 선정 소식! 20초 동안 자동 생산 ' + +(5 * m).toFixed(1) + '배' }; }
     out.drop = dropItem(st, 'quotes');
     return out;
@@ -702,7 +717,7 @@
     if (st.ended) return { kind: 'retire', text: '살아있는 교과서가 되었어요! 월계관을 받고 재입학하세요.' };
     if (st.taps < 10 && st.papers === 0) return { kind: 'tap', text: '대학원생을 탭해서 연구 데이터를 모으세요.' };
     if (canPromote(st)) return { kind: 'promote', text: '논문이 다 모였어요. ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직하세요!' };
-    if (c.prof) return { kind: 'prof', text: '교수님이 지나가요! 놓치기 전에 누르세요.' };
+    if (c.prof) return { kind: 'prof', text: jo(visitor(st).name, '이', '가') + ' 지나가요! 놓치기 전에 누르세요.' };
     if (st.tier === LAST - 1 && !st.century && st.papers >= CFG.needs[LAST]) {
       if (st.data >= CFG.century) return { kind: 'century', text: '세기의 연구를 완성할 수 있어요.' };
       return { kind: 'wait', text: '세기의 연구에 데이터 ' + fmt(CFG.century) + '이 필요해요' + (ps > 0 ? ' (약 ' + dur((CFG.century - st.data) / ps) + ')' : '') + '.' + (st.auto.hire ? ' 자동 고용을 잠시 끄면 더 빨리 모여요.' : '') };
@@ -712,7 +727,7 @@
     // 논문이 곧이면(20초 안) 다른 데 쓰지 말고 기다리게 한다
     if (st.papers < need && ps > 0 && (pc - st.data) / ps <= 20) return { kind: 'wait', text: '곧 논문을 쓸 수 있어요 (약 ' + dur((pc - st.data) / ps) + '). 데이터를 아껴 두세요.' };
     if (attendReady(st)) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상(커피 쿠폰)을 받으세요.' };
-    const AUTO_TXT = { paper: '후배가 데이터가 모이는 대로 논문을 내 줘요', hire: '데이터 절반 안에서 효율 좋은 동료·장비를 알아서 들여요' };
+    const AUTO_TXT = { paper: junior(st) + '가 데이터가 모이는 대로 논문을 내 줘요', hire: '데이터 절반 안에서 효율 좋은 동료·장비를 알아서 들여요' };
     const au = Object.keys(AUTOS).find((id) => st.tier >= AUTOS[id].tier && !st.auto[id] && !(st.autoEver && st.autoEver[id]));
     if (au) return { kind: 'auto', id: au, text: jo(AUTOS[au].name, '을', '를') + ' 켜면 ' + AUTO_TXT[au] + '.' };
     if (st.drinks > 0 && !st.buffs.some((b) => b.src === DRINK.src && b.until > st.time)) return { kind: 'drink', text: '에너지 드링크가 있어요. 마시면 5분 동안 2배예요.' };
@@ -736,6 +751,6 @@
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
     buyGen, buyTap, writePaper, canPromote, promote, buyCentury, skillReady, useSkill, setAuto, profReward, offline,
-    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide, jo, FINAL_TITLE,
+    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide, jo, FINAL_TITLE, VISITORS, visitor, junior,
   };
 });

@@ -1248,13 +1248,13 @@ button.item:disabled { cursor: not-allowed; }
 
   // ---------- 전직·엔딩 ----------
   const PROMO_LINES = {
-    2: '박사과정 1년차가 되었다. 후배와 공용 실험 장비를 들일 수 있고, 후배에게 논문 자동 투고를 맡길 수 있다. 중소기업 주관 국가과제에 참여할 수 있다.',
-    3: '박사 학위를 받았다. 탭 1번에 초당 생산의 2%가 더해지고, 자동 고용과 중견기업 산학과제가 열린다.',
+    2: '박사과정 1년차가 되었다. 후배와 공용 실험 장비를 들일 수 있고, 후배에게 논문 자동 투고를 맡길 수 있다. 탭 1번에 초당 생산의 5%가 더해지고, 중소기업 주관 국가과제에 참여할 수 있다.',
+    3: '박사 학위를 받았다. 다른 학교 연구실에서 책임교수님과 일한다. 자동 고용과 중견기업 산학과제가 열린다.',
     4: '세 학교를 돌며 강의한다. 강의 자료 보따리가 무겁다. 출강 학교가 데이터를 만들고, 중견기업 주관 국가과제가 열린다.',
-    5: '교수 공채에 합격했다. 연구실 문패에 내 이름이 걸렸다. 대기업 산학과제를 맡을 수 있다.',
+    5: '교수 공채에 합격했다. 연구실 문패에 내 이름이 걸렸다. 이제 후배가 아니라 제자가 생겼고, 복도에서는 학장님을 마주친다. 대기업 산학과제를 맡을 수 있다.',
     6: '테뉴어 심사를 통과했다. 국제 공동연구단을 꾸리고, 대기업 주관 국가과제에 도전할 수 있다.',
-    7: '정교수가 되었다. 국가 대형 연구시설을 쓸 수 있다.',
-    8: '국제학회 펠로우로 선정됐다. 세기의 연구에 도전할 수 있다.',
+    7: '정교수가 되었다. 총장님이 연구실에 들르기 시작했다. 국가 대형 연구시설을 쓸 수 있다.',
+    8: '국제학회 펠로우로 선정됐다. 노벨상 수상자가 공동연구를 제안해 온다. 세기의 연구에 도전할 수 있다.',
   };
   function showPromotion(from) {
     const t = st.tier, info = E.TIERS[t];
@@ -1277,8 +1277,9 @@ button.item:disabled { cursor: not-allowed; }
   function spawnProf() {
     if (st.ended || $('lab').querySelector('.prof')) return;
     const b = document.createElement('button');
-    b.className = 'prof'; b.innerHTML = '<em aria-hidden="true">🧑‍🏫</em> 교수님';
-    b.setAttribute('aria-label', '지나가는 교수님 잡기');
+    const vi = E.visitor(st);
+    b.className = 'prof'; b.innerHTML = '<em aria-hidden="true">' + vi.emoji + '</em> ' + vi.name;
+    b.setAttribute('aria-label', '지나가는 ' + vi.name + ' 잡기');
     b.addEventListener('click', (e) => { e.stopPropagation(); const r = E.profReward(st); say(r.text); setMode('think'); b.remove(); update(); });
     b.addEventListener('pointerdown', (e) => e.stopPropagation());
     b.addEventListener('animationend', () => b.remove());
@@ -1292,7 +1293,7 @@ button.item:disabled { cursor: not-allowed; }
     if (r.gain <= 0 && r.levels <= 0) return;
     const lines = ['데이터 <b class="num">+' + fmt(r.gain) + '</b>'];
     if (r.levels) lines.push('레벨 <b class="num">+' + r.levels + '</b> (지금 Lv ' + st.lv + ')');
-    if (r.papers) lines.push('후배가 대신 낸 논문 <b class="num">' + r.papers + '편</b>');
+    if (r.papers) lines.push(E.junior(st) + '가 대신 낸 논문 <b class="num">' + r.papers + '편</b>');
     if (r.projects) lines.push('끝난 과제 <b class="num">' + r.projects + '건</b>');
     const capNote = r.capped ? '<p class="meta">' + r.capH + '시간까지만 쌓였다.' + (st.subActive ? '' : ' 정기구독이면 12시간, 효율 100%.') + '</p>' : '';
     const adOk = E.adLeft(st, 'offline') > 0;
