@@ -27,6 +27,21 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('공개 확률 합계 = 드롭 확률', sum);
   const old = E.migrate({ v: 1, data: 1, total: 1, taps: 0, tapLv: 0, gens: {}, papers: 3, paperTitles: [], tier: 4, time: 10, skills: { night: 0, deadline: 0 }, buffs: [], medals: 0, century: false, promotedAt: [{ tier: 1, time: 0 }, { tier: 2, time: 5 }, { tier: 4, time: 9 }], rng: 1, ended: false });
   ok('v1 세이브 변환 시 지나온 직급 기념사진 복원', old.col.photos[2] && old.col.photos[5] && !old.col.photos[4]);
+  const y = E.newGame(); y.data = 1e9;
+  const names = []; for (let i = 0; i < 7; i++) { E.writePaper(y); if (E.canPromote(y)) E.promote(y); names.push(E.rankName(y)); }
+  ok('연차: 석사 1~2년차, 박사 1~4년차 순서로 오른다', names.join(',') === '석사과정 1년차,석사과정 2년차,박사과정 1년차,박사과정 2년차,박사과정 3년차,박사과정 4년차,포닥', names.join(','));
+  const pj = E.newGame(); pj.data = 1e6; pj.rng = 3;
+  const r1 = E.startProject(pj, 'i1');
+  ok('산학과제는 계약(선정 100%)이고 진행 중 생산 보너스가 붙는다', r1 && r1.selected && E.projBuff(pj) === 0.05);
+  ok('박사과정 전에는 국가과제를 낼 수 없다', E.projState(pj, 'n1') === '박사과정부터' && E.startProject(pj, 'n1') === null);
+  E.tick(pj, 901);
+  ok('과제가 끝나면 보상·협약서·실적이 남는다', pj.projects.length === 0 && pj.life.projects === 1 && pj.col.projects.i1 === true);
+  const lr = E.newGame(); lr.tier = 8; lr.papers = 50; lr.data = 1e12; E.buyCentury(lr); E.promote(lr);
+  const rw = E.laurelReward(lr).total, nx = E.retire(lr);
+  ok('재입학하면 월계관(기본 3 + 추가 논문 1)을 받는다', rw === 4 && nx.laurels === 4 && nx.life.runs === 1);
+  ok('월계관 강화를 사면 보유 월계관이 줄고 레벨이 오른다', E.buyUpgrade(nx, 'know') && nx.laurels === 3 && E.upLv(nx, 'know') === 1);
+  nx.laurels = 20; E.buyUpgrade(nx, 'early'); const nx2 = E.retire(Object.assign(nx, { ended: true }));
+  ok('조기 진학 강화: 재입학하면 박사과정 1년차로 시작', nx2.tier === 2 && E.rankName(nx2) === '박사과정 1년차');
 }
 
 (async () => {
@@ -82,7 +97,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   await p.screenshot({ path: SP + '/qa-offline.png' });
   // 7. 깨진 세이브
   p = await page(undefined, '{not json');
-  ok('깨진 세이브는 새 게임으로 시작', (await p.textContent('#tierName')) === '석사과정');
+  ok('깨진 세이브는 새 게임으로 시작 (석사과정 1년차)', (await p.textContent('#tierName')) === '석사과정 1년차');
   // 8. 시계를 되돌린 경우(저장 시각이 미래)
   p = await page(undefined, JSON.stringify({ st: s6, at: Date.now() + 5 * 3600 * 1000 }));
   ok('미래 저장 시각은 방치 보상 없음', !(await modalText(p)).includes('다녀오셨어요'));
@@ -103,7 +118,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('마지막 캐릭터는 월계관 (흰 머리 뭉치 없음)', await p.evaluate(() => { const svg = document.querySelector('#dialog svg'); return svg.querySelectorAll('ellipse[fill="#d4a72c"]').length >= 13 && svg.querySelectorAll('circle[r="16"]').length === 0; }));
   await p.screenshot({ path: SP + '/qa-ending.png' });
   await clickModal(p, '재입학'); await p.waitForTimeout(300);
-  ok('재입학 후 석사과정·쿠폰(77+출석5+첫 도달10)·야옹 유지', (await p.textContent('#tierName')) === '석사과정' && (await p.textContent('#coupons')) === '92' && (await p.$('.cat')) !== null, '쿠폰 ' + (await p.textContent('#coupons')));
+  ok('재입학 후 석사과정·쿠폰(77+출석5+첫 도달10)·야옹 유지', (await p.textContent('#tierName')) === '석사과정 1년차' && (await p.textContent('#coupons')) === '92' && (await p.$('.cat')) !== null, '쿠폰 ' + (await p.textContent('#coupons')));
   // 12. 도감 탭: 주입한 수집 상태가 그대로 보인다
   const s12 = E.newGame(); s12.daily.claimed = 'x';
   s12.col = { quotes: { 0: 1, 13: 2 }, goods: { 10: 1 }, topics: { 0: 4, 3: 10 }, photos: { 1: true, 2: true }, cats: {}, pity: { quotes: 2 } };
@@ -115,6 +130,27 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('도감: 연구 주제 별 5개(★★ + ★★★)', colText.includes('5/30') && colText.includes('★★★'));
   ok('도감: 확률 공개 (일반 어록 5.5%)', colText.includes('일반 · 5.5%'));
   await p.screenshot({ path: SP + '/qa-collection.png', fullPage: true });
+  // 13. 새 기능: 범용 이름, 움직이는 장면, 과제·월계관·랭킹 탭
+  p = await page();
+  await clickModal(p, '받기');
+  const bodyText = await p.evaluate(() => document.body.innerText);
+  ok('범용 이름: 화면에 VNA·무향실·안테나·레이다가 없다', !/VNA|무향실|안테나|레이다/.test(bodyText));
+  ok('배지에 연차 표시 (석사과정 1년차)', (await p.textContent('#tierName')) === '석사과정 1년차');
+  const modes = new Set();
+  for (let i = 0; i < 3; i++) { modes.add(await p.evaluate(() => document.getElementById('scene').getAttribute('class'))); await p.click('#tab-gens'); await p.evaluate(() => document.querySelector('#genRows .buy') && 0); await p.waitForTimeout(10); }
+  await p.evaluate(() => { const t = document.getElementById('tapper'); for (let i = 0; i < 3; i++) t.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300, bubbles: true })); });
+  await p.waitForTimeout(300);
+  ok('연구실 장면이 모드를 가진다 (논문·실험·분석·생각 중 하나)', /mode-(type|exp|an|think)/.test([...modes][0]) && (await p.textContent('#hint')).endsWith('중…'), [...modes].join(' / ') + ' · ' + (await p.textContent('#hint')));
+  await p.click('#tab-proj'); await p.waitForTimeout(150);
+  const projText = await p.textContent('#panel-proj');
+  ok('과제 탭: 산학 3개 + 국가과제(중소·중견·대기업 주관) 6개', (projText.match(/중소기업 주관/g) || []).length === 2 && (projText.match(/중견기업 주관/g) || []).length === 2 && (projText.match(/대기업 주관/g) || []).length === 2 && projText.includes('산학 공동연구센터'));
+  ok('과제 탭: 국가과제 선정률 공개 (60%)', projText.includes('선정률 60%'));
+  await p.click('#tab-laurel'); await p.waitForTimeout(100);
+  ok('월계관 탭: 강화 9종 표시', (await p.$$('#panel-laurel [data-up]')).length === 9);
+  await p.click('#tab-rank'); await p.waitForTimeout(100);
+  ok('파일로 열면 랭킹 대신 안내 문구', (await p.textContent('#panel-rank')).includes('claude.ai에서 이 게임을 열었을 때'));
+  await p.click('#tab-proj'); await p.waitForTimeout(100);
+  await p.screenshot({ path: SP + '/qa-projects.png', fullPage: true });
   // 11. 폰 너비
   const p11 = await page();
   ok('폰 너비 가로 스크롤 없음', (await p11.evaluate(() => document.documentElement.scrollWidth)) <= 400);

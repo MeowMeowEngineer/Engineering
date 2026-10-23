@@ -12,7 +12,7 @@
     needs: [0, 0, 3, 7, 11, 16, 22, 29, 37, 45], // 직급별 전직에 필요한 누적 논문 편수
     paperBase: 30000, paperGrowth: 1.45, paperBonus: 0.03, tierProd: 1.5, tierTap: 1.5, century: 1e10,
     levelBonus: 0.03, expBase: 60, expGrowth: 1.2, tapExp: 0.5,
-    offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3,
+    offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3, laurelBonus: 0.2, laurelBase: 3,
   };
 
   const TIERS = [
@@ -34,14 +34,14 @@
     { id: 'coffee', name: '커피 머신', note: '졸음을 데이터로 바꾼다', base: 15, rate: 0.1, tier: 1 },
     { id: 'intern', name: '학부연구생', note: '측정 셋업을 대신 해 준다', base: 100, rate: 1, tier: 1 },
     { id: 'junior', name: '후배 대학원생', note: '"선배, 이거 왜 안 돼요?"', base: 1100, rate: 8, tier: 2 },
-    { id: 'vna', name: 'VNA', note: '벡터 네트워크 분석기. 교정 키트는 자주 사라진다', base: 12000, rate: 47, tier: 2 },
-    { id: 'chamber', name: '무향실', note: '예약 전쟁 없이 우리 랩 전용', base: 130000, rate: 260, tier: 3 },
+    { id: 'vna', name: '공용 실험 장비', note: '예약표는 늘 꽉 차 있다', base: 12000, rate: 47, tier: 2 },
+    { id: 'chamber', name: '전용 실험실', note: '예약 전쟁 없이 우리 랩 전용', base: 130000, rate: 260, tier: 3 },
     { id: 'agent', name: 'AI 코딩 에이전트', note: '가끔 엉뚱한 파일을 고친다', base: 1.4e6, rate: 1400, tier: 3 },
     { id: 'lecture', name: '출강 학교', note: '월수금은 A대, 화목은 B대', base: 6e6, rate: 3500, tier: 4 },
-    { id: 'cluster', name: 'EM 해석 클러스터', note: '밤새 1,000건을 돌린다', base: 2e7, rate: 7800, tier: 5 },
+    { id: 'cluster', name: 'GPU 서버', note: '밤새 실험을 1,000번 돌린다', base: 2e7, rate: 7800, tier: 5 },
     { id: 'postdoc', name: '포닥 연구원', note: '내가 포닥일 때보다 일을 잘한다', base: 3.3e8, rate: 44000, tier: 5 },
     { id: 'consortium', name: '국제 공동연구단', note: '시차 덕분에 24시간 연구', base: 5.1e9, rate: 260000, tier: 6 },
-    { id: 'telescope', name: '전파망원경 배열', note: '우주에서 오는 데이터', base: 7.5e10, rate: 1.6e6, tier: 7 },
+    { id: 'telescope', name: '국가 대형 연구시설', note: '가속기·망원경·데이터센터 사용 시간을 따냈다', base: 7.5e10, rate: 1.6e6, tier: 7 },
     { id: 'institute', name: '석학 연구원', note: '이름을 딴 연구원이 생겼다', base: 1e12, rate: 1e7, tier: 8 },
   ];
   const GEN_GROWTH = 1.15;
@@ -70,6 +70,49 @@
     pet: { name: '야옹 입양', cost: 150, desc: '야옹이 1초에 3번 대신 탭한다 (방치 중에도)' },
   };
   const AD_LIMITS = { total: 10, buff: 5, skill: 5 };
+
+  // ---------- 월계관 영구 강화 ----------
+  // 쓰지 않고 가진 월계관은 1개당 생산·탭 +20%. 쓰면 그만큼 보유 보너스가 줄어드는 대신 강화가 남는다.
+  const LAUREL_UPS = {
+    know: { name: '연구 노하우', desc: '자동 생산 +30%', max: 10, cost: (lv) => lv + 1 },
+    finger: { name: '타자 장인', desc: '탭 +50%', max: 5, cost: (lv) => lv + 1 },
+    jokbo: { name: '선배의 족보', desc: '논문 비용 -6%', max: 5, cost: (lv) => 2 * (lv + 1) },
+    network: { name: '교수님 인맥', desc: '교수님 보상 +50%, 더 자주 지나감', max: 3, cost: (lv) => 2 * (lv + 1) },
+    leave: { name: '휴학계', desc: '방치 보상 최대 시간 +2시간', max: 3, cost: (lv) => 2 * (lv + 1) },
+    grant: { name: '과제 수주 노하우', desc: '국가과제 선정률 +5%p', max: 4, cost: (lv) => 2 * (lv + 1) },
+    slot: { name: '연구실 확장', desc: '과제 슬롯 +1', max: 2, cost: (lv) => 5 * (lv + 1) },
+    early: { name: '조기 진학', desc: '재입학 때 박사과정(논문 3편)부터 시작', max: 1, cost: () => 8 },
+    honor: { name: '명예 교수 추대', desc: '엔딩 때 받는 월계관 +1', max: 3, cost: (lv) => 3 * (lv + 1) },
+  };
+  const upLv = (st, id) => (st.ups && st.ups[id]) || 0;
+
+  // ---------- 과제 ----------
+  // 산학과제는 계약이라 선정 확률 100%, 국가과제는 주관 기업 규모별로 선정률이 다르다.
+  // 비용·보상은 시작 시점의 자동 생산 몇 분 치로 정하고, 끝나면 방치 중이라도 보상이 들어온다.
+  const PROJECTS = [
+    { id: 'i1', kind: '산학과제', grade: '중소기업', name: '시제품 성능 시험 대행', tier: 1, dur: 900, select: 1, costMin: 1, rewardMin: 5, coupons: 1, buff: 0.05 },
+    { id: 'i2', kind: '산학과제', grade: '중견기업', name: '공정 데이터 분석 용역', tier: 3, dur: 3600, select: 1, costMin: 4, rewardMin: 25, coupons: 1, buff: 0.08 },
+    { id: 'i3', kind: '산학과제', grade: '대기업', name: '산학 공동연구센터', tier: 5, dur: 14400, select: 1, costMin: 15, rewardMin: 96, coupons: 2, buff: 0.12 },
+    { id: 'n1', kind: '국가과제', grade: '중소기업 주관', name: '스마트 센서 국산화', tier: 2, dur: 3600, select: 0.6, costMin: 5, rewardMin: 60, coupons: 1, buff: 0.1 },
+    { id: 'n2', kind: '국가과제', grade: '중소기업 주관', name: '친환경 소재 개발', tier: 2, dur: 7200, select: 0.55, costMin: 8, rewardMin: 130, coupons: 2, buff: 0.1 },
+    { id: 'n3', kind: '국가과제', grade: '중견기업 주관', name: '제조 AI 고도화', tier: 4, dur: 10800, select: 0.45, costMin: 15, rewardMin: 240, coupons: 3, buff: 0.15 },
+    { id: 'n4', kind: '국가과제', grade: '중견기업 주관', name: '바이오 진단 키트 상용화', tier: 4, dur: 14400, select: 0.4, costMin: 20, rewardMin: 360, coupons: 3, buff: 0.15 },
+    { id: 'n5', kind: '국가과제', grade: '대기업 주관', name: '차세대 반도체 원천기술', tier: 6, dur: 21600, select: 0.3, costMin: 40, rewardMin: 660, coupons: 4, buff: 0.2 },
+    { id: 'n6', kind: '국가과제', grade: '대기업 주관', name: '탄소중립 에너지 플랫폼', tier: 7, dur: 28800, select: 0.25, costMin: 60, rewardMin: 960, coupons: 5, buff: 0.25 },
+  ];
+  const SLOTS = [0, 1, 1, 2, 2, 3, 3, 4, 4, 4];
+  const REJECT_NOTES = ['우수하나 사업 목적과 맞지 않음', '예산 규모 대비 성과 목표가 낮음', '선행 연구 실적 보완 필요', '경쟁 과제 대비 차별성 부족', '평가위원 의견: 그림이 너무 많음'];
+
+  // ---------- 연차 ----------
+  // 석사과정은 1~2년차, 박사과정은 1~4년차. 그 과정 안에서 쓴 논문 수로 오르고, 1년 오를 때마다 자동 생산 +10%.
+  const YEARS = { 1: 2, 2: 4 };
+  function yearOf(st) {
+    const n = YEARS[st.tier]; if (!n) return 0;
+    const from = CFG.needs[st.tier], to = CFG.needs[st.tier + 1];
+    return Math.max(1, Math.min(n, 1 + Math.floor(((st.papers - from) * n) / Math.max(1, to - from))));
+  }
+  const yearMult = (st) => 1 + 0.1 * Math.max(0, yearOf(st) - 1);
+  const rankName = (st) => TIERS[st.tier].name + (yearOf(st) ? ' ' + yearOf(st) + '년차' : '');
   const ATTEND = [5, 5, 10, 10, 15, 15, 30];
 
   // ---------- 랩실 도감 (수집형) ----------
@@ -83,7 +126,7 @@
       items: [
         ['이거 그냥 하면 되잖아?', 'c'], ['다음 주까지 되지?', 'c'], ['데이터가 말해 주겠지.', 'c'], ['그 그림, 축 단위 어디 갔어?', 'c'],
         ['요즘 연구실에서 잘 안 보이던데?', 'c'], ['내가 학생 때는 이거 손으로 했어.', 'c'], ['논문은 엉덩이로 쓰는 거야.', 'c'], ['일단 돌려 봐.', 'c'],
-        ['이 결과, 측정 다시 해 봤어?', 'r'], ['내일 아침 8시에 미팅하자.', 'r'], ['과제 제안서 그림 좀 부탁해.', 'r'], ['학회는 놀러 가는 데가 아니야.', 'r'], ['졸업은 논문이 말해 줄 거야.', 'r'],
+        ['이 결과, 실험 다시 해 봤어?', 'r'], ['내일 아침 8시에 미팅하자.', 'r'], ['과제 제안서 그림 좀 부탁해.', 'r'], ['학회는 놀러 가는 데가 아니야.', 'r'], ['졸업은 논문이 말해 줄 거야.', 'r'],
         ['이번 결과 좋다. 수고했어.', 'l'], ['오늘은 일찍 들어가.', 'l'], ['이제 졸업해도 되겠다.', 'l'],
       ],
     },
@@ -104,21 +147,25 @@
       name: '직급 기념사진', source: '그 직급에 처음 오르면', chance: 1,
       each: '사진 1장당 경험치 +3%', set: '재입학할 때 커피 머신 10대·학부연구생 5대로 시작',
     },
+    projects: {
+      name: '과제 협약서', source: '그 과제를 처음 끝내면', chance: 1,
+      each: '협약서 1장당 과제 보상 +5%', set: '과제 슬롯 +1',
+    },
     cats: {
       name: '야옹 사진', source: '야옹과 1시간 이상 방치하고 돌아오면', chance: 1,
       each: '사진 1장당 방치 효율 +3%p', set: '방치 보상 최대 시간 +2시간',
       items: [
         ['키보드 위에서 낮잠', 'c'], ['택배 상자 속 야옹', 'c'], ['창밖 구경', 'c'], ['레이저 포인터 사냥', 'c'],
-        ['따뜻한 VNA 위에서 낮잠', 'r'], ['논문 출력물에 꾹꾹이', 'r'],
-        ['무향실 탐험', 'l'], ['학위복 입은 야옹', 'l'],
+        ['따뜻한 서버 위에서 낮잠', 'r'], ['논문 출력물에 꾹꾹이', 'r'],
+        ['실험실 탐험', 'l'], ['학위복 입은 야옹', 'l'],
       ],
     },
   };
   const TOPIC_STARS = [1, 4, 10];
 
-  const TOPICS = ['벽 투과 FMCW 레이다', '광각 위상배열 안테나', '저손실 동축 케이블', '렌즈 배열 안테나', '메타표면 반사판', '이중편파 분산형 레이다', '밀리미터파 빔포밍', '무선 전력 전송 코일', '도파관 필터', '레이다 거리 빈 선택'];
-  const METHODS = ['설계', '측정', '해석', '머신러닝 기반 최적화', '소형화', '실험적 검증', '오차 보정', '성능 개선'];
-  const FINAL_TITLE = '전자기파와 시공간 곡률의 통합 이론';
+  const TOPICS = ['기후 변화 예측', '신약 후보 물질', '자율주행 인식', '차세대 배터리', '양자 컴퓨팅', '유전체 분석', '대규모 언어 모델', '신소재 합성', '뇌 신호 해석', '도시 교통 최적화'];
+  const METHODS = ['설계', '실험적 검증', '대규모 데이터 분석', '머신러닝 기반 최적화', '이론적 고찰', '성능 개선', '시뮬레이션', '메타 분석'];
+  const FINAL_TITLE = '모든 분야를 잇는 통합 이론';
 
   const fmtUnits = [[1e44, '재'], [1e40, '정'], [1e36, '간'], [1e32, '구'], [1e28, '양'], [1e24, '자'], [1e20, '해'], [1e16, '경'], [1e12, '조'], [1e8, '억'], [1e4, '만']];
   function fmt(n) {
@@ -140,14 +187,16 @@
       time: 0, skills: { night: 0, deadline: 0 }, buffs: [], century: false, ended: false,
       promotedAt: [{ tier: 1, time: 0 }], rng: (Math.random() * 2 ** 32) >>> 0,
       exp: 0, lv: 0, auto: { paper: false, hire: false }, notes: [],
-      medals: keep.medals || 0, coupons: keep.coupons || 0, pet: !!keep.pet, bestTier: keep.bestTier || 1,
+      medals: keep.medals || 0, laurels: keep.laurels || 0, ups: keep.ups || {}, coupons: keep.coupons || 0, pet: !!keep.pet, bestTier: keep.bestTier || 1,
+      life: keep.life || { runs: 0, papers: 0, projects: 0, bestRun: null }, projects: [], rank: keep.rank || { join: false, nick: '' },
       shop: keep.shop || { noAds: false, starter: false, subUntil: '', purchases: [] },
       daily: keep.daily || { day: '', streak: 0, claimed: '', ads: 0, adBuff: 0, adSkill: 0 },
       subActive: !!keep.subActive,
-      col: keep.col || { quotes: {}, goods: {}, topics: {}, photos: { 1: true }, cats: {} },
+      col: keep.col || { quotes: {}, goods: {}, topics: {}, photos: { 1: true }, cats: {}, projects: {} },
     };
     GENS.forEach((g) => (st.gens[g.id] = 0));
     if (colSetDone(st, 'photos')) { st.gens.coffee = 10; st.gens.intern = 5; }
+    if (upLv(st, 'early')) { st.tier = 2; st.papers = CFG.needs[2]; st.promotedAt.push({ tier: 2, time: 0 }); }
     return st;
   }
   // 저장본을 현재 구조로 맞춘다. 알 수 없는 저장본이면 null.
@@ -162,12 +211,14 @@
       st.v = 2;
     }
     if (st.v !== 2) return null;
-    const fresh = newGame({ medals: st.medals });
+    if (st.laurels === undefined) st.laurels = st.medals || 0;
+    const fresh = newGame({ medals: st.medals, laurels: st.laurels });
     Object.keys(fresh).forEach((k) => { if (st[k] === undefined) st[k] = fresh[k]; });
     GENS.forEach((g) => { if (typeof st.gens[g.id] !== 'number') st.gens[g.id] = 0; });
     ['data', 'total', 'time', 'exp'].forEach((k) => { if (typeof st[k] !== 'number' || !isFinite(st[k]) || st[k] < 0) st[k] = 0; });
     st.tier = Math.min(LAST, Math.max(1, st.tier | 0));
     (st.promotedAt || []).forEach((x) => { st.col.photos[x.tier] = true; });
+    if (!st.col.projects) st.col.projects = {};
     return st;
   }
 
@@ -183,9 +234,10 @@
   const colCount = (st, k) => {
     if (k === 'topics') return Object.values(st.col.topics).reduce((a, n) => a + TOPIC_STARS.filter((t) => n >= t).length, 0);
     if (k === 'photos') return Object.keys(st.col.photos).length;
+    if (k === 'projects') return Object.keys(st.col.projects || {}).length;
     return Object.keys(st.col[k]).length;
   };
-  const colTotal = (k) => (k === 'topics' ? TOPICS.length * 3 : k === 'photos' ? TIERS.length - 1 : COLLECTION[k].items.length);
+  const colTotal = (k) => (k === 'topics' ? TOPICS.length * 3 : k === 'photos' ? TIERS.length - 1 : k === 'projects' ? PROJECTS.length : COLLECTION[k].items.length);
   function colSetDone(st, k) { return colCount(st, k) >= colTotal(k); }
   function colBonus(st) {
     return {
@@ -232,14 +284,16 @@
   const milestoneMult = (n) => MILESTONES.filter((m) => n >= m).length;
   const genRate = (st, g) => g.rate * Math.pow(2, milestoneMult(st.gens[g.id]));
   const levelMult = (st) => 1 + CFG.levelBonus * st.lv;
+  const laurelMult = (st) => 1 + CFG.laurelBonus * st.laurels;
+  const projBuff = (st) => (st.projects || []).reduce((a, p) => a + p.buff, 0);
   function globalMult(st) {
     const cb = colBonus(st);
-    return (1 + cb.paperBonus * st.papers) * Math.pow(CFG.tierProd, st.tier - 1) * (1 + 0.5 * st.medals) * levelMult(st) * (1 + cb.prod);
+    return (1 + cb.paperBonus * st.papers) * Math.pow(CFG.tierProd, st.tier - 1) * yearMult(st) * laurelMult(st) * (1 + 0.3 * upLv(st, 'know')) * levelMult(st) * (1 + cb.prod) * (1 + projBuff(st));
   }
   function perSecBase(st) { return GENS.reduce((a, g) => a + st.gens[g.id] * genRate(st, g), 0) * globalMult(st); }
   function perSec(st) { return perSecBase(st) * buffMult(st, 'prod'); }
   function perTapBase(st) {
-    const base = Math.pow(2, st.tapLv) * Math.pow(CFG.tierTap, st.tier - 1) * (1 + 0.5 * st.medals) * levelMult(st) * (1 + colBonus(st).tap);
+    const base = Math.pow(2, st.tapLv) * Math.pow(CFG.tierTap, st.tier - 1) * laurelMult(st) * (1 + 0.5 * upLv(st, 'finger')) * levelMult(st) * (1 + colBonus(st).tap);
     const share = st.tier >= 3 ? perSecBase(st) * 0.02 : 0; // 포닥부터 탭 1번에 초당 생산의 2%가 더해진다
     return base + share;
   }
@@ -261,7 +315,7 @@
   const genCost = (st, id) => { const g = GENS.find((x) => x.id === id); return Math.ceil(g.base * Math.pow(GEN_GROWTH, st.gens[id])); };
   const tapCost = (st) => Math.ceil(50 * Math.pow(6, st.tapLv));
   // 첫 논문 몇 편은 할인해 초반 전직이 빨리 오게 한다(1편째 1/64 가격, 8편째부터 정가).
-  const paperCost = (st) => Math.ceil(CFG.paperBase * Math.pow(CFG.paperGrowth, st.papers) * Math.min(1, Math.pow((st.papers + 1) / 8, 2)) * (1 - colBonus(st).paperDiscount));
+  const paperCost = (st) => Math.ceil(CFG.paperBase * Math.pow(CFG.paperGrowth, st.papers) * Math.min(1, Math.pow((st.papers + 1) / 8, 2)) * (1 - colBonus(st).paperDiscount) * (1 - 0.06 * upLv(st, 'jokbo')));
   const nextTier = (st) => (st.tier < LAST ? TIERS[st.tier + 1] : null);
   const nextNeed = (st) => (st.tier < LAST ? CFG.needs[st.tier + 1] : Infinity);
 
@@ -279,6 +333,7 @@
     }
     st.buffs = st.buffs.filter((b) => b.until > st.time);
     addExp(st, dt + (st.pet ? CFG.petTps * CFG.tapExp * dt : 0));
+    checkProjects(st);
     autoActions(st);
   }
   function tap(st) { if (st.ended) return 0; const v = perTap(st); earn(st, v); st.taps++; addExp(st, CFG.tapExp); return v; }
@@ -292,7 +347,9 @@
   function writePaper(st) {
     if (st.ended) return null;
     const c = paperCost(st); if (st.data < c) return null;
-    st.data -= c; st.papers++;
+    const yearBefore = yearOf(st);
+    st.data -= c; st.papers++; st.life.papers++;
+    if (yearOf(st) > yearBefore) note(st, 'year', rankName(st) + '으로 진급했다! 자동 생산 +10%');
     const ti = Math.floor(rnd(st) * TOPICS.length);
     const title = TOPICS[ti] + '의 ' + METHODS[Math.floor(rnd(st) * METHODS.length)];
     st.paperTitles.push(title);
@@ -347,22 +404,22 @@
   }
   // 화면에 가끔 지나가는 교수님을 누르면 받는 보상 (거지키우기의 보물 거지 자리)
   function profReward(st) {
-    const r = rnd(st), m = colBonus(st).profMult;
+    const r = rnd(st), m = colBonus(st).profMult * (1 + 0.5 * upLv(st, 'network'));
     let out;
     if (r < 0.5) { const v = Math.max(perSec(st) * 60, perTap(st) * 30, 50) * m; earn(st, v); out = { kind: 'data', text: '교수님이 연구비를 풀었다! 데이터 +' + fmt(v) }; }
-    else if (r < 0.8) { st.buffs.push({ kind: 'tap', mult: 7 * m, until: st.time + 20, src: '영감' }); out = { kind: 'tap', text: '교수님 한마디에 영감이 왔다. 20초 동안 탭 ' + 7 * m + '배' }; }
-    else { st.buffs.push({ kind: 'prod', mult: 5 * m, until: st.time + 20, src: '과제 선정' }); out = { kind: 'prod', text: '과제 선정 소식! 20초 동안 자동 생산 ' + 5 * m + '배' }; }
+    else if (r < 0.8) { st.buffs.push({ kind: 'tap', mult: 7 * m, until: st.time + 20, src: '영감' }); out = { kind: 'tap', text: '교수님 한마디에 영감이 왔다. 20초 동안 탭 ' + +(7 * m).toFixed(1) + '배' }; }
+    else { st.buffs.push({ kind: 'prod', mult: 5 * m, until: st.time + 20, src: '과제 선정' }); out = { kind: 'prod', text: '과제 선정 소식! 20초 동안 자동 생산 ' + +(5 * m).toFixed(1) + '배' }; }
     out.drop = dropItem(st, 'quotes');
     return out;
   }
   // 앱을 닫아 둔 시간의 보상. 100조각으로 나눠 계산해 자동 투고·고용과 레벨 업이 방치 중에도 일어난다.
   function offline(st, seconds) {
     const cb = colBonus(st);
-    const cap = ((st.subActive ? CFG.subCapH : CFG.offlineCapH) + cb.capH) * 3600;
+    const cap = ((st.subActive ? CFG.subCapH : CFG.offlineCapH) + cb.capH + 2 * upLv(st, 'leave')) * 3600;
     const eff = Math.min(1, (st.subActive ? CFG.subEff : CFG.offlineEff) + cb.offline);
     const raw = typeof seconds === 'number' && isFinite(seconds) ? seconds : 0;
     const s = Math.min(Math.max(0, raw), cap);
-    const before = { total: st.total, lv: st.lv, papers: st.papers };
+    const before = { total: st.total, lv: st.lv, papers: st.papers, projects: st.life.projects };
     if (s > 0 && !st.ended) {
       st.buffs = [];
       const n = 100, dt = s / n;
@@ -370,13 +427,88 @@
         earn(st, (perSecBase(st) + (st.pet ? CFG.petTps * perTapBase(st) : 0)) * dt * eff);
         st.time += dt;
         addExp(st, dt + (st.pet ? CFG.petTps * CFG.tapExp * dt : 0));
+        checkProjects(st);
         autoActions(st);
       }
       if (st.pet && s >= 3600) dropItem(st, 'cats');
       // 자리를 비운 동안 교수님이 2시간마다 다녀가며 어록을 남긴다(최대 4번)
       for (let i = 0; i < Math.min(4, Math.floor(s / 7200)); i++) dropItem(st, 'quotes');
     }
-    return { seconds: s, capH: cap / 3600, capped: raw > cap, eff, gain: st.total - before.total, levels: st.lv - before.lv, papers: st.papers - before.papers };
+    return { seconds: s, capH: cap / 3600, capped: raw > cap, eff, gain: st.total - before.total, levels: st.lv - before.lv, papers: st.papers - before.papers, projects: st.life.projects - before.projects };
+  }
+
+  // ---------- 과제 ----------
+  const projSlots = (st) => SLOTS[st.tier] + upLv(st, 'slot') + (colSetDone(st, 'projects') ? 1 : 0);
+  const projSelect = (st, p) => (p.select >= 1 ? 1 : Math.min(0.95, p.select + 0.05 * upLv(st, 'grant')));
+  const projUnit = (st) => Math.max(perSecBase(st) / (1 + projBuff(st)), perTapBase(st) * 2, 1) * 60; // 자동 생산 1분 치(과제 보너스 제외)
+  const projCost = (st, p) => Math.ceil(Math.max(50, projUnit(st) * p.costMin));
+  const projReward = (st, p) => Math.ceil(Math.max(300, projUnit(st) * p.rewardMin) * (1 + 0.05 * colCount(st, 'projects')));
+  function projState(st, id) {
+    const p = PROJECTS.find((x) => x.id === id);
+    if (st.tier < p.tier) return TIERS[p.tier].name + '부터';
+    if (st.projects.some((x) => x.id === id)) return '진행 중';
+    if (st.projects.length >= projSlots(st)) return '슬롯 부족';
+    if (st.data < projCost(st, p)) return '데이터 부족';
+    return true;
+  }
+  // 제안서 제출(산학은 계약). 국가과제는 바로 선정 여부를 굴린다.
+  function startProject(st, id) {
+    if (st.ended || projState(st, id) !== true) return null;
+    const p = PROJECTS.find((x) => x.id === id);
+    st.data -= projCost(st, p);
+    if (rnd(st) >= projSelect(st, p)) {
+      const why = REJECT_NOTES[Math.floor(rnd(st) * REJECT_NOTES.length)];
+      note(st, 'project', '[' + p.grade + '] 「' + p.name + '」 탈락. 평가 의견: ' + why);
+      return { selected: false, why };
+    }
+    st.projects.push({ id, endAt: st.time + p.dur, reward: projReward(st, p), coupons: p.coupons, buff: p.buff });
+    note(st, 'project', '[' + p.grade + '] 「' + p.name + '」 ' + (p.select >= 1 ? '계약' : '선정') + '! 진행 중 자동 생산 +' + Math.round(p.buff * 100) + '%');
+    return { selected: true };
+  }
+  function checkProjects(st) {
+    if (!st.projects || !st.projects.length) return;
+    st.projects = st.projects.filter((x) => {
+      if (x.endAt > st.time) return true;
+      const p = PROJECTS.find((q) => q.id === x.id);
+      earn(st, x.reward); st.coupons += x.coupons; st.life.projects++;
+      note(st, 'project', '「' + p.name + '」 과제 완료! 데이터 +' + fmt(x.reward) + ', 커피 쿠폰 +' + x.coupons);
+      if (!st.col.projects[x.id]) { st.col.projects[x.id] = true; note(st, 'collect', '[과제 협약서] 「' + p.name + '」 (' + colCount(st, 'projects') + '/' + colTotal('projects') + ')' + (colSetDone(st, 'projects') ? ' 세트 완성: 과제 슬롯 +1' : '')); }
+      return false;
+    });
+  }
+
+  // ---------- 월계관과 재입학 ----------
+  function laurelReward(st) {
+    const extra = Math.min(5, Math.floor(Math.max(0, st.papers - CFG.needs[LAST]) / 5));
+    return { base: CFG.laurelBase, extra, honor: upLv(st, 'honor'), total: CFG.laurelBase + extra + upLv(st, 'honor') };
+  }
+  // 엔딩 후 재입학: 월계관을 받고 새 판을 연다. 평생 기록은 이어진다.
+  function retire(st) {
+    if (!st.ended) return null;
+    const r = laurelReward(st);
+    st.laurels += r.total; st.medals += r.total;
+    st.life.runs++;
+    // 진행 중이던 과제는 완료로 처리해 협약서와 실적을 남긴다(데이터 보상은 새 판에 넘기지 않음).
+    (st.projects || []).forEach((x) => { st.life.projects++; st.col.projects[x.id] = true; });
+    st.projects = [];
+    if (st.life.bestRun == null || st.time < st.life.bestRun) st.life.bestRun = st.time;
+    return newGame(st);
+  }
+  function buyUpgrade(st, id) {
+    const u = LAUREL_UPS[id], lv = upLv(st, id);
+    if (!u || lv >= u.max || st.laurels < u.cost(lv)) return false;
+    st.laurels -= u.cost(lv); st.ups[id] = lv + 1; return true;
+  }
+
+  // ---------- 랭킹 점수 ----------
+  function colPct(st) {
+    const keys = Object.keys(COLLECTION);
+    return Math.floor((keys.reduce((a, k) => a + colCount(st, k), 0) / keys.reduce((a, k) => a + colTotal(k), 0)) * 100);
+  }
+  function scoreCard(st) {
+    const card = { bestTier: st.bestTier, laurels: st.medals, colPct: colPct(st), projects: st.life.projects, papers: st.life.papers, runs: st.life.runs, bestRun: st.life.bestRun == null ? null : Math.round(st.life.bestRun) };
+    card.score = card.bestTier * 100 + card.laurels * 50 + card.colPct * 5 + card.projects * 2 + Math.floor(card.papers / 2);
+    return card;
   }
 
   // ---------- BM ----------
@@ -431,7 +563,8 @@
 
   return {
     CFG, TIERS, LAST, GENS, SKILLS, AUTOS, MILESTONES, PRODUCTS, COUPON_ITEMS, AD_LIMITS, ATTEND, fmt,
-    COLLECTION, RARITY, TOPICS, TOPIC_STARS, PITY, colCount, colTotal, colSetDone, colBonus, dropRate,
+    COLLECTION, RARITY, TOPICS, TOPIC_STARS, PITY, LAUREL_UPS, PROJECTS, YEARS, upLv, laurelMult, projBuff, yearOf, rankName,
+    projSlots, projSelect, projCost, projReward, projState, startProject, laurelReward, retire, buyUpgrade, colPct, scoreCard, colCount, colTotal, colSetDone, colBonus, dropRate,
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
     buyGen, buyTap, writePaper, canPromote, promote, buyCentury, skillReady, useSkill, setAuto, profReward, offline,

@@ -8,6 +8,7 @@ function activeSecond(st, p, reach) {
   if (p.skills) { E.useSkill(st, 'night'); E.useSkill(st, 'deadline'); }
   E.tick(st, 1);
   if (p.auto) { E.setAuto(st, 'paper', true); E.setAuto(st, 'hire', true); }
+  startProjects(st);
   for (let guard = 0; guard < 60; guard++) {
     if (E.canPromote(st)) { E.promote(st); reach[st.tier] = st.time; continue; }
     if (E.buyCentury(st)) continue;
@@ -30,6 +31,23 @@ function activeSecond(st, p, reach) {
   }
 }
 
+// 빈 과제 슬롯이 있으면 협약서가 없는 과제, 그다음 기대 보상(보상×선정률÷기간)이 큰 과제부터 시작한다.
+function startProjects(st) {
+  for (let i = 0; i < 4; i++) {
+    const ev = (p) => (p.rewardMin * E.projSelect(st, p)) / p.dur + (st.col.projects[p.id] ? 0 : 1); // 협약서가 없는 과제를 먼저
+    const ok = E.PROJECTS.filter((p) => E.projState(st, p.id) === true).sort((a, b) => ev(b) - ev(a));
+    if (!ok.length) return;
+    E.startProject(st, ok[0].id);
+  }
+}
+// 재입학: 월계관을 받고, 싼 강화부터 산다(연구 노하우·연구실 확장 우선).
+function retireAndUpgrade(st) {
+  const next = E.retire(st);
+  const order = ['slot', 'know', 'early', 'grant', 'leave', 'jokbo', 'network', 'finger', 'honor'];
+  for (let k = 0; k < 50; k++) { const id = order.find((u) => E.buyUpgrade(next, u)); if (!id) break; }
+  return next;
+}
+
 function run(p) {
   const st = E.newGame(p.prev);
   st.rng = p.seed || 12345;
@@ -47,10 +65,12 @@ function run(p) {
     while (st.time < limit && !st.ended) {
       for (let s = 0; s < p.sessionSec && !st.ended; s++) activeSecond(st, p, reach);
       if (st.ended) break;
+      startProjects(st);
       E.offline(st, p.checkInH * 3600);
       E.spendCoupon(st, 'pet'); // 쿠폰 150개가 모이면 무과금으로도 야옹을 입양한다
       if (p.profEvery) for (let k = 0; k < Math.floor(p.sessionSec / p.profEvery); k++) E.profReward(st);
       while (E.canPromote(st)) { E.promote(st); reach[st.tier] = st.time; }
+      startProjects(st); // 들어오자마자 쌓인 데이터로 과제부터 고른다
     }
   }
   return { reach, papers: st.papers, lv: st.lv, ended: st.ended, time: st.time, st };
@@ -75,9 +95,9 @@ for (const p of PROFILES) {
 // 재입학 반복: 4시간마다 2분 접속(교수님 1번 잡음), 무과금. 판마다 걸린 시간과 도감 진행을 본다.
 console.log('\n재입학 반복 (4시간마다 2분 접속, 무과금)');
 let prev;
-for (let n = 1; n <= 6; n++) {
+for (let n = 1; n <= 8; n++) {
   const r = run({ tps: 3, skills: true, auto: true, checkInH: 4, sessionSec: 120, profEvery: 120, limitH: 24 * 14, prev, seed: 1000 + n });
   const col = Object.keys(E.COLLECTION).map((k) => E.COLLECTION[k].name + ' ' + E.colCount(r.st, k) + '/' + E.colTotal(k)).join(', ');
-  console.log('  ' + n + '판: ' + t(r.reach[E.LAST]) + ' · 월계관 ' + r.st.medals + ' · ' + col);
-  prev = r.st; prev.medals++;
+  console.log('  ' + n + '판: ' + t(r.reach[E.LAST]) + ' · 과제 ' + r.st.life.projects + '건 · 강화 ' + JSON.stringify(r.st.ups) + '\n     ' + col);
+  prev = retireAndUpgrade(r.st);
 }
