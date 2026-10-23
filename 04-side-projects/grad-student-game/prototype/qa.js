@@ -3,6 +3,8 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const E = require('./engine.js');
+// 엔진 검사용: 심사를 바로 끝내고 전직한다
+const promoteNow = (s) => { const r = E.promote(s); if (s.review) { s.review.endAt = s.time; E.finishReview(s); } return r; };
 const SP = process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'grad-qa-'));
 fs.mkdirSync(path.join(SP, 'web'), { recursive: true });
 fs.copyFileSync(path.join(__dirname, 'engine.js'), path.join(SP, 'web', 'engine.js'));
@@ -28,7 +30,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   const old = E.migrate({ v: 1, data: 1, total: 1, taps: 0, tapLv: 0, gens: {}, papers: 3, paperTitles: [], tier: 4, time: 10, skills: { night: 0, deadline: 0 }, buffs: [], medals: 0, century: false, promotedAt: [{ tier: 1, time: 0 }, { tier: 2, time: 5 }, { tier: 4, time: 9 }], rng: 1, ended: false });
   ok('v1 세이브 변환 시 지나온 직급 기념사진 복원', old.col.photos[2] && old.col.photos[5] && !old.col.photos[4]);
   const y = E.newGame(); y.data = 1e9;
-  const names = []; for (let i = 0; i < 7; i++) { E.writePaper(y); if (E.canPromote(y)) E.promote(y); names.push(E.rankName(y)); }
+  const names = []; for (let i = 0; i < 7; i++) { E.writePaper(y); if (E.canPromote(y)) promoteNow(y); names.push(E.rankName(y)); }
   ok('연차: 석사 1~2년차, 박사 1~4년차 순서로 오른다', names.join(',') === '석사과정 1년차,석사과정 2년차,박사과정 1년차,박사과정 2년차,박사과정 3년차,박사과정 4년차,포닥', names.join(','));
   const pj = E.newGame(); pj.data = 1e6; pj.rng = 3;
   const r1 = E.startProject(pj, 'i1');
@@ -36,7 +38,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('박사과정 전에는 국가과제를 낼 수 없다', E.projState(pj, 'n1') === '박사과정부터' && E.startProject(pj, 'n1') === null);
   E.tick(pj, 901);
   ok('과제가 끝나면 보상·협약서·실적이 남는다', pj.projects.length === 0 && pj.life.projects === 1 && pj.col.projects.i1 === true);
-  const lr = E.newGame(); lr.tier = 8; lr.papers = E.CFG.needs[E.LAST] + 5; lr.data = 1e12; E.buyCentury(lr); E.promote(lr);
+  const lr = E.newGame(); lr.tier = 8; lr.papers = E.CFG.needs[E.LAST] + 5; lr.data = 1e12; E.buyCentury(lr); promoteNow(lr);
   const rw = E.laurelReward(lr).total, nx = E.retire(lr);
   ok('재입학하면 월계관(기본 3 + 추가 논문 1)을 받는다', rw === 4 && nx.laurels === 4 && nx.life.runs === 1);
   ok('월계관 강화를 사면 보유 월계관이 줄고 레벨이 오른다', E.buyUpgrade(nx, 'know') && nx.laurels === 3 && E.upLv(nx, 'know') === 1);
@@ -46,7 +48,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('영웅 등급을 넣어도 어록 확률은 그대로(5.45%), 아바타는 일반>희귀>영웅>전설', Math.abs(qRate - 5.4545) < 0.01 && aRates[0] > aRates[1] && aRates[1] > aRates[2] && aRates[2] > aRates[3], aRates.map((x) => x.toFixed(2)).join('/'));
   const av = E.newGame(); av.rng = 9; av.data = 1e9;
   for (let i = 0; i < 3; i++) E.writePaper(av);
-  E.promote(av);
+  promoteNow(av);
   ok('전직하면 아바타 1개 확정', E.colCount(av, 'avatar') === 1);
   const lvA = E.newGame(); lvA.rng = 2; lvA.exp = 1e9; E.tick(lvA, 1);
   ok('5레벨마다 아바타 1개 (레벨 5 이상이면 1개 이상)', lvA.lv >= 5 && E.colCount(lvA, 'avatar') >= 1, 'Lv ' + lvA.lv + ', 아바타 ' + E.colCount(lvA, 'avatar'));
@@ -65,7 +67,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   E.drink(dr);
   ok('겹쳐 마시면 배율은 그대로 2배, 시간만 10분으로 늘어난다', E.buffMult(dr, 'tap') === 2 && dr.buffs.length === 2 && dr.buffs.every((b) => b.until === 600) && !E.drink(dr));
   const gd = E.newGame(); gd.data = 1e9; gd.coupons = 20; gd.rng = 4;
-  for (let i = 0; i < 3; i++) E.writePaper(gd); E.promote(gd);
+  for (let i = 0; i < 3; i++) E.writePaper(gd); promoteNow(gd);
   const afterPromo = gd.drinks; E.spendCoupon(gd, 'drink');
   gd.daily = { day: 'd3', streak: 3, claimed: '', ads: 0, adBuff: 0, adSkill: 0 }; E.claimAttend(gd);
   E.adReward(gd, 'skill');
@@ -152,10 +154,17 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   p = await page(undefined, JSON.stringify({ st: s6, at: Date.now() + 5 * 3600 * 1000 }));
   ok('미래 저장 시각은 방치 보상 없음', !(await modalText(p)).includes('다녀오셨어요'));
   // 9. 시간강사 전직
-  const s9 = E.newGame(); s9.tier = 3; s9.papers = 11; s9.data = 1e8; s9.daily.claimed = 'x';
-  p = await page(undefined, JSON.stringify({ st: s9, at: Date.now() }));
+  const s9b = E.newGame(); s9b.tier = 3; s9b.papers = 11; s9b.data = 1e8; s9b.daily.claimed = 'x';
+  p = await page(undefined, JSON.stringify({ st: s9b, at: Date.now() }));
   await clickModal(p, '받기');
-  await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(500);
+  ok('전직 버튼은 심사 신청', (await p.textContent('#promoteBtn')).includes('시간강사 채용 면접 신청'));
+  await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(300);
+  const left0 = await p.textContent('#nextCount');
+  await p.evaluate(() => { const t = document.getElementById('tapper'); for (let i = 0; i < 10; i++) t.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300, bubbles: true })); }); await p.waitForTimeout(300);
+  ok('심사 중 표시와 탭으로 단축', (await p.textContent('#nextLabel')).includes('시간강사 채용 면접 중') && left0 !== (await p.textContent('#nextCount')), left0 + ' → ' + (await p.textContent('#nextCount')));
+  const s9 = E.newGame(); s9.tier = 3; s9.papers = 11; s9.data = 1e8; s9.daily.claimed = 'x'; s9.review = { to: 4, endAt: s9.time + 0.5, total: 7200 };
+  p = await page(undefined, JSON.stringify({ st: s9, at: Date.now() }));
+  await clickModal(p, '받기'); await p.waitForTimeout(800);
   const m9 = await modalText(p);
   ok('포닥 → 시간강사 전직', m9.includes('시간강사') && m9.includes('보따리'), m9.split('\n').slice(0, 3).join(' / '));
   await p.screenshot({ path: SP + '/qa-lecturer.png' });
@@ -163,7 +172,10 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   const s10 = E.newGame(); s10.tier = 8; s10.papers = E.CFG.needs[E.LAST]; s10.data = 2e10; s10.coupons = 77; s10.pet = true; s10.medals = 0;
   p = await page({ viewport: { width: 1200, height: 900 }, colorScheme: 'dark' }, JSON.stringify({ st: s10, at: Date.now() }));
   await clickModal(p, '받기');
-  await p.click('#centuryBtn'); await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(500);
+  await p.click('#centuryBtn'); await p.waitForTimeout(200);
+  ok('세기의 연구 뒤 교과서 편찬 위원회 심사 신청', (await p.textContent('#promoteBtn')).includes('교과서 편찬 위원회 심사'));
+  p = await page({ viewport: { width: 1200, height: 900 }, colorScheme: 'dark' }, JSON.stringify({ st: Object.assign(s10, { century: true, paperTitles: [E.FINAL_TITLE], review: { to: 9, endAt: 0.5, total: 86400 } }), at: Date.now() }));
+  await clickModal(p, '받기'); await p.waitForTimeout(800);
   ok('살아있는 교과서 엔딩', (await modalText(p)).includes('살아있는 교과서') && (await modalText(p)).includes('인류의 지성'));
   ok('마지막 캐릭터는 월계관 (흰 머리 뭉치 없음)', await p.evaluate(() => { const svg = document.querySelector('#dialog svg'); return svg.querySelectorAll('ellipse[fill="#d4a72c"]').length >= 13 && svg.querySelectorAll('circle[r="16"]').length === 0; }));
   await p.screenshot({ path: SP + '/qa-ending.png' });

@@ -9,8 +9,10 @@
 
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 전직 속도를 맞춘다.
   const CFG = {
-    needs: [0, 0, 3, 7, 11, 18, 26, 37, 50, 64], // 직급별 전직에 필요한 누적 논문 편수
-    paperBase: 36000, paperGrowth: 1.48, paperBonus: 0.03, tapShare: 0.05, tierProd: 1.5, tierTap: 1.5, century: 1e10,
+    needs: [0, 0, 3, 7, 11, 16, 22, 29, 37, 45], // 직급별 전직에 필요한 누적 논문 편수
+    // 전직 심사: 논문을 채우고 신청하면 실제 시간이 흘러야 끝난다(앱을 꺼 둬도 흐름). 탭 1번마다 남은 시간이 줄어든다.
+    reviewSec: [0, 0, 0, 3600, 7200, 21600, 36000, 50400, 64800, 86400], reviewTapCut: 1.8,
+    paperBase: 36000, paperGrowth: 1.47, paperBonus: 0.03, tapShare: 0.05, tierProd: 1.5, tierTap: 1.5, century: 1e10,
     levelBonus: 0.03, expBase: 60, expGrowth: 1.2, tapExp: 0.5,
     offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3, laurelBonus: 0.2, laurelBase: 3,
   };
@@ -28,6 +30,8 @@
     { name: '살아있는 교과서', title: '인류의 지성' },
   ];
   const LAST = TIERS.length - 1;
+  // 직급마다 거치는 심사 이름(그 직급으로 오를 때)
+  const REVIEWS = [null, null, '박사과정 입학 심사', '박사 학위 논문 심사', '시간강사 채용 면접', '교수 임용 심사', '테뉴어 심사', '정교수 승진 심사', '국제학회 펠로우 심사', '교과서 편찬 위원회 심사'];
 
   // 자동 생산원. tier 이상이 되면 고용·구매할 수 있다.
   const GENS = [
@@ -252,7 +256,7 @@
     const st = {
       v: 2, data: 0, total: 0, taps: 0, tapLv: 0, gens: {}, papers: 0, paperTitles: [], tier: 1,
       time: 0, skills: { night: 0, deadline: 0 }, buffs: [], century: false, ended: false,
-      promotedAt: [{ tier: 1, time: 0 }], rng: (Math.random() * 2 ** 32) >>> 0,
+      promotedAt: [{ tier: 1, time: 0 }], review: null, rng: (Math.random() * 2 ** 32) >>> 0,
       exp: 0, lv: 0, auto: { paper: false, hire: false }, notes: [],
       medals: keep.medals || 0, laurels: keep.laurels || 0, ups: keep.ups || {}, coupons: keep.coupons || 0, pet: !!keep.pet, bestTier: keep.bestTier || 1,
       life: keep.life || { runs: 0, papers: 0, projects: 0, bestRun: null }, projects: [], rank: keep.rank || { join: false, nick: '' },
@@ -296,6 +300,7 @@
     if (!st.look || typeof st.look !== 'object') st.look = DEFAULT_LOOK();
     Object.keys(DEFAULT_LOOK()).forEach((k) => { if (st.look[k] === undefined) st.look[k] = DEFAULT_LOOK()[k]; });
     if (st.look.gender !== 'f') st.look.gender = 'm';
+    if (st.review && !(typeof st.review.endAt === 'number' && st.review.to === st.tier + 1)) st.review = null;
     return st;
   }
 
@@ -429,9 +434,16 @@
     st.buffs = st.buffs.filter((b) => b.until > st.time);
     addExp(st, dt + (st.pet ? CFG.petTps * CFG.tapExp * dt : 0));
     checkProjects(st);
+    finishReview(st);
     autoActions(st);
   }
-  function tap(st) { if (st.ended) return 0; const v = perTap(st); earn(st, v); st.taps++; addExp(st, CFG.tapExp); return v; }
+  function tap(st) {
+    if (st.ended) return 0;
+    const v = perTap(st); earn(st, v); st.taps++; addExp(st, CFG.tapExp);
+    // 심사 중이면 탭이 심사 준비가 된다. 밤샘·드링크·영감처럼 탭을 키우는 버프만큼 더 줄어든다
+    if (st.review) { st.review.endAt -= CFG.reviewTapCut * buffMult(st, 'tap'); finishReview(st); }
+    return v;
+  }
   function genUnlocked(st, id) { return st.tier >= GENS.find((g) => g.id === id).tier; }
   function buyGen(st, id) {
     if (!genUnlocked(st, id)) return false;
@@ -455,17 +467,35 @@
     return title;
   }
   function canPromote(st) {
-    if (st.tier >= LAST || st.papers < nextNeed(st)) return false;
+    if (st.review || st.tier >= LAST || st.papers < nextNeed(st)) return false;
     return st.tier + 1 < LAST || st.century;
   }
+  const reviewSec = (st) => CFG.reviewSec[st.tier + 1] || 0;
+  // 전직 신청: 심사가 있으면 심사를 시작하고, 없으면(첫 전직) 바로 오른다
   function promote(st) {
     if (!canPromote(st)) return false;
+    const sec = reviewSec(st);
+    if (sec > 0) {
+      st.review = { to: st.tier + 1, endAt: st.time + sec, total: sec };
+      note(st, 'review', REVIEWS[st.tier + 1] + '을 신청했다. 심사가 끝나면 ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직한다.');
+      return 'review';
+    }
+    levelUpTier(st);
+    return true;
+  }
+  function finishReview(st) {
+    if (!st.review || st.review.endAt > st.time) return false;
+    st.review = null;
+    levelUpTier(st);
+    note(st, 'promoted', REVIEWS[st.tier] + ' 통과! ' + jo(TIERS[st.tier].name, '으로', '로') + ' 전직했다.');
+    return true;
+  }
+  function levelUpTier(st) {
     st.tier++; st.promotedAt.push({ tier: st.tier, time: st.time });
     dropItem(st, 'avatar'); dropItem(st, 'scholar'); giveDrink(st, 1, '전직 축하');
     if (!st.col.photos[st.tier]) { st.col.photos[st.tier] = true; note(st, 'collect', '[직급 기념사진] ' + TIERS[st.tier].name + ' (' + colCount(st, 'photos') + '/' + colTotal('photos') + ')'); }
     if (st.tier > st.bestTier) { st.bestTier = st.tier; st.coupons += 10; note(st, 'coupon', '처음 오른 직급이라 커피 쿠폰 +10'); }
     if (st.tier === LAST) st.ended = true;
-    return true;
   }
   function buyCentury(st) {
     if (st.tier !== LAST - 1 || st.century || st.papers < CFG.needs[LAST] || st.data < CFG.century) return false;
@@ -545,6 +575,9 @@
       for (let i = 0; i < Math.min(4, Math.floor(s / 7200)); i++) dropItem(st, 'quotes');
       st.buffs = st.buffs.filter((b) => b.until > st.time); // 버프는 지워지지 않고, 자리를 비운 시간만큼 줄어든다
     }
+    // 심사는 보상 상한(8시간)과 상관없이 실제로 비운 시간만큼 흐른다
+    if (raw > s && st.review) { st.review.endAt -= raw - s; }
+    finishReview(st);
     return { seconds: s, capH: cap / 3600, capped: raw > cap, eff, gain: st.total - before.total, levels: st.lv - before.lv, papers: st.papers - before.papers, projects: st.life.projects - before.projects };
   }
 
@@ -716,7 +749,7 @@
     const c = ctx || {}, ps = perSec(st);
     if (st.ended) return { kind: 'retire', text: '살아있는 교과서가 되었어요! 월계관을 받고 재입학하세요.' };
     if (st.taps < 10 && st.papers === 0) return { kind: 'tap', text: '대학원생을 탭해서 연구 데이터를 모으세요.' };
-    if (canPromote(st)) return { kind: 'promote', text: '논문이 다 모였어요. ' + jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직하세요!' };
+    if (canPromote(st)) return { kind: 'promote', text: '논문이 다 모였어요. ' + (reviewSec(st) ? jo(REVIEWS[st.tier + 1], '을', '를') + ' 신청하세요!' : jo(TIERS[st.tier + 1].name, '으로', '로') + ' 전직하세요!') };
     if (c.prof) return { kind: 'prof', text: jo(visitor(st).name, '이', '가') + ' 지나가요! 놓치기 전에 누르세요.' };
     if (st.tier === LAST - 1 && !st.century && st.papers >= CFG.needs[LAST]) {
       if (st.data >= CFG.century) return { kind: 'century', text: '세기의 연구를 완성할 수 있어요.' };
@@ -735,9 +768,11 @@
     const best = GENS.filter((g) => genUnlocked(st, g.id)).map((g) => ({ g, c: genCost(st, g.id) })).sort((a, b) => genRate(st, b.g) / b.c - genRate(st, a.g) / a.c)[0];
     if (best && st.data >= best.c) return { kind: 'gen', id: best.g.id, text: jo(best.g.name, '을', '를') + (['intern', 'junior', 'postdoc'].includes(best.g.id) ? ' 뽑으세요' : ' 들이세요') + '. 지금 가장 효율이 좋아요.' };
     if (st.data >= tapCost(st)) { const t0 = perTapBase(st); st.tapLv++; const t1 = perTapBase(st); st.tapLv--; if (t1 / t0 > 1.3) return { kind: 'tapUp', text: '타자 속도를 올리면 탭이 ' + (t1 / t0).toFixed(1) + '배가 돼요.' }; }
+    if (st.review && skillReady(st, 'night')) return { kind: 'skill', id: 'night', text: '심사 중에는 탭이 심사 준비가 돼요. 밤샘을 쓰면 10배로 빨라져요.' };
     const sk = Object.keys(SKILLS).find((id) => skillReady(st, id));
     if (sk) return { kind: 'skill', id: sk, text: jo(SKILLS[sk].name, '을', '를') + ' 쓰면 ' + SKILLS[sk].desc + '예요.' };
     if (st.laurels > 0 && Object.keys(LAUREL_UPS).some((id) => upLv(st, id) < LAUREL_UPS[id].max && st.laurels >= LAUREL_UPS[id].cost(upLv(st, id)))) return { kind: 'tab', tab: 'laurel', text: '월계관으로 영구 강화를 살 수 있어요.' };
+    if (st.review) return { kind: 'tap', text: REVIEWS[st.review.to] + ' 중이에요 (남은 ' + dur(st.review.endAt - st.time) + '). 탭할 때마다 ' + CFG.reviewTapCut + '초씩 빨라져요.' };
     if (st.papers < need && ps > 0) return { kind: 'wait', text: '다음 논문까지 데이터를 모으는 중 (약 ' + dur((pc - st.data) / ps) + '). 탭하면 더 빨라요.' };
     if (best && ps > 0) return { kind: 'wait', text: best.g.name + '까지 데이터를 모으는 중 (약 ' + dur((best.c - st.data) / ps) + ').' };
     return { kind: 'tap', text: '탭해서 데이터를 모으세요. 동료·장비를 들이면 자동으로 쌓여요.' };
@@ -751,6 +786,6 @@
     newGame, migrate, tick, tap, perSec, perSecBase, perTap, petPerSec, globalMult, genRate, genCost, tapCost, paperCost,
     nextTier, nextNeed, genUnlocked, expNeed, levelMult, buffMult,
     buyGen, buyTap, writePaper, canPromote, promote, buyCentury, skillReady, useSkill, setAuto, profReward, offline,
-    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide, jo, FINAL_TITLE, VISITORS, visitor, junior,
+    refreshDay, attendReady, attendReward, claimAttend, adLeft, adReward, mockBuy, spendCoupon, spent, guide, jo, FINAL_TITLE, VISITORS, visitor, junior, REVIEWS, reviewSec, finishReview,
   };
 });

@@ -10,7 +10,7 @@ function activeSecond(st, p, reach) {
   if (p.auto) { E.setAuto(st, 'paper', true); E.setAuto(st, 'hire', true); }
   startProjects(st);
   for (let guard = 0; guard < 60; guard++) {
-    if (E.canPromote(st)) { E.promote(st); reach[st.tier] = st.time; continue; }
+    if (E.canPromote(st)) { E.promote(st); continue; }
     if (E.buyCentury(st)) continue;
     const ps = E.perSecBase(st), income = ps + p.tps * E.perTap(st) + 1;
     const opts = [];
@@ -69,10 +69,12 @@ function run(p) {
       E.offline(st, p.checkInH * 3600);
       E.spendCoupon(st, 'pet'); // 쿠폰 150개가 모이면 무과금으로도 야옹을 입양한다
       if (p.profEvery) for (let k = 0; k < Math.floor(p.sessionSec / p.profEvery); k++) E.profReward(st);
-      while (E.canPromote(st)) { E.promote(st); reach[st.tier] = st.time; }
+      while (E.canPromote(st)) E.promote(st);
       startProjects(st); // 들어오자마자 쌓인 데이터로 과제부터 고른다
     }
   }
+  // 심사가 끝난 시각이 실제 전직 시각이다
+  st.promotedAt.forEach((x) => { reach[x.tier] = x.time; });
   return { reach, papers: st.papers, lv: st.lv, ended: st.ended, time: st.time, st };
 }
 module.exports = { run };
@@ -80,7 +82,7 @@ if (require.main !== module) return;
 
 const PROFILES = [
   { label: '적극 (초당 5탭, 스킬, 교수님 90초)', tps: 5, skills: true, profEvery: 90, auto: true },
-  { label: '가벼움 (초당 1탭)', tps: 1, skills: false, auto: true },
+  { label: '가벼움 (초당 1탭)', tps: 1, skills: false, auto: true , limitH: 48 },
   { label: '방치 (4시간마다 2분 플레이, 무과금)', tps: 3, skills: true, auto: true, checkInH: 4, sessionSec: 120, limitH: 24 * 14 },
   { label: '방치 + 정기구독·야옹', tps: 3, skills: true, auto: true, checkInH: 4, sessionSec: 120, limitH: 24 * 14, sub: true },
   { label: '하루 2번 (12시간마다 5분, 무과금)', tps: 3, skills: true, auto: true, checkInH: 12, sessionSec: 300, limitH: 24 * 14 },
