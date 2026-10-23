@@ -34,10 +34,13 @@ function bestAction(st) {
   return opts;
 }
 // 학과 연구·스타 연구원·스킬: 쓸 수 있으면 바로 쓴다
-function extras(st) {
+function extras(st, p) {
   const order = ['exp', 'write', 'admin', 'welfare', 'pr', 'build', 'scholar'];
   if (!st.research.active) { const id = order.slice().sort((a, b) => E.researchCost(st, a) - E.researchCost(st, b)).find((k) => E.canResearch(st, k) === true); if (id) E.startResearch(st, id); }
   while (st.tickets > 0) E.drawCard(st);
+  E.CARDS.forEach((c) => { while (E.canEnhance(st, c.id)) E.enhanceCard(st, c.id); });
+  // 과제: 칸이 비면 보상이 큰 것부터 신청
+  if (p.projects !== false) E.PROJECTS.slice().reverse().forEach((x) => { if (E.canStartProject(st, x.id) === true) E.startProject(st, x.id); });
   const best = (role) => E.CARDS.filter((c) => st.cards.owned[c.id] && (c.role === role || c.role === 'any')).sort((a, b) => E.RARITY[b.rar].mult - E.RARITY[a.rar].mult)[0];
   const top = E.ROOMS.filter((r) => r.role === 'A' && E.built(st, r.id)).pop();
   [['meeting', 'B'], ['office', 'C'], ['lounge', 'M'], [top.id, 'A']].forEach(([rid, role]) => { const c = best(role); if (c && !Object.values(st.cards.assign).includes(c.id)) E.assignCard(st, c.id, rid); });
@@ -45,7 +48,7 @@ function extras(st) {
   E.useSkill(st, bid);
 }
 function activeSecond(st, p, reach) {
-  extras(st);
+  extras(st, p);
   if (p.encourage) { const f = E.flow(st); const id = f.bott === 'B' ? 'meeting' : f.bott === 'C' ? 'office' : (E.ROOMS.filter((r) => r.role === 'A' && E.built(st, r.id)).pop() || {}).id; if (id) E.encourage(st, id); }
   E.tick(st, 1);
   if (st.univ === E.UNIV_MAX && reach.u == null) reach.u = st.time;

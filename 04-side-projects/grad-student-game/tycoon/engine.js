@@ -12,7 +12,7 @@
 
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 승진 속도를 맞춘다.
   const CFG = {
-    fameNeed: [0, 0, 1e3, 3e5, 6e7, 1.5e10], // 직급별 승진에 필요한 누적 명성
+    fameNeed: [0, 0, 1e3, 3e5, 7e7, 2e10], // 직급별 승진에 필요한 누적 명성
     tierValue: 2.5, fameRate: 0.1,
     prodGrowth: 1.14, stageGrowth: 1.16, hireBase: 30, hireGrowth: 1.32,
     offlineCapH: 8, offlineEff: 0.5, laurelBonus: 0.25, libraryBonus: 0.05,
@@ -100,20 +100,50 @@
 
   // 스타 연구원 카드: 방에 배치하면 상시 배율, 스킬은 쿨다운마다 쓸 수 있다. 모집권은 무료로만 얻는다.
   const RARITY = { c: { name: '일반', w: 60, mult: 1.5, skill: [3, 20, 600] }, r: { name: '희귀', w: 28, mult: 2, skill: [4, 25, 480] }, e: { name: '영웅', w: 9, mult: 3, skill: [5, 30, 360] }, l: { name: '전설', w: 3, mult: 5, skill: [8, 30, 300] } };
+  // 학생 도감: 과정별 5갈래 30명. group은 갈래, role은 배치할 수 있는 방(A 생산, B 회의실, C 교수실, M 휴게실, any 어디든)
+  const CARD_GROUPS = {
+    u: { name: '학부연구생', set: '데이터 생산 +10%' },
+    m: { name: '석사과정', set: '회의실 용량 +10%' },
+    d: { name: '박사과정', set: '데이터 생산 +15%' },
+    p: { name: '포닥·연구교수', set: '교수실 용량 +15%' },
+    v: { name: '해외 방문연구원', set: '연구비 +20%' },
+  };
   const CARDS = [
-    { id: 'c1', name: '성실한 석사 김하늘', rar: 'c', role: 'A', skill: '밤샘 실험' },
-    { id: 'c2', name: '꼼꼼한 박사 이도윤', rar: 'c', role: 'B', skill: '교정 마라톤' },
-    { id: 'c3', name: '행정의 달인 박소라', rar: 'c', role: 'C', skill: '서류 일괄 처리' },
-    { id: 'c4', name: '분위기 메이커 최준', rar: 'c', role: 'M', skill: '야식 배달' },
-    { id: 'r1', name: '실험 장인 정민재', rar: 'r', role: 'A', skill: '완벽한 셋업' },
-    { id: 'r2', name: '코딩 천재 한서윤', rar: 'r', role: 'A', skill: '자동화 스크립트' },
-    { id: 'r3', name: '논문 기계 오지후', rar: 'r', role: 'B', skill: '하룻밤 원고' },
-    { id: 'r4', name: '과제 사냥꾼 윤채원', rar: 'r', role: 'C', skill: '제안서 폭격' },
-    { id: 'e1', name: '포닥 에이스 강태오', rar: 'e', role: 'A', skill: '연구실 총동원' },
-    { id: 'e2', name: '편집위원 서은비', rar: 'e', role: 'B', skill: '빠른 심사 요청' },
-    { id: 'l1', name: '전설의 연구교수 임도현', rar: 'l', role: 'any', skill: '세기의 아이디어' },
-    { id: 'l2', name: '세계적 석학 권하린', rar: 'l', role: 'C', skill: '기조연설' },
+    { id: 'u1', g: 'u', name: '열정 넘치는 학부생 김하늘', rar: 'c', role: 'A', skill: '밤샘 실험' },
+    { id: 'u2', g: 'u', name: '간식 담당 학부생 최준', rar: 'c', role: 'M', skill: '야식 배달' },
+    { id: 'u3', g: 'u', name: '손 빠른 학부생 이서진', rar: 'c', role: 'A', skill: '시료 정리' },
+    { id: 'u4', g: 'u', name: '받아쓰기 달인 학부생 박도윤', rar: 'c', role: 'B', skill: '회의록 정리' },
+    { id: 'u5', g: 'u', name: '심부름 달인 학부생 정예린', rar: 'c', role: 'C', skill: '도장 받아 오기' },
+    { id: 'u6', g: 'u', name: '조기 졸업 학부생 한서윤', rar: 'r', role: 'A', skill: '자동화 스크립트' },
+    { id: 'm1', g: 'm', name: '성실한 석사 강민재', rar: 'c', role: 'A', skill: '반복 실험' },
+    { id: 'm2', g: 'm', name: '꼼꼼한 석사 오지후', rar: 'c', role: 'B', skill: '교정 마라톤' },
+    { id: 'm3', g: 'm', name: '행정의 달인 석사 박소라', rar: 'c', role: 'C', skill: '서류 일괄 처리' },
+    { id: 'm4', g: 'm', name: '분위기 메이커 석사 윤하준', rar: 'c', role: 'M', skill: '회식 기획' },
+    { id: 'm5', g: 'm', name: '실험 장인 석사 정민재', rar: 'r', role: 'A', skill: '완벽한 셋업' },
+    { id: 'm6', g: 'm', name: '발표왕 석사 서유나', rar: 'r', role: 'B', skill: '리허설 지도' },
+    { id: 'm7', g: 'm', name: '상담가 석사 임채원', rar: 'r', role: 'M', skill: '고민 상담' },
+    { id: 'd1', g: 'd', name: '밤샘 박사 조은우', rar: 'c', role: 'A', skill: '72시간 실험' },
+    { id: 'd2', g: 'd', name: '그림 장인 박사 신다은', rar: 'c', role: 'B', skill: '그림 완성' },
+    { id: 'd3', g: 'd', name: '논문 기계 박사 권지후', rar: 'r', role: 'B', skill: '하룻밤 원고' },
+    { id: 'd4', g: 'd', name: '과제 사냥꾼 박사 윤채원', rar: 'r', role: 'C', skill: '제안서 폭격' },
+    { id: 'd5', g: 'd', name: '코딩 천재 박사 황시우', rar: 'r', role: 'A', skill: 'GPU 총동원' },
+    { id: 'd6', g: 'd', name: '수석 박사 강태오', rar: 'e', role: 'A', skill: '연구실 총동원' },
+    { id: 'd7', g: 'd', name: '최우수 논문상 박사 송유진', rar: 'e', role: 'B', skill: '빠른 심사 요청' },
+    { id: 'p1', g: 'p', name: '예산 정산 포닥 이준서', rar: 'r', role: 'C', skill: '예산 정산' },
+    { id: 'p2', g: 'p', name: '연구교수 한지민', rar: 'e', role: 'C', skill: '과제 따내기' },
+    { id: 'p3', g: 'p', name: '만능 포닥 오세린', rar: 'e', role: 'any', skill: '멀티태스킹' },
+    { id: 'p4', g: 'p', name: '전설의 연구교수 임도현', rar: 'l', role: 'any', skill: '세기의 아이디어' },
+    { id: 'p5', g: 'p', name: '편집위원 연구교수 서은비', rar: 'l', role: 'B', skill: '특집호 초청' },
+    { id: 'v1', g: 'v', name: '독일 방문연구원 레온', rar: 'r', role: 'A', skill: '정밀 측정' },
+    { id: 'v2', g: 'v', name: '미국 방문연구원 에밀리', rar: 'r', role: 'B', skill: '영어 교정' },
+    { id: 'v3', g: 'v', name: '일본 방문연구원 하루토', rar: 'e', role: 'A', skill: '장비 개량' },
+    { id: 'v4', g: 'v', name: '프랑스 방문연구원 클레어', rar: 'e', role: 'M', skill: '티타임' },
+    { id: 'v5', g: 'v', name: '세계적 석학 권하린', rar: 'l', role: 'C', skill: '기조연설' },
   ];
+  // 강화: 같은 연구원이 또 나오면 중복 카드로 쌓이고, 중복 카드를 써서 별을 올린다. 별 1개마다 배율 +25%
+  const ENHANCE_COST = [0, 1, 2, 3, 5]; // ★n → ★n+1에 필요한 중복 카드
+  const STAR_MAX = 5, MAX_DUP_GEMS = 10;
+  const OLD_CARD = { c1: 'm1', c2: 'm2', c3: 'm3', c4: 'm4', r1: 'm5', r2: 'u6', r3: 'd3', r4: 'd4', e1: 'd6', e2: 'd7', l1: 'p4', l2: 'v5' };
   const CARD_PITY = 10; // 영웅 이상 없이 10번 뽑으면 다음은 영웅 이상 확정
 
   // 일일 미션
@@ -169,14 +199,16 @@
       rooms: {}, equip: {}, students: [], buffs: [], cooldown: {}, notes: [], rng: (Math.random() * 2 ** 32) >>> 0,
       laurels: keep.laurels || 0, runs: keep.runs || 0, promotedAt: [{ tier: 1, time: 0 }],
       builds: [], research: { lv: {}, active: null }, nextReq: 1, helpApplied: {},
-      cards: keep.cards || { owned: {}, assign: {}, skillCd: {}, pity: 0 }, tickets: keep.tickets != null ? keep.tickets : 2,
+      cards: keep.cards || { owned: {}, dup: {}, assign: {}, skillCd: {}, pity: 0 }, tickets: keep.tickets != null ? keep.tickets : 2,
       missions: keep.missions || { day: '', prog: {}, claimed: {}, bonus: false },
       week: keep.week || { key: '', papers: 0, claimed: {} },
       ally: keep.ally || { id: null, nick: '', donated: {}, weekDonated: 0, helpGiven: 0, helps: {} },
       allyTech: keep.allyTech || {}, lifeFame: keep.lifeFame || 0,
-      col: keep.col || { covers: {}, alumni: {}, visitors: {}, photos: {} }, colPity: keep.colPity || 0, colNew: keep.colNew || 0,
+      col: keep.col || { covers: {}, alumni: {}, visitors: {}, photos: {}, contracts: {} }, colPity: keep.colPity || 0, colNew: keep.colNew || 0,
       gems: keep.gems || 0, daily: keep.daily || { day: '', streak: 0, claimed: '', ads: 0, adBuild: 0, adBoost: 0 },
       shop: keep.shop || { starter: false, noAds: false, subUntil: '', purchases: [] }, subActive: false, deco: keep.deco || {},
+      look: keep.look || { gender: null, outfit: -1, hair: -1, face: -1, prop: -1, pose: -1 }, av: keep.av || {},
+      projects: { active: [], done: (keep.projects && keep.projects.done) || {} }, guideOff: !!keep.guideOff,
     };
     st.cards.assign = {}; // 새 연구실이라 배치는 다시 한다
     ROOMS.forEach((r) => { st.rooms[r.id] = r.build === 0 ? 1 : 0; st.equip[r.id] = [0, 0, 0, 0, 0]; });
@@ -200,6 +232,16 @@
     });
     if (typeof st.univ !== 'number' || st.univ < 1 || st.univ > UNIV_MAX) st.univ = 1;
     if (st.univ < Math.min(UNIV_MAX - 1, st.tier)) st.univ = Math.min(UNIV_MAX - 1, st.tier); // 본관이 없던 저장: 직급에 맞춰 준다
+    // 예전 카드 12종 id를 새 학생 도감 id로 옮긴다
+    const c = st.cards; if (!c.dup) c.dup = {};
+    Object.keys(OLD_CARD).forEach((o) => {
+      if (c.owned[o]) { c.owned[OLD_CARD[o]] = Math.max(c.owned[OLD_CARD[o]] || 0, c.owned[o]); delete c.owned[o]; }
+      Object.keys(c.assign).forEach((r) => { if (c.assign[r] === o) c.assign[r] = OLD_CARD[o]; });
+      if (c.skillCd[o] != null) { c.skillCd[OLD_CARD[o]] = c.skillCd[o]; delete c.skillCd[o]; }
+    });
+    if (!st.col.contracts) st.col.contracts = {};
+    if (!st.look) st.look = fresh.look;
+    if (!st.projects) st.projects = fresh.projects;
     ['money', 'fame', 'time', 'totalMoney', 'papers'].forEach((k) => { if (typeof st[k] !== 'number' || !isFinite(st[k]) || st[k] < 0) st[k] = 0; });
     return st;
   }
@@ -238,16 +280,16 @@
   const perStudent = (st, id) => room(id).rate * lv(st, id) * Math.pow(2, MILESTONES.filter((m) => lv(st, id) >= m).length) * (1 + eqSum(st, id, 'mult')) * cardMult(st, id);
   function stageA(st) {
     const s = seating(st);
-    const g = (1 + 0.1 * rlv(st, 'exp')) * (1 + 0.05 * tech(st, 'lab')) * (1 + colBonus(st, 'data'));
+    const g = (1 + 0.1 * rlv(st, 'exp')) * (1 + 0.05 * tech(st, 'lab')) * (1 + colBonus(st, 'data') + avBonus(st, 'prop') + cardSet(st, 'u') + cardSet(st, 'd'));
     return producers(st).reduce((a, r) => a + perStudent(st, r.id) * (s[r.id] || 0) * buffMult(st, r.id), 0) * g;
   }
   const capOf = (st, id) => room(id).cap * lv(st, id) * Math.pow(2, Math.floor(lv(st, id) / 10)) * Math.pow(1.6, st.tier - 1) * (1 + eqSum(st, id, 'mult')) * cardMult(st, id);
-  const stageB = (st) => capOf(st, 'meeting') * buffMult(st, 'meeting') * (1 + 0.1 * rlv(st, 'write')) * (1 + 0.05 * tech(st, 'seminar'));
-  const stageC = (st) => capOf(st, 'office') * buffMult(st, 'office') * (1 + 0.1 * rlv(st, 'admin')) * (1 + 0.05 * tech(st, 'office'));
-  const comfort = (st) => Math.floor((3 + 2 * lv(st, 'lounge') + eqAll(st, 'comfort') + 2 * rlv(st, 'welfare')) * cardMult(st, 'lounge'));
+  const stageB = (st) => capOf(st, 'meeting') * buffMult(st, 'meeting') * (1 + 0.1 * rlv(st, 'write')) * (1 + 0.05 * tech(st, 'seminar')) * (1 + avBonus(st, 'face') + cardSet(st, 'm'));
+  const stageC = (st) => capOf(st, 'office') * buffMult(st, 'office') * (1 + 0.1 * rlv(st, 'admin')) * (1 + 0.05 * tech(st, 'office')) * (1 + avBonus(st, 'face') + cardSet(st, 'p'));
+  const comfort = (st) => Math.floor((3 + 2 * lv(st, 'lounge') + eqAll(st, 'comfort') + 2 * rlv(st, 'welfare')) * cardMult(st, 'lounge') * (1 + avBonus(st, 'pose')));
   const mood = (st) => Math.max(0.35, Math.min(1, 1 - 0.07 * (st.students.length - comfort(st))));
-  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant')) * (1 + colBonus(st, 'money') + colBonus(st, 'all'));
-  const fameMult = (st) => (1 + eqAll(st, 'fame')) * (1 + 0.1 * rlv(st, 'pr')) * (1 + 0.15 * (st.univ - 1)) * (1 + colBonus(st, 'fame') + colBonus(st, 'all')); // 좋은 대학일수록 논문이 주목받는다
+  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant')) * (1 + colBonus(st, 'money') + colBonus(st, 'all') + avBonus(st, 'hair') + cardSet(st, 'v') + projBuff(st));
+  const fameMult = (st) => (1 + eqAll(st, 'fame')) * (1 + 0.1 * rlv(st, 'pr')) * (1 + 0.15 * (st.univ - 1)) * (1 + colBonus(st, 'fame') + colBonus(st, 'all') + avBonus(st, 'outfit')); // 좋은 대학일수록 논문이 주목받는다
   function flow(st) {
     const a = stageA(st), b = stageB(st), c = stageC(st), m = mood(st);
     const t = Math.min(a, b, c) * m;
@@ -281,7 +323,7 @@
     if (st.ended || !(dt > 0)) return;
     let left = dt;
     while (left > 0) {
-      const ends = st.buffs.map((b) => b.until).concat(st.builds.map((b) => b.endAt), st.research.active ? [st.research.active.endAt] : []).filter((u) => u > st.time);
+      const ends = st.buffs.map((b) => b.until).concat(st.builds.map((b) => b.endAt), st.research.active ? [st.research.active.endAt] : [], st.projects.active.map((a) => a.endAt)).filter((u) => u > st.time);
       const step = Math.min(left, ends.length ? Math.max(0.001, Math.min(...ends) - st.time) : left);
       gain(st, flow(st), step, 1);
       st.time += step; left -= step;
@@ -301,6 +343,7 @@
       if (b.room === 'univ') {
         st.univ = b.toLv;
         gainPhoto(st, b.toLv - 1);
+        giveAvatar(st, '대학 승격');
         note(st, 'univ', '대학이 ' + UNIVS[b.toLv].name + '(으)로 승격했다! 교수실을 Lv ' + UNIVS[b.toLv].cap + '까지 올릴 수 있다.');
         checkEnd(st);
         return false;
@@ -316,6 +359,7 @@
       note(st, 'research', RESEARCH[r.id].name + ' 연구 Lv ' + r.toLv + ' 완료!');
       dropCol(st, 'covers', 0.35);
     }
+    finishProjects(st);
   }
   function canUpgrade(st, id) {
     const r = room(id);
@@ -419,10 +463,35 @@
     for (const c of pool) { r -= RARITY[c.rar].w / CARDS.filter((x) => x.rar === c.rar).length; if (r <= 0) { pick = c; break; } }
     st.cards.pity = pick.rar === 'e' || pick.rar === 'l' ? 0 : st.cards.pity + 1;
     const had = st.cards.owned[pick.id] || 0;
-    st.cards.owned[pick.id] = Math.min(5, had + 1);
-    note(st, 'card', (had ? '[별 +1] ' : '[새 연구원] ') + RARITY[pick.rar].name + ' 「' + pick.name + '」' + (had ? ' ★' + st.cards.owned[pick.id] : ''));
+    track(st, 'draw');
+    if (!had) {
+      st.cards.owned[pick.id] = 1;
+      note(st, 'card', '[새 연구원] ' + RARITY[pick.rar].name + ' 「' + pick.name + '」 (' + CARD_GROUPS[pick.g].name + ' ' + groupCount(st, pick.g) + '/' + groupTotal(pick.g) + ')');
+    } else if (had >= STAR_MAX && !(st.cards.dup[pick.id] > 0)) {
+      st.gems += MAX_DUP_GEMS;
+      note(st, 'card', '「' + pick.name + '」 중복 (이미 ★5). 발전기금 +' + MAX_DUP_GEMS);
+    } else {
+      st.cards.dup[pick.id] = (st.cards.dup[pick.id] || 0) + 1;
+      note(st, 'card', '「' + pick.name + '」 중복 카드 +1 (' + st.cards.dup[pick.id] + '장). 연구원 탭에서 강화할 수 있다.');
+    }
     return { card: pick, isNew: !had };
   }
+  const groupCount = (st, g) => CARDS.filter((c) => c.g === g && st.cards.owned[c.id]).length;
+  const groupTotal = (g) => CARDS.filter((c) => c.g === g).length;
+  const groupDone = (st, g) => groupCount(st, g) >= groupTotal(g);
+  const enhanceNeed = (st, id) => { const s0 = st.cards.owned[id] || 0; return s0 && s0 < STAR_MAX ? ENHANCE_COST[s0] : null; };
+  const canEnhance = (st, id) => { const n = enhanceNeed(st, id); return n != null && (st.cards.dup[id] || 0) >= n; };
+  function enhanceCard(st, id) {
+    if (!canEnhance(st, id)) return false;
+    st.cards.dup[id] -= enhanceNeed(st, id);
+    st.cards.owned[id]++;
+    const c = CARDS.find((x) => x.id === id);
+    note(st, 'card', '「' + c.name + '」 강화! ★' + st.cards.owned[id] + ' (배율 ×' + (RARITY[c.rar].mult * (1 + 0.25 * (st.cards.owned[id] - 1))).toFixed(2) + ')');
+    return true;
+  }
+  const anyEnhance = (st) => CARDS.some((c) => canEnhance(st, c.id));
+  // 학생 도감 세트: 갈래를 다 모으면 효과
+  const cardSet = (st, g) => (groupDone(st, g) ? { u: 0.1, m: 0.1, d: 0.15, p: 0.15, v: 0.2 }[g] : 0);
   // 카드 한 장의 공개 확률(%)
   const cardRate = (id) => { const c = CARDS.find((x) => x.id === id); return RARITY[c.rar].w / CARDS.filter((x) => x.rar === c.rar).length; };
   const roleFits = (c, roomId) => c.role === 'any' || c.role === room(roomId).role;
@@ -533,6 +602,7 @@
     covers: { name: '학술지 표지 논문', kind: 'fame', how: '학과 연구 완료 35%, 공사·대공사 완료 25%', set: 0.2, items: [['세포 그림 표지', 'c'], ['반도체 웨이퍼 표지', 'c'], ['은하 사진 표지', 'c'], ['단백질 구조 표지', 'c'], ['도시 지도 데이터 표지', 'c'], ['로봇 팔 표지', 'c'], ['양자 칩 표지', 'r'], ['뇌 지도 표지', 'r'], ['기후 모델 표지', 'r'], ['창간 특집호 표지', 'e'], ['올해의 논문 표지', 'e'], ['100주년 기념호 표지', 'l']] },
     alumni: { name: '졸업생 소식', kind: 'money', how: '일일 미션 보상 받기 50%', set: 0.2, items: [['중소기업 연구원', 'c'], ['스타트업 개발자', 'c'], ['공공기관 연구원', 'c'], ['고등학교 과학 교사', 'c'], ['중견기업 엔지니어', 'c'], ['박사후연구원', 'c'], ['대기업 연구소', 'r'], ['국책 연구소 선임', 'r'], ['스타트업 창업', 'r'], ['교수 임용', 'e'], ['해외 대학 교수', 'e'], ['세계적 학술상 수상', 'l']] },
     visitors: { name: '연구실 방문객', kind: 'data', how: '돌발 이벤트 처리 40%', set: 0.2, items: [['견학 온 고등학생', 'c'], ['과학 기자', 'c'], ['다른 대학 교수', 'c'], ['장비 영업사원', 'c'], ['총장', 'r'], ['해외 석학', 'r'], ['기업 연구소장', 'r'], ['장관급 인사', 'e'], ['다큐멘터리 촬영팀', 'e'], ['살아있는 전설', 'l']] },
+    contracts: { name: '과제 협약서', kind: 'money', how: '과제를 처음 마칠 때 확정', set: 0.1, items: [['시제품 성능 시험 대행', 'c'], ['공정 데이터 분석 용역', 'r'], ['산학 공동연구센터', 'e'], ['스마트 센서 국산화', 'c'], ['친환경 소재 개발', 'c'], ['제조 AI 고도화', 'r'], ['바이오 진단 키트 상용화', 'r'], ['차세대 반도체 원천기술', 'e'], ['탄소중립 에너지 플랫폼', 'l']] },
     photos: { name: '대학 기념사진', kind: 'all', how: '대학 승격 때 확정', set: 0.1, items: [['지방 사립대 정문', 'c'], ['지방 거점 국립대 본관', 'r'], ['수도권 종합대 시계탑', 'r'], ['서울 명문 사립대 졸업식', 'e'], ['세계적 명문대 돔', 'l']] },
   };
   const COL_W = { c: 55, r: 30, e: 12, l: 3 }; // 갈래 안에서 등급이 뽑힐 비중
@@ -659,6 +729,151 @@
   }
   const spent = (st) => st.shop.purchases.reduce((a, x) => a + x.price, 0);
 
+  // ---------- 교수 아바타 ----------
+  // 가진 아이템 하나마다 그 부위 능력치가 오른다(입지 않아도 됨). 부위를 다 모으면 +10% 더.
+  // 얻는 곳: 승진·대학 승격 때 1개 확정, 과제 완료 25%, 발전기금으로 골라 사기(무작위 뽑기 없음)
+  const AV_SLOTS = {
+    outfit: { name: '옷', stat: '명성' },
+    hair: { name: '머리', stat: '연구비' },
+    face: { name: '얼굴', stat: '회의실·교수실 용량' },
+    prop: { name: '소품', stat: '데이터 생산' },
+    pose: { name: '자세', stat: '휴게 정원' },
+  };
+  const AVATARS = [
+    ['outfit', 'check', '체크셔츠', 'c'], ['outfit', 'vest', '니트 조끼', 'c'], ['outfit', 'labcoat', '실험 가운', 'r'], ['outfit', 'tweed', '트위드 재킷', 'r'], ['outfit', 'suit', '정장', 'e'], ['outfit', 'gown', '학위 가운', 'l'],
+    ['hair', 'neat', '단정한 머리', 'c'], ['hair', 'gray', '반백 머리', 'c'], ['hair', 'messy', '부스스한 머리', 'r'], ['hair', 'beret', '베레모', 'e'], ['hair', 'einstein', '아인슈타인 머리', 'l'],
+    ['face', 'horn', '뿔테 안경', 'c'], ['face', 'dark', '다크서클', 'c'], ['face', 'reading', '돋보기 안경', 'r'], ['face', 'mustache', '콧수염', 'r'], ['face', 'gold', '금테 안경', 'e'],
+    ['prop', 'tumbler', '텀블러', 'c'], ['prop', 'redpen', '빨간 펜', 'c'], ['prop', 'laser', '레이저 포인터', 'r'], ['prop', 'pen', '만년필', 'e'], ['prop', 'medal', '노벨상 메달 모형', 'l'],
+    ['pose', 'turtle', '거북목', 'c'], ['pose', 'arms', '팔짱', 'c'], ['pose', 'behind', '뒷짐', 'r'], ['pose', 'straight', '꼿꼿한 자세', 'e'],
+  ];
+  const AV_VALUE = { c: 0.02, r: 0.04, e: 0.08, l: 0.15 }, AV_PRICE = { c: 40, r: 80, e: 160, l: 320 }, AV_SET = 0.1;
+  const avSlotDone = (st, slot) => AVATARS.every((a, i) => a[0] !== slot || st.av[i]);
+  function avBonus(st, slot) {
+    if (!st.av) return 0;
+    return AVATARS.reduce((a, x, i) => a + (x[0] === slot && st.av[i] ? AV_VALUE[x[3]] : 0), 0) + (avSlotDone(st, slot) ? AV_SET : 0);
+  }
+  function giveAvatar(st, why) {
+    const miss = AVATARS.map((_, i) => i).filter((i) => !st.av[i]);
+    if (!miss.length) { st.gems += 20; note(st, 'avatar', '아바타를 다 모았다. 대신 발전기금 +20 (' + why + ')'); return null; }
+    // 일반이 잘 나오고 전설은 드물다
+    const w = miss.map((i) => ({ c: 6, r: 3, e: 1.5, l: 0.6 })[AVATARS[i][3]]), t = w.reduce((a, b) => a + b, 0);
+    let x = rnd(st) * t, idx = miss[miss.length - 1];
+    for (let k = 0; k < miss.length; k++) { if (x < w[k]) { idx = miss[k]; break; } x -= w[k]; }
+    st.av[idx] = 1;
+    note(st, 'avatar', '[아바타] ' + RARITY[AVATARS[idx][3]].name + ' 「' + AVATARS[idx][2] + '」을(를) 얻었다! (' + why + ')');
+    return idx;
+  }
+  function buyAvatar(st, idx) {
+    const a = AVATARS[idx]; if (!a || st.av[idx] || st.gems < AV_PRICE[a[3]]) return false;
+    st.gems -= AV_PRICE[a[3]]; st.av[idx] = 1; return true;
+  }
+  function wear(st, idx) {
+    if (!st.av[idx]) return false;
+    const slot = AVATARS[idx][0]; st.look[slot] = st.look[slot] === idx ? -1 : idx; return true;
+  }
+  function setGender(st, g) { st.look.gender = g === 'f' ? 'f' : 'm'; return true; }
+
+  // ---------- 과제 ----------
+  // 산학과제는 직급, 국가과제는 대학 단계가 되어야 신청한다. 국가과제는 심사에서 떨어질 수 있고, 떨어지면 신청비 절반을 돌려받는다.
+  // 진행 중에는 연구비 보너스, 끝나면 연구비(그때 수입 기준 N분 치)·모집권·과제 협약서(처음 한 번).
+  const PROJECTS = [
+    { id: 'i1', kind: '산학과제', grade: '중소기업', name: '시제품 성능 시험 대행', tier: 1, univ: 1, dur: 300, select: 1, costMin: 0.5, rewardMin: 2, tickets: 0, buff: 0.05 },
+    { id: 'i2', kind: '산학과제', grade: '중견기업', name: '공정 데이터 분석 용역', tier: 2, univ: 1, dur: 900, select: 1, costMin: 1.5, rewardMin: 6, tickets: 1, buff: 0.08 },
+    { id: 'i3', kind: '산학과제', grade: '대기업', name: '산학 공동연구센터', tier: 4, univ: 1, dur: 3600, select: 1, costMin: 6, rewardMin: 24, tickets: 2, buff: 0.12 },
+    { id: 'n1', kind: '국가과제', grade: '중소기업 주관', name: '스마트 센서 국산화', tier: 1, univ: 2, dur: 1200, select: 0.6, costMin: 2, rewardMin: 13, tickets: 1, buff: 0.1 },
+    { id: 'n2', kind: '국가과제', grade: '중소기업 주관', name: '친환경 소재 개발', tier: 1, univ: 2, dur: 1800, select: 0.55, costMin: 3, rewardMin: 22, tickets: 1, buff: 0.1 },
+    { id: 'n3', kind: '국가과제', grade: '중견기업 주관', name: '제조 AI 고도화', tier: 1, univ: 3, dur: 3600, select: 0.45, costMin: 6, rewardMin: 53, tickets: 2, buff: 0.15 },
+    { id: 'n4', kind: '국가과제', grade: '중견기업 주관', name: '바이오 진단 키트 상용화', tier: 1, univ: 3, dur: 5400, select: 0.4, costMin: 9, rewardMin: 90, tickets: 2, buff: 0.15 },
+    { id: 'n5', kind: '국가과제', grade: '대기업 주관', name: '차세대 반도체 원천기술', tier: 1, univ: 4, dur: 7200, select: 0.3, costMin: 12, rewardMin: 160, tickets: 3, buff: 0.2 },
+    { id: 'n6', kind: '국가과제', grade: '대기업 주관', name: '탄소중립 에너지 플랫폼', tier: 1, univ: 5, dur: 10800, select: 0.25, costMin: 18, rewardMin: 290, tickets: 4, buff: 0.25 },
+  ];
+  const PROJ_SLOTS = [0, 1, 1, 2, 2, 3];
+  const REJECT_NOTES = ['우수하나 사업 목적과 맞지 않음', '예산 규모 대비 성과 목표가 낮음', '선행 연구 실적 보완 필요', '경쟁 과제 대비 차별성 부족', '평가위원 의견: 그림이 너무 많음'];
+  const proj = (id) => PROJECTS.find((x) => x.id === id);
+  const projSlots = (st) => PROJ_SLOTS[st.tier];
+  const projBuff = (st) => (st.projects ? st.projects.active.reduce((a, x) => a + proj(x.id).buff, 0) : 0);
+  const projCost = (st, id) => Math.ceil(Math.max(30, flow(st).money * 60 * proj(id).costMin));
+  // 국가과제 선정 확률: 대학 단계가 높을수록 오른다(단계마다 +5%p, 최대 95%)
+  const projSelect = (st, id) => { const p = proj(id); return p.select >= 1 ? 1 : Math.min(0.95, p.select + 0.05 * (st.univ - p.univ)); };
+  function canStartProject(st, id) {
+    const p = proj(id); if (!p) return '없음';
+    if (st.tier < p.tier) return TIERS[p.tier].name + '부터';
+    if (st.univ < p.univ) return UNIVS[p.univ].name + '부터';
+    if (st.projects.active.some((a) => a.id === id)) return '진행 중';
+    if (st.projects.active.length >= projSlots(st)) return '과제 칸 가득';
+    return st.money >= projCost(st, id) ? true : '연구비 부족';
+  }
+  function startProject(st, id) {
+    if (canStartProject(st, id) !== true) return null;
+    const p = proj(id), c = projCost(st, id);
+    st.money -= c;
+    track(st, 'project');
+    if (rnd(st) >= projSelect(st, id)) {
+      const back = Math.floor(c / 2); st.money += back;
+      const why = REJECT_NOTES[Math.floor(rnd(st) * REJECT_NOTES.length)];
+      note(st, 'project', p.name + ' 탈락. 심사평: "' + why + '" 신청비 절반을 돌려받았다.');
+      return { ok: false, why };
+    }
+    const sec = p.dur * timeMult(st);
+    st.projects.active.push({ id, endAt: st.time + sec, total: sec });
+    note(st, 'project', p.kind + ' 「' + p.name + '」 선정! ' + fmtTime(sec) + ' 동안 연구비 +' + Math.round(p.buff * 100) + '%');
+    return { ok: true };
+  }
+  function finishProjects(st) {
+    if (!st.projects) return;
+    st.projects.active = st.projects.active.filter((a) => {
+      if (a.endAt > st.time) return true;
+      const p = proj(a.id), v = Math.max(200, flow(st).money * 60 * p.rewardMin);
+      st.money += v; st.totalMoney += v; st.tickets += p.tickets;
+      st.projects.done[a.id] = (st.projects.done[a.id] || 0) + 1;
+      note(st, 'project', '「' + p.name + '」 과제 완료! 연구비 +' + fmt(v) + (p.tickets ? ', 모집권 +' + p.tickets : ''));
+      const ci = PROJECTS.indexOf(p); if (!st.col.contracts[ci]) giveCol(st, 'contracts', ci);
+      if (rnd(st) < 0.25) giveAvatar(st, '과제 완료');
+      return false;
+    });
+  }
+
+  // ---------- 실시간 가이드 ----------
+  // 받침에 따라 조사를 고른다: jo('실험실', '을', '를') → '실험실을'
+  const jo = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b); };
+  // 지금 가장 먼저 할 일 하나를 고른다. 화면은 kind와 room을 보고 말풍선을 어디에 띄울지 정한다.
+  function guide(st) {
+    const f = flow(st);
+    if (st.ended) return { kind: 'retire', text: '최종 목표를 이뤘어요! 정년 퇴임하고 월계관을 받으세요.' };
+    if (canPromote(st)) return { kind: 'promote', text: '명성이 찼어요. ' + TIERS[st.tier + 1].name + (TIERS[st.tier + 1].name.endsWith('서') ? '로' : '으로') + ' 승진하세요!' };
+    if (canUpgradeUniv(st) === true) return { kind: 'univ', text: '대학 본관을 ' + UNIVS[st.univ + 1].name + '로 승격할 수 있어요.' };
+    const nb = ROOMS.find((r) => !built(st, r.id) && canUpgrade(st, r.id) === true);
+    if (nb) return { kind: 'build', room: nb.id, text: nb.name + ' 부지가 열렸어요. 눌러서 공사하세요.' };
+    if (f.mood < 0.95 && canUpgrade(st, 'lounge') === true) return { kind: 'upgrade', room: 'lounge', text: '학생이 휴게실 정원을 넘었어요. 휴게실을 올려 분위기를 지키세요.' };
+    if (Object.keys(MISSIONS).some((k) => missionDone(st, k) && !st.missions.claimed[k])) return { kind: 'tab', tab: 'mission', text: '끝난 미션 보상을 받으세요.' };
+    if (st.daily && st.daily.day && st.daily.claimed !== st.daily.day) return { kind: 'tab', tab: 'shop', text: '오늘 출석 보상이 있어요.' };
+    if (st.tickets > 0) return { kind: 'tab', tab: 'cards', text: '모집권 ' + st.tickets + '장이 있어요. 연구원을 뽑아 보세요.' };
+    if (anyEnhance(st)) return { kind: 'tab', tab: 'cards', text: '중복 카드가 모였어요. 연구원을 강화하세요.' };
+    // 배치 안 된 연구원
+    const free = CARDS.find((c) => st.cards.owned[c.id] && !Object.values(st.cards.assign).includes(c.id) && ROOMS.some((r) => built(st, r.id) && roleFits(c, r.id) && !st.cards.assign[r.id]));
+    if (free) return { kind: 'tab', tab: 'cards', text: '「' + free.name + '」' + (/[가-힣]$/.test(free.name) && (free.name.charCodeAt(free.name.length - 1) - 0xac00) % 28 ? '을' : '를') + ' 빈 방에 배치하세요.' };
+    // 병목
+    const prod = producers(st).slice(-1)[0];
+    const target = f.bott === 'B' ? 'meeting' : f.bott === 'C' ? 'office' : prod.id;
+    if (f.bott === 'A' && canHire(st) === true) return { kind: 'hire', text: '빈자리가 있어요. 학생을 뽑으면 데이터가 늘어요.' };
+    const cu = canUpgrade(st, target);
+    if (cu === true) return { kind: 'upgrade', room: target, text: (f.bott === 'A' ? '데이터 생산이 병목이에요. ' : jo(room(target).name, '이', '가') + ' 병목이에요. ') + jo(room(target).name, '을', '를') + ' 업그레이드하세요.' };
+    if (typeof cu === 'string' && cu.startsWith('교수실') && canUpgrade(st, 'office') === true) return { kind: 'upgrade', room: 'office', text: jo(room(target).name, '을', '를') + ' 더 올리려면 교수실 레벨이 필요해요. 교수실부터 올리세요.' };
+    if (cu === '대학 본관 승격 필요') return { kind: 'univ', text: '교수실이 한계예요. 대학 본관을 승격해야 더 올릴 수 있어요.' };
+    if (f.bott === 'A' && canHire(st) === '자리 부족') {
+      const eqi = (EQUIP[prod.id] || []).findIndex((e, i) => e[1] === 'seat' && canEquip(st, prod.id, i) === true);
+      if (eqi >= 0) return { kind: 'equip', room: prod.id, i: eqi, text: '자리가 꽉 찼어요. ' + jo(EQUIP[prod.id][eqi][0], '을', '를') + ' 늘려 좌석을 확장하세요.' };
+    }
+    if (!st.research.active && Object.keys(RESEARCH).some((k) => canResearch(st, k) === true)) return { kind: 'tab', tab: 'lab', text: '학과 연구가 쉬고 있어요. 연구를 시작하세요.' };
+    if (st.projects.active.length < projSlots(st) && PROJECTS.some((x) => canStartProject(st, x.id) === true)) return { kind: 'tab', tab: 'proj', text: '과제 칸이 비었어요. 과제를 신청하세요.' };
+    // 싼 장비
+    for (const r of ROOMS) { if (!built(st, r.id)) continue; const i = EQUIP[r.id].findIndex((_, k) => canEquip(st, r.id, k) === true && eqCost(st, r.id, k) < st.money * 0.3); if (i >= 0) return { kind: 'equip', room: r.id, i, text: r.name + '의 ' + jo(EQUIP[r.id][i][0], '을', '를') + ' 싸게 올릴 수 있어요.' }; }
+    if (!st.look.gender) return { kind: 'tab', tab: 'avatar', text: '아바타 탭에서 교수 모습을 정해 보세요.' };
+    const need = canUpgrade(st, target) === '연구비 부족' ? upCost(st, target) - st.money : 0;
+    if (need > 0 && f.money > 0) return { kind: 'wait', room: target, text: room(target).name + ' 업그레이드까지 연구비를 모으는 중 (약 ' + fmtTime(need / f.money) + ')' };
+    return { kind: 'wait', room: target, text: '연구실이 잘 돌아가고 있어요.' };
+  }
+
   // ---------- 승진과 정년 ----------
   const nextNeed = (st) => (st.tier < LAST ? CFG.fameNeed[st.tier + 1] : Infinity);
   const canPromote = (st) => st.tier < LAST && st.fame >= nextNeed(st);
@@ -667,13 +882,15 @@
     st.tier++; st.promotedAt.push({ tier: st.tier, time: st.time });
     st.tickets += 2;
     dropCol(st, null, 1);
+    giveAvatar(st, '승진');
     checkEnd(st);
     return true;
   }
   const laurelReward = (st) => 3 + Math.min(5, Math.floor(Math.log10(Math.max(1, st.fame / CFG.fameNeed[LAST])) * 2));
   function retire(st) {
     if (!st.ended) return null;
-    const keep = { laurels: st.laurels + laurelReward(st), runs: st.runs + 1, cards: st.cards, tickets: st.tickets, missions: st.missions, week: st.week, ally: st.ally, allyTech: st.allyTech, lifeFame: st.lifeFame, col: st.col, colPity: st.colPity, colNew: st.colNew, gems: st.gems, daily: st.daily, shop: st.shop, deco: st.deco };
+    st.projects.active.forEach((a) => { a.endAt = st.time; }); finishTimers(st); // 진행 중인 과제는 퇴임 때 마무리한다
+    const keep = { laurels: st.laurels + laurelReward(st), runs: st.runs + 1, cards: st.cards, tickets: st.tickets, missions: st.missions, week: st.week, ally: st.ally, allyTech: st.allyTech, lifeFame: st.lifeFame, col: st.col, colPity: st.colPity, colNew: st.colNew, gems: st.gems, daily: st.daily, shop: st.shop, deco: st.deco, look: st.look, av: st.av, projects: st.projects, guideOff: st.guideOff };
     return newGame(keep);
   }
 
@@ -695,6 +912,9 @@
 
   return {
     COLLECTION, COL_W, COL_BONUS, COL_PITY, COL_DUP_GEMS, colCount, colTotal, colDone, colBonus, colRate, dropCol, giveCol,
+    CARD_GROUPS, ENHANCE_COST, STAR_MAX, groupCount, groupTotal, groupDone, enhanceNeed, canEnhance, enhanceCard, anyEnhance, cardSet,
+    AV_SLOTS, AVATARS, AV_VALUE, AV_PRICE, AV_SET, avSlotDone, avBonus, giveAvatar, buyAvatar, wear, setGender,
+    PROJECTS, PROJ_SLOTS, projSlots, projBuff, projCost, projSelect, canStartProject, startProject, guide,
     ATTEND, AD_LIMITS, PRODUCTS, DECOS, ADVANCE_GEMS, attendReady, attendReward, claimAttend, adLeft, adReward, finishCost, finishNow, spendAdvance, buyDeco, mockBuy, spent,
     EQ_STAGE_LV, eqStageBonus, STYLES, roomStyle,
     CFG, TIERS, LAST, ROOMS, MILESTONES, EQUIP, EQUIP_MAX, EQUIP_UNLOCK, EQ_N, UNIVS, UNIV_MAX, MAXLV, eqGrade, eqLook, placeName, canUpgradeUniv, upgradeUniv, RESEARCH, RARITY, CARDS, CARD_PITY, MISSIONS, ALLY_TECH, WEEK_GOALS, HELP_MAX, GRADES, EVENTS, fmt, fmtTime,

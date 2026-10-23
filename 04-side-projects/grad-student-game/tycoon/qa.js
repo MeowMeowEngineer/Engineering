@@ -33,10 +33,15 @@ function mockClaude() {
     await p.goto(url); await p.waitForTimeout(800); return p;
   }
   const saveOf = (s) => JSON.stringify({ st: s, at: Date.now() });
+  const ng = () => { const t = E.newGame(); t.look.gender = 'm'; return t; };
+  const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
 
   let p = await page({ width: 400, height: 900 });
   ok('첫 화면: 지방 사립대 조교수, 학생 2명, 본관+방 9칸', (await p.textContent('#univName')) === '지방 사립대' && (await p.textContent('#tierName')) === '조교수' && (await p.textContent('#studentsN')) === '2' && (await p.$$('.plot')).length === 10);
   ok('최종 목표 막대', (await p.textContent('#goal')).includes('세계적 명문대의 대가 랩실'));
+  ok('처음에 교수 성별을 고른다', (await p.textContent('#dialog')).includes('교수 아바타를 고르세요'));
+  await p.click('#dialog .btn:nth-of-type(2)'); await p.waitForTimeout(400);
+  ok('말풍선 가이드: 출석 보상 → 상점 탭을 가리킨다', !(await p.$eval('#bubble', (e) => e.hidden)) && (await p.textContent('#bubble')).includes('출석') && (await p.$eval('#tab-shop', (e) => e.classList.contains('gpulse'))) && (await p.textContent('#guidebar')).includes('출석'));
   await p.waitForTimeout(4000);
   ok('걸어 다니는 학생이 생긴다', (await p.$$('#walkers g')).length > 0, (await p.$$('#walkers g')).length + '명');
   const m0 = await p.textContent('#money');
@@ -47,7 +52,7 @@ function mockClaude() {
   ok('실험대를 들이면 모습 이름이 붙는다', (await p.textContent('#roomCard')).includes('낡은 실험대'));
   ok('장비 단계 표시 (1단계)와 방 인테리어 단계', (await p.textContent('#roomCard')).includes('1단계 낡은 실험대') && (await p.textContent('#roomCard')).includes('인테리어 1단계 낡은 방'));
   await p.click('#tab-col'); await p.waitForTimeout(200);
-  ok('도감: 지방 사립대 기념사진 1/39와 확률 공개', (await p.textContent('#panel-col')).includes('1/39') && (await p.textContent('#panel-col')).includes('지방 사립대 정문') && (await p.textContent('#panel-col')).includes('%'));
+  ok('도감: 지방 사립대 기념사진 1/48과 확률 공개', (await p.textContent('#panel-col')).includes('1/48') && (await p.textContent('#panel-col')).includes('지방 사립대 정문') && (await p.textContent('#panel-col')).includes('%'));
   await p.click('#tab-shop'); await p.waitForTimeout(200);
   await p.click('#attendBtn'); await p.waitForTimeout(250);
   ok('상점: 출석 보상으로 발전기금 10', (await p.textContent('#gems')) === '10');
@@ -57,6 +62,10 @@ function mockClaude() {
   ok('상점: 신임 교수 패키지 가상 구매 → 기금 110, 분수대', (await p.textContent('#gems')) === '110' && (await p.textContent('#panel-shop')).includes('설치됨') && (await p.textContent('#panel-shop')).includes('1,200원'));
   await p.click('[data-deco="cherry"]'); await p.waitForTimeout(300);
   ok('상점: 벚꽃길 장식이 지도에 나타난다', (await p.innerHTML('#map')).includes('#f4b6c8') && (await p.textContent('#gems')) === '50');
+  await p.click('#tab-avatar'); await p.waitForTimeout(200);
+  ok('아바타: 고른 성별(여)과 25종', (await p.$eval('[data-gender="f"]', (e) => e.getAttribute('aria-pressed'))) === 'true' && (await p.$$('[data-av]')).length === 25);
+  await p.click('[data-av="0"]'); await p.waitForTimeout(200); await p.click('#dialog .btn.primary'); await p.waitForTimeout(300);
+  ok('아바타: 기금으로 체크셔츠를 사서 입는다', (await p.textContent('[data-av="0"]')).includes('입는 중') && (await p.textContent('#gems')) === '10' && (await p.textContent('#panel-avatar')).includes('명성 +2%'));
   await p.click('#tab-room');
   await p.click('#cheerBtn'); await p.waitForTimeout(250);
   ok('독려하면 ×2 표시와 쿨다운', (await p.textContent('#roomCard')).includes('다시 독려까지') && (await p.$$('.tag.boost')).length === 1);
@@ -74,7 +83,7 @@ function mockClaude() {
   ok('폰 너비 가로 스크롤 없음', (await p.evaluate(() => document.documentElement.scrollWidth)) <= 400);
 
   // 후반 상태: 서울 명문 사립대 석학, 장비를 들여 놓은 연구실
-  const s = E.newGame(); s.tier = 4; s.univ = 4; s.money = 5e11; s.fame = 1e8;
+  const s = ng(); s.tier = 4; s.univ = 4; s.money = 5e11; s.fame = 1e8; s.cards.owned = { m1: 1 }; s.cards.dup = { m1: 1 };
   Object.assign(s.rooms, { office: 60, meeting: 58, lounge: 8, wetlab: 50, server: 30, library: 40, clean: 25, bigequip: 3, global: 0 });
   Object.keys(s.equip).forEach((k, i) => { s.equip[k] = [10, 7, 4, 2 + (i % 3), i % 2 ? 10 : 0]; });
   for (let i = 0; i < 16; i++) s.students.push({ name: '학생' + i, grade: i % 4 });
@@ -98,16 +107,31 @@ function mockClaude() {
   await p.click('#tab-cards'); await p.waitForTimeout(200);
   await p.click('#drawBtn'); await p.waitForTimeout(250);
   ok('스타 연구원 뽑기', (await p.textContent('#dialog')).includes('연구원 모집'));
-  await p.click('#dialog button'); await p.click('#tab-room');
+  await p.click('#dialog button'); await p.waitForTimeout(200);
+  ok('학생 도감 5갈래 30명', (await p.$$('#panel-cards .cardi')).length === 30 && (await p.textContent('#panel-cards')).includes('해외 방문연구원'));
+  await p.click('[data-enh="m1"]'); await p.waitForTimeout(250);
+  ok('중복 카드 1장으로 ★2 강화', (await p.textContent('#panel-cards')).includes('성실한 석사 강민재 ★★') && (await p.textContent('#panel-cards')).includes('다음 강화 2장'));
+  await p.click('#tab-proj'); await p.waitForTimeout(200);
+  await p.click('[data-proj="i3"]'); await p.waitForTimeout(250);
+  ok('과제: 산학 대기업 과제 신청 → 진행 중', (await p.textContent('#panel-proj')).includes('진행 중 · 연구비 +12%') && (await p.$$('#panel-proj [data-proj]')).length === 9);
+  await p.click('#tab-room');
 
+  // 지도 말풍선: 다른 방을 고른 상태에서 실험실 업그레이드를 가리킨다
+  { const g = ng(); g.tickets = 0; g.daily.day = today; g.daily.claimed = today;
+    p = await page({ width: 1280, height: 900 }, saveOf(g));
+    ok('가이드: 실험실이 선택돼 있으면 업그레이드 버튼을 가리킨다', (await p.$eval('#upBtn', (e) => e.classList.contains('gpulse'))) && (await p.textContent('#bubble')).includes('실험실을 업그레이드'));
+    await p.click('.plot[data-id="meeting"]'); await p.waitForTimeout(400);
+    ok('가이드: 다른 방을 보면 지도 위 실험실에 말풍선', (await p.textContent('#guideG')).includes('실험실 업그레이드') && (await p.$eval('#bubble', (e) => e.hidden)));
+    await p.click('#bubbleX', { force: true }).catch(() => {});
+  }
   // 승진
-  const s2 = E.newGame(); s2.fame = 2000;
+  const s2 = ng(); s2.fame = 2000;
   p = await page({ width: 400, height: 900 }, saveOf(s2));
   await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(300);
   ok('승진 모달 (부교수) 뒤 본관 승격 안내', (await p.textContent('#dialog')).includes('부교수') && (await p.textContent('#dialog')).includes('지방 거점 국립대'));
 
   // 엔딩과 정년 퇴임
-  const s3 = E.newGame(); s3.tier = 5; s3.univ = 5; s3.fame = 2e10; s3.ended = true;
+  const s3 = ng(); s3.tier = 5; s3.univ = 5; s3.fame = 2e10; s3.ended = true;
   p = await page({ width: 400, height: 900 }, saveOf(s3));
   ok('엔딩 저장은 퇴임 버튼을 보여 준다', (await p.textContent('#promoteBtn')).includes('정년 퇴임'));
   await p.click('#promoteBtn', { force: true }); await p.waitForTimeout(200);
@@ -116,7 +140,7 @@ function mockClaude() {
   ok('퇴임하면 지방 사립대 조교수로 돌아가고 월계관', (await p.textContent('#univName')) === '지방 사립대' && (await p.textContent('#tierName')) === '조교수' && (await p.textContent('#laurelNote')).includes('월계관'));
 
   // 컨소시엄 (db·user 대역)
-  const s4 = E.newGame(); s4.tier = 2; s4.univ = 2; s4.money = 1e5; s4.time = 1000;
+  const s4 = ng(); s4.tier = 2; s4.univ = 2; s4.money = 1e5; s4.time = 1000;
   s4.rooms.server = 0; s4.builds = [{ room: 'server', toLv: 1, endAt: 1600, total: 600, reqId: 'b1' }]; s4.nextReq = 2;
   p = await page({ width: 1280, height: 900 }, saveOf(s4), { cloud: true });
   await p.click('#tab-ally'); await p.waitForTimeout(300);

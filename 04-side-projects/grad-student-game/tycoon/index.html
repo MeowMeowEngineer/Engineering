@@ -172,6 +172,26 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .dialog p { margin: 0; }
 .dialog .hand { font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
 .bigstamp { justify-self: center; border: 4px double var(--stamp); color: var(--stamp); font-family: var(--font-display); font-size: 1.6rem; padding: 2px 16px; transform: rotate(-8deg); }
+.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; text-align: left; width: 100%; }
+.guidebar b { white-space: nowrap; }
+.bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; animation: bub 1.2s ease-in-out infinite; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; left: 18px; bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
+.bubble.below::after { bottom: auto; top: -9px; border-top: 0; border-bottom: 8px solid #e0b030; }
+.bubble button { pointer-events: auto; position: absolute; right: 2px; top: 1px; border: 0; background: none; cursor: pointer; font-size: 0.9rem; color: #7a5a00; }
+@keyframes bub { 50% { transform: translateY(-3px); } }
+.gpulse { box-shadow: 0 0 0 3px #e0b030, 0 0 14px 4px #e0b03099 !important; animation: gp 1s ease-in-out infinite; }
+@keyframes gp { 50% { box-shadow: 0 0 0 5px #e0b030, 0 0 18px 6px #e0b030aa; } }
+.gbub rect { fill: #fff8e1; stroke: #e0b030; stroke-width: 2.5; } .gbub text { font-family: "IBM Plex Sans KR", sans-serif; font-weight: 600; font-size: 14px; fill: #3a2c00; }
+.gbub { animation: bob 1.2s ease-in-out infinite; } .gring { animation: glowp 0.8s ease-in-out infinite alternate; }
+.avwrap { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 420px) { .avwrap { grid-template-columns: 1fr; } }
+.avprev { background: var(--soft); border: 1px solid var(--line); }
+.avgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 5px; }
+.avi { border: 1px solid var(--line); padding: 5px 7px; font-size: 0.78rem; display: grid; gap: 3px; background: var(--card); text-align: left; cursor: pointer; }
+.avi.on { border: 2px solid var(--accent); } .avi.missing { background: var(--soft); color: var(--muted); }
+.avi.l { box-shadow: inset 0 0 0 1px var(--gold); } .avi.e { box-shadow: inset 0 0 0 1px var(--epic); }
+.seg { display: inline-flex; border: 2px solid var(--ink); } .seg button { border: 0; background: var(--card); padding: 4px 12px; cursor: pointer; font-weight: 600; } .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.dupline { font-size: 0.74rem; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } }
 </style>
 
@@ -193,6 +213,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <div class="stat"><span class="k">쓴 논문</span><span class="v num" id="papers">0</span><span class="s" id="laurelNote"></span></div>
   </div>
   <div class="goal" id="goal"></div>
+  <button class="guidebar" id="guidebar" hidden><b>가이드</b><span id="guidetext"></span></button>
 
   <div class="main">
     <section aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
@@ -210,7 +231,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <button role="tab" data-tab="room" id="tab-room" aria-selected="true">방</button>
         <button role="tab" data-tab="lab" id="tab-lab" aria-selected="false">학과 연구</button>
         <button role="tab" data-tab="cards" id="tab-cards" aria-selected="false">연구원</button>
+        <button role="tab" data-tab="proj" id="tab-proj" aria-selected="false">과제</button>
         <button role="tab" data-tab="mission" id="tab-mission" aria-selected="false">미션</button>
+        <button role="tab" data-tab="avatar" id="tab-avatar" aria-selected="false">아바타</button>
         <button role="tab" data-tab="col" id="tab-col" aria-selected="false">도감</button>
         <button role="tab" data-tab="shop" id="tab-shop" aria-selected="false">상점</button>
         <button role="tab" data-tab="ally" id="tab-ally" aria-selected="false">컨소시엄</button>
@@ -219,7 +242,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       <div id="panel-room" style="display:grid;gap:10px"><div class="card" id="roomCard"></div><div class="card" id="hireCard"></div></div>
       <div id="panel-lab" class="card" hidden></div>
       <div id="panel-cards" class="card" hidden></div>
+      <div id="panel-proj" class="card" hidden></div>
       <div id="panel-mission" class="card" hidden></div>
+      <div id="panel-avatar" class="card" hidden></div>
       <div id="panel-col" class="card" hidden></div>
       <div id="panel-shop" style="display:grid;gap:10px" hidden></div>
       <div id="panel-ally" style="display:grid;gap:10px" hidden></div>
@@ -228,6 +253,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   </div>
 </div>
 
+<div class="bubble" id="bubble" hidden><span></span><button type="button" id="bubbleX" aria-label="이 안내 1분 동안 숨기기">×</button></div>
 <div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
 
 <script src="engine.js"></script>
@@ -311,7 +337,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         s += desk(cx, cy, -0.2, -0.05, 0.5, 0.3, 18, G(0));
         const m = P(cx, cy, 0.15, 0.0, 18); s += monitor(m[0], m[1], g(2), [1, 1, 2, 2, 3][G(2)]);
         if (g(2) >= 3) s += box(cx, cy, 0.38, 0.05, 0.48, 0.25, 22, '#2d3646', '#202836', '#1a212d', 0) ;
-        const pc = P(cx, cy, 0.0, 0.55); s += chair(pc[0] + 6, pc[1] + 2, G(1)) + person(pc[0], pc[1] + 2, '#2c3e66', '', '#55555f', null, true);
+        const pc = P(cx, cy, 0.0, 0.55); s += chair(pc[0] + 6, pc[1] + 2, G(1)) + prof(pc[0], pc[1] + 2, 1);
         return s;
       }
       case 'meeting': {
@@ -388,6 +414,48 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 2) + '" rx="26" ry="8" fill="#00000022"/><circle cx="' + q[0] + '" cy="' + (q[1] - 32) + '" r="27" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 27) + ' ' + (q[1] - 32) + ' h54 M' + q[0] + ' ' + (q[1] - 59) + ' v54" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 44) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + desk(cx, cy, 0.2, 0.0, 0.8, 0.35, 14, G(4)) + '<rect class="glow" x="' + (P(cx, cy, 0.5, 0.0, 14)[0] - 10 - G(0) * 2) + '" y="' + (P(cx, cy, 0.5, 0.0, 14)[1] - 20) + '" width="' + (20 + G(0) * 4) + '" height="13" fill="' + SCREEN[G(0)] + '" stroke="#2c5d8a"/>'; }
       default: return '';
     }
+  }
+  // 교수 아바타 그림: (x, y)는 앉은 엉덩이 위치, k는 크기
+  const OUTFIT = { check: '#b5574f', vest: '#6f8fb8', labcoat: '#f4f6f8', tweed: '#8a7a55', suit: '#1b2838', gown: '#2b1b4a' };
+  function prof(x, y, k) {
+    const L = st.look, key = (slot) => (L[slot] >= 0 ? E.AVATARS[L[slot]][1] : null);
+    const o = key('outfit'), h = key('hair'), f = key('face'), pr = key('prop'), po = key('pose'), fem = L.gender === 'f';
+    const hx = po === 'turtle' ? 3 : 0, hy = po === 'turtle' ? 3 : po === 'straight' ? -2 : 0;
+    let s = '<g transform="translate(' + x + ' ' + y + ') scale(' + k + ')"><ellipse cx="0" cy="1" rx="8" ry="2.8" fill="#00000026"/>';
+    const shirt = o ? OUTFIT[o] : '#2c3e66';
+    s += '<path d="M-7 0 q0 -14 7 -14 q7 0 7 14 z" fill="' + shirt + '"' + (o === 'labcoat' ? ' stroke="#9aa5b2"' : '') + '/>';
+    if (o === 'check') s += '<path d="M-5 -9 h10 M-6 -5 h12 M-3 -13 v13 M2 -13 v13" stroke="#ffffff66" stroke-width="1"/>';
+    if (o === 'vest') s += '<path d="M-6 0 q0 -11 3 -12 l3 6 l3 -6 q3 1 3 12 z" fill="#8a6a46"/>';
+    if (o === 'labcoat') s += '<path d="M0 -13 v13" stroke="#9aa5b2"/>';
+    if (o === 'tweed') s += '<path d="M-2 -13 l2 5 l2 -5" stroke="#f4f6f8" fill="none" stroke-width="1.5"/>';
+    if (o === 'suit') s += '<path d="M-2 -13 l2 5 l2 -5 z" fill="#ffffff"/><path d="M0 -9 l-1 6 l1 2 l1 -2 z" fill="#c3303a"/>';
+    if (o === 'gown') s += '<path d="M-4 -12 v12 M4 -12 v12" stroke="#d4a72c" stroke-width="2"/>';
+    if (po === 'arms') s += '<rect x="-7" y="-8" width="14" height="4" rx="2" fill="' + shirt + '" stroke="#00000033"/>';
+    else if (po !== 'behind') s += '<path d="M-6 -10 l-3 8 M6 -10 l3 8" stroke="' + shirt + '" stroke-width="3.5" stroke-linecap="round"/><circle cx="-9" cy="-2" r="1.8" fill="#f3cba8"/><circle cx="9" cy="-2" r="1.8" fill="#f3cba8"/>';
+    if (pr === 'medal') s += '<circle cx="0" cy="-6" r="2.6" fill="#e0b030" stroke="#a86a00"/>';
+    // 머리
+    const cx = hx, cy = -20 + hy;
+    if (fem && h !== 'einstein') s += '<path d="M' + (cx - 6.5) + ' ' + (cy - 1) + ' q-1 10 1 13 h11 q2 -3 1 -13 z" fill="' + (h === 'gray' ? '#9aa0a8' : '#3a2a22') + '"/>';
+    s += '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="#f3cba8"/>';
+    const hairCol = h === 'gray' ? '#9aa0a8' : h === 'einstein' ? '#eef0f2' : fem ? '#3a2a22' : '#2a2a33';
+    if (h === 'einstein') s += '<path d="M' + (cx - 8) + ' ' + (cy - 1) + ' l-3 -3 l3 -1 l-2 -4 l4 1 l0 -4 l4 3 l2 -4 l2 4 l4 -3 l0 4 l4 -1 l-2 4 l3 1 l-3 3 q-1 -6 -8 -7 q-7 1 -8 7 z" fill="' + hairCol + '" stroke="#c3c8ce" stroke-width="0.5"/>';
+    else if (h === 'messy') s += '<path d="M' + (cx - 6.5) + ' ' + (cy - 1) + ' l1 -5 l2 2 l1 -4 l2 3 l2 -4 l1 4 l2 -3 l1 4 l1 3 q-6 -4 -13 0 z" fill="#3a3a40"/>';
+    else s += '<path d="M' + (cx - 6.2) + ' ' + (cy - 1) + ' q6.2 -9.5 12.4 0 q-6.2 -3.2 -12.4 0z" fill="' + hairCol + '"/>';
+    if (h === 'beret') s += '<ellipse cx="' + (cx + 1) + '" cy="' + (cy - 5.5) + '" rx="8" ry="3" fill="#b5303a"/><circle cx="' + (cx + 1) + '" cy="' + (cy - 8.5) + '" r="1.2" fill="#b5303a"/>';
+    if (fem) s += '<path d="M' + (cx - 3.5) + ' ' + (cy - 0.5) + ' l-1 -1 M' + (cx + 3.5) + ' ' + (cy - 0.5) + ' l1 -1" stroke="#2a2a33" stroke-width="0.8"/>';
+    // 얼굴
+    s += '<circle cx="' + (cx - 2.2) + '" cy="' + (cy + 0.5) + '" r="0.9" fill="#2a2a33"/><circle cx="' + (cx + 2.2) + '" cy="' + (cy + 0.5) + '" r="0.9" fill="#2a2a33"/>';
+    if (f === 'horn') s += '<rect x="' + (cx - 4.5) + '" y="' + (cy - 1.2) + '" width="3.6" height="3" fill="none" stroke="#1b1b1b" stroke-width="1.2"/><rect x="' + (cx + 0.9) + '" y="' + (cy - 1.2) + '" width="3.6" height="3" fill="none" stroke="#1b1b1b" stroke-width="1.2"/>';
+    if (f === 'gold') s += '<circle cx="' + (cx - 2.4) + '" cy="' + (cy + 0.4) + '" r="2" fill="none" stroke="#d4a72c" stroke-width="1"/><circle cx="' + (cx + 2.4) + '" cy="' + (cy + 0.4) + '" r="2" fill="none" stroke="#d4a72c" stroke-width="1"/>';
+    if (f === 'reading') s += '<path d="M' + (cx - 4.5) + ' ' + (cy + 1.4) + ' h3.6 v1.6 h-3.6 z M' + (cx + 0.9) + ' ' + (cy + 1.4) + ' h3.6 v1.6 h-3.6 z" fill="none" stroke="#55657a" stroke-width="0.9"/>';
+    if (f === 'dark') s += '<path d="M' + (cx - 3.4) + ' ' + (cy + 2) + ' h2.4 M' + (cx + 1) + ' ' + (cy + 2) + ' h2.4" stroke="#7a5a8a" stroke-width="1.2"/>';
+    if (f === 'mustache') s += '<path d="M' + (cx - 3) + ' ' + (cy + 3.2) + ' q3 -1.6 6 0 q-3 1 -6 0z" fill="#5a3b2a"/>';
+    // 소품
+    if (pr === 'tumbler') s += '<rect x="9" y="-7" width="4" height="7" rx="1" fill="#4f8a6a"/>';
+    if (pr === 'redpen') s += '<path d="M8 -1 l5 -6" stroke="#c3303a" stroke-width="1.6"/>';
+    if (pr === 'laser') s += '<path d="M8 -2 l4 -4" stroke="#55657a" stroke-width="1.6"/><path d="M12 -6 l12 -12" stroke="#ff4d4d" stroke-width="0.8" class="glow"/>';
+    if (pr === 'pen') s += '<path d="M8 -1 l5 -6" stroke="#1b1b1b" stroke-width="1.8"/><path d="M12.4 -6.3 l0.9 -1" stroke="#d4a72c" stroke-width="1.8"/>';
+    return s + '</g>';
   }
   const SEATS = [[-0.45, -0.1], [0.05, -0.1], [-0.45, 0.72], [0.0, 0.72], [0.45, 0.35], [0.62, -0.15]];
   // 방 껍데기: 방 레벨에 따라 바닥·벽·창·조명·소품이 단계적으로 좋아진다 (E.STYLES)
@@ -499,7 +567,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (st.deco.gate) { const g0 = center(2.62, 2.62); const x = g0[0], y = g0[1] + 60; s += '<rect x="' + (x - 34) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><rect x="' + (x + 24) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><path d="M' + (x - 36) + ' ' + (y - 56) + ' q36 -28 72 0 v-8 q-36 -28 -72 0 z" fill="#a58a62"/><rect x="' + (x - 18) + '" y="' + (y - 76) + '" width="36" height="10" fill="#1b2838"/><text x="' + x + '" y="' + (y - 68) + '" text-anchor="middle" font-size="8" fill="#ffd54a" font-family="IBM Plex Sans KR, sans-serif">' + E.UNIVS[st.univ].name.slice(0, 6) + '</text>'; }
     return s;
   }
-  const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.deco) + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
+  const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.deco) + JSON.stringify(st.look) + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
   let mapSig = '';
   function drawMap() {
     const seat = E.seating(st), f = E.flow(st);
@@ -539,7 +607,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const bm = E.buffMult(st, r.id);
       if (bm > 1) signs += '<g class="tag boost"><rect x="' + (sx + lw2 - 6) + '" y="' + (sy + 10) + '" width="36" height="17" rx="3"/><text x="' + (sx + lw2 + 12) + '" y="' + (sy + 23) + '" text-anchor="middle">×' + bm + '</text></g>';
     });
-    s += '<g id="walkers"></g><g id="coins"></g><g pointer-events="none">' + signs + '</g>';
+    s += '<g id="walkers"></g><g id="coins"></g><g pointer-events="none">' + signs + '</g><g id="guideG" pointer-events="none"></g>';
     $('map').innerHTML = s;
     $('map').querySelectorAll('.plot').forEach((gEl) => {
       const pick = () => { sel = gEl.dataset.id; switchTab('room'); drawMap(); renderRoom(); };
@@ -674,25 +742,80 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
   // ---------- 패널: 스타 연구원 ----------
   function renderCards() {
-    let h = '<h2>스타 연구원 <small class="num">모집권 ' + st.tickets + '장</small></h2><p class="note">모집권으로 뽑아 방에 배치한다. 같은 연구원이 또 나오면 별이 오르고 배율이 25%씩 는다.</p>' +
+    let h = '<h2>학생 도감 <small class="num">모집권 ' + st.tickets + '장</small></h2><p class="note">모집권으로 연구원을 뽑아 방에 배치한다. 같은 연구원이 또 나오면 중복 카드가 쌓이고, 중복 카드로 별을 올린다.</p>' +
       '<div class="btns"><button class="btn primary" id="drawBtn"' + (st.tickets > 0 ? '' : ' disabled') + '><span class="t">1번 뽑기</span><span class="s">모집권 1장</span></button><button class="btn" id="draw10Btn"' + (st.tickets >= 10 ? '' : ' disabled') + '><span class="t">10번 뽑기</span><span class="s">모집권 10장</span></button></div>' +
-      '<p class="meta">모집권은 일일 미션, 승진, 과제 선정 이벤트, 컨소시엄 주간 목표에서 무료로 얻는다. 결제로 파는 상품은 없다. 등급 확률: 일반 60% · 희귀 28% · 영웅 9% · 전설 3%. 영웅 이상 없이 ' + E.CARD_PITY + '번 뽑으면 다음은 영웅 이상 확정 (지금 ' + st.cards.pity + '/' + E.CARD_PITY + ').</p><div class="cards">';
-    E.CARDS.forEach((c) => {
-      const own = st.cards.owned[c.id], where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === c.id);
-      const roleName = { A: '생산 공간', B: '회의실', C: '교수실', M: '휴게실', any: '어느 방이든' }[c.role];
-      h += '<div class="cardi ' + c.rar + (own ? '' : ' missing') + '"><span class="rar ' + c.rar + '">' + RAR_NAME(c.rar) + ' · ' + E.cardRate(c.id).toFixed(1) + '%</span><b>' + (own ? c.name + ' ' + '★'.repeat(own) : '???') + '</b><span class="meta">' + roleName + ' · 상시 ×' + E.RARITY[c.rar].mult + (own ? ' · 스킬 「' + c.skill + '」' : '') + '</span>' +
-        (own ? '<select data-card="' + c.id + '" aria-label="' + c.name + ' 배치할 방"><option value="">' + (where ? E.room(where).name + '에 배치됨' : '배치할 방 고르기') + '</option>' + E.ROOMS.filter((r) => E.built(st, r.id) && E.roleFits(c, r.id)).map((r) => '<option value="' + r.id + '">' + r.name + '</option>').join('') + (where ? '<option value="-">배치 해제</option>' : '') + '</select>' : '') + '</div>';
+      '<p class="meta">모집권은 일일 미션, 승진, 과제, 과제 선정 이벤트, 출석 7일째, 컨소시엄 주간 목표에서 무료로 얻는다. 결제로 파는 상품은 없다. 등급 확률: 일반 60% · 희귀 28% · 영웅 9% · 전설 3% (카드별 확률은 아래). 영웅 이상 없이 ' + E.CARD_PITY + '번 뽑으면 다음은 영웅 이상 확정 (지금 ' + st.cards.pity + '/' + E.CARD_PITY + ').</p>' +
+      '<p class="meta">강화: ★1→2 중복 1장, ★2→3 2장, ★3→4 3장, ★4→5 5장. 별 1개마다 배율 +25%. ★5에서 또 나오면 발전기금 10.</p>';
+    Object.keys(E.CARD_GROUPS).forEach((g) => {
+      const G = E.CARD_GROUPS[g];
+      h += '<h3>' + G.name + ' <small class="num">' + E.groupCount(st, g) + '/' + E.groupTotal(g) + ' · 다 모으면 ' + G.set + (E.groupDone(st, g) ? ' (적용 중)' : '') + '</small></h3><div class="cards">';
+      E.CARDS.filter((c) => c.g === g).forEach((c) => {
+        const own = st.cards.owned[c.id], where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === c.id), dup = st.cards.dup[c.id] || 0, need = E.enhanceNeed(st, c.id);
+        const roleName = { A: '생산 공간', B: '회의실', C: '교수실', M: '휴게실', any: '어느 방이든' }[c.role];
+        h += '<div class="cardi ' + c.rar + (own ? '' : ' missing') + '"><span class="rar ' + c.rar + '">' + RAR_NAME(c.rar) + ' · ' + E.cardRate(c.id).toFixed(2) + '%</span><b>' + (own ? c.name + ' ' + '★'.repeat(own) : '???') + '</b><span class="meta">' + roleName + ' · 상시 ×' + (own ? (E.RARITY[c.rar].mult * (1 + 0.25 * (own - 1))).toFixed(2) : E.RARITY[c.rar].mult) + (own ? ' · 「' + c.skill + '」' : '') + '</span>';
+        if (own) {
+          h += '<span class="dupline num">중복 카드 ' + dup + '장' + (need != null ? ' · 다음 강화 ' + need + '장' : ' · 최고 강화') + '</span>';
+          if (need != null) h += '<button class="btn' + (E.canEnhance(st, c.id) ? ' primary' : '') + '" data-enh="' + c.id + '"' + (E.canEnhance(st, c.id) ? '' : ' disabled') + '><span class="t">강화 ★' + own + '→' + (own + 1) + '</span></button>';
+          h += '<select data-card="' + c.id + '" aria-label="' + c.name + ' 배치할 방"><option value="">' + (where ? E.room(where).name + '에 배치됨' : '배치할 방 고르기') + '</option>' + E.ROOMS.filter((r) => E.built(st, r.id) && E.roleFits(c, r.id)).map((r) => '<option value="' + r.id + '">' + r.name + (st.cards.assign[r.id] ? ' (교체)' : '') + '</option>').join('') + (where ? '<option value="-">배치 해제</option>' : '') + '</select>';
+        }
+        h += '</div>';
+      });
+      h += '</div>';
     });
-    h += '</div>';
     $('panel-cards').innerHTML = h;
-    const drawN = (n) => { const got = []; for (let i = 0; i < n; i++) { const r = E.drawCard(st); if (r) got.push(r); } if (got.length) { save(); renderCards(); refresh(true); openModal('<h2>연구원 모집</h2>' + got.map((x) => '<p><span class="rar ' + x.card.rar + '">' + RAR_NAME(x.card.rar) + '</span> ' + x.card.name + (x.isNew ? ' <b>NEW</b>' : ' ★+1') + '</p>').join(''), [{ label: '좋아', primary: true }]); } };
+    const drawN = (n) => { const got = []; for (let i = 0; i < n; i++) { const r = E.drawCard(st); if (r) got.push(r); } if (got.length) { save(); renderCards(); refresh(true); openModal('<h2>연구원 모집</h2>' + got.map((x) => '<p><span class="rar ' + x.card.rar + '">' + RAR_NAME(x.card.rar) + '</span> ' + x.card.name + (x.isNew ? ' <b>NEW</b>' : ' · 중복 카드 +1') + '</p>').join(''), [{ label: '좋아', primary: true }]); } };
     $('drawBtn').addEventListener('click', () => drawN(1));
     $('draw10Btn').addEventListener('click', () => drawN(10));
+    $('panel-cards').querySelectorAll('[data-enh]').forEach((b) => b.addEventListener('click', () => { if (E.enhanceCard(st, b.dataset.enh)) { save(); renderCards(); refresh(true); } }));
     $('panel-cards').querySelectorAll('select[data-card]').forEach((s2) => s2.addEventListener('change', () => {
       const v = s2.value, cid = s2.dataset.card;
       if (v === '-') { const where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === cid); if (where) E.unassignCard(st, where); }
       else if (v && E.assignCard(st, cid, v)) say(E.CARDS.find((x) => x.id === cid).name + '을(를) ' + E.room(v).name + '에 배치했다.');
       save(); renderCards(); refresh(true);
+    }));
+  }
+
+  // ---------- 패널: 과제 ----------
+  function renderProj() {
+    const act = st.projects.active;
+    let h = '<h2>과제 <small class="num">진행 ' + act.length + '/' + E.projSlots(st) + '칸</small></h2><p class="note">과제를 따 오면 진행 중에는 연구비가 늘고, 끝나면 큰 보상을 받는다.</p>' +
+      '<p class="meta">산학과제는 직급, 국가과제는 대학 단계가 되면 신청한다. 국가과제는 심사에서 떨어질 수 있고(대학 단계가 오를수록 선정률 +5%p), 떨어지면 신청비 절반을 돌려받는다. 처음 마친 과제는 도감에 협약서로 남는다. 과제 칸: 조교수 1 · 정교수 2 · 살아있는 교과서 3.</p>';
+    act.forEach((a) => { const p = E.PROJECTS.find((x) => x.id === a.id); h += '<div class="rowi"><div><div class="nm">' + p.name + ' <span class="meta">진행 중 · 연구비 +' + Math.round(p.buff * 100) + '%</span></div><div class="bar"><i style="width:' + Math.min(100, (1 - (a.endAt - st.time) / a.total) * 100) + '%"></i></div><div class="meta num">남은 시간 ' + fmtTime(a.endAt - st.time) + '</div></div><span></span></div>'; });
+    ['산학과제', '국가과제'].forEach((kind) => {
+      h += '<h3>' + kind + '</h3>';
+      E.PROJECTS.filter((p) => p.kind === kind).forEach((p) => {
+        const c = E.canStartProject(st, p.id), sel2 = E.projSelect(st, p.id), done = st.projects.done[p.id] || 0;
+        h += '<div class="rowi"><div><div class="nm">' + p.name + ' <span class="meta">' + p.grade + (done ? ' · 완료 ' + done + '번' : '') + '</span></div><div class="meta num">' + fmtTime(p.dur) + ' · 진행 중 연구비 +' + Math.round(p.buff * 100) + '% · 끝나면 연구비 ' + p.rewardMin + '분 치' + (p.tickets ? ' + 모집권 ' + p.tickets + '장' : '') + (sel2 < 1 ? ' · 선정률 ' + Math.round(sel2 * 100) + '%' : '') + '</div></div><button class="btn" data-proj="' + p.id + '"' + (c === true ? '' : ' disabled') + '><span class="t num">' + (c === true || c === '연구비 부족' ? fmt(E.projCost(st, p.id)) : c) + '</span><span class="s">' + (c === true || c === '연구비 부족' ? '신청' : '') + '</span></button></div>';
+      });
+    });
+    $('panel-proj').innerHTML = h;
+    $('panel-proj').querySelectorAll('[data-proj]').forEach((b) => b.addEventListener('click', () => { const r = E.startProject(st, b.dataset.proj); if (r) { save(); refresh(true); renderProj(); } }));
+  }
+
+  // ---------- 패널: 아바타 ----------
+  function renderAvatar() {
+    const L = st.look;
+    let h = '<h2>교수 아바타 <small class="num">' + Object.keys(st.av).length + '/' + E.AVATARS.length + '</small></h2>' +
+      '<div class="avwrap"><svg class="avprev" viewBox="-40 -62 80 72" role="img" aria-label="내 교수 아바타">' + prof(0, 0, 1.6) + '</svg><div style="display:grid;gap:6px">' +
+      '<div><span class="meta">성별</span> <span class="seg"><button data-gender="m" aria-pressed="' + (L.gender === 'm') + '">남</button><button data-gender="f" aria-pressed="' + (L.gender === 'f') + '">여</button></span></div>' +
+      '<p class="meta">아이템은 가지고만 있어도 그 부위 능력치가 오른다(일반 2% · 희귀 4% · 영웅 8% · 전설 15%). 부위를 다 모으면 +10% 더. 입은 아이템은 교수실 지도에도 보인다.</p>' +
+      '<p class="meta">얻는 곳: 승진·대학 승격 때 1개 확정, 과제 완료 25%, 발전기금으로 골라 사기(무작위 뽑기 없음, 가진 기금 ' + st.gems + ').</p></div></div>';
+    Object.keys(E.AV_SLOTS).forEach((slot) => {
+      const S = E.AV_SLOTS[slot];
+      h += '<h3>' + S.name + ' <small class="num">' + S.stat + ' +' + Math.round(E.avBonus(st, slot) * 100) + '%' + (E.avSlotDone(st, slot) ? ' (세트 완성)' : '') + '</small></h3><div class="avgrid">';
+      E.AVATARS.forEach((a, i) => {
+        if (a[0] !== slot) return;
+        const own = st.av[i], on = L[slot] === i;
+        h += '<button class="avi ' + a[3] + (own ? '' : ' missing') + (on ? ' on' : '') + '" data-av="' + i + '"' + (!own && st.gems < E.AV_PRICE[a[3]] ? ' disabled' : '') + '><span class="rar ' + a[3] + '">' + RAR_NAME(a[3]) + ' · +' + Math.round(E.AV_VALUE[a[3]] * 100) + '%</span><b>' + a[2] + '</b><span class="meta">' + (own ? (on ? '입는 중 · 눌러서 벗기' : '눌러서 입기') : '기금 ' + E.AV_PRICE[a[3]] + '으로 사기') + '</span></button>';
+      });
+      h += '</div>';
+    });
+    $('panel-avatar').innerHTML = h;
+    $('panel-avatar').querySelectorAll('[data-gender]').forEach((b) => b.addEventListener('click', () => { E.setGender(st, b.dataset.gender); save(); renderAvatar(); refresh(true); }));
+    $('panel-avatar').querySelectorAll('[data-av]').forEach((b) => b.addEventListener('click', () => {
+      const i = +b.dataset.av, a = E.AVATARS[i];
+      if (st.av[i]) { E.wear(st, i); save(); renderAvatar(); refresh(true); return; }
+      openModal('<h2>아바타 사기</h2><p>' + RAR_NAME(a[3]) + ' 「' + a[2] + '」</p><p class="meta">발전기금 ' + E.AV_PRICE[a[3]] + ' (가진 기금 ' + st.gems + ')</p>', [{ label: '산다', primary: true, fn: () => { if (E.buyAvatar(st, i)) { E.wear(st, i); say('「' + a[2] + '」을(를) 샀다.'); save(); renderAvatar(); refresh(true); } } }, { label: '취소' }]);
     }));
   }
 
@@ -719,7 +842,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     keys.forEach((g) => {
       const C = E.COLLECTION[g], b = C.items.reduce((a, it, i) => a + (st.col[g][i] ? E.COL_BONUS[it[1]] : 0), 0);
       h += '<h3>' + C.name + ' <small class="num">' + E.colCount(st, g) + '/' + E.colTotal(g) + ' · ' + KIND_NAME[C.kind] + ' +' + Math.round(b * 100) + '%' + (E.colDone(st, g) ? ' + 세트 ' + Math.round(C.set * 100) + '%' : '') + '</small></h3><p class="meta">얻는 곳: ' + C.how + ' · 다 모으면 ' + KIND_NAME[C.kind] + ' +' + Math.round(C.set * 100) + '%</p><div class="colgrid">';
-      C.items.forEach((it, i) => { const n = st.col[g][i]; h += '<div class="coli ' + it[1] + (n ? '' : ' missing') + '"><span class="rar ' + it[1] + '">' + E.RARITY[it[1]].name + (g === 'photos' ? '' : ' · ' + E.colRate(g, i).toFixed(1) + '%') + '</span><b>' + (n ? it[0] : '???') + '</b>' + (n > 1 ? '<span class="meta num">×' + n + '</span>' : '') + '</div>'; });
+      C.items.forEach((it, i) => { const n = st.col[g][i]; h += '<div class="coli ' + it[1] + (n ? '' : ' missing') + '"><span class="rar ' + it[1] + '">' + E.RARITY[it[1]].name + (g === 'photos' || g === 'contracts' ? '' : ' · ' + E.colRate(g, i).toFixed(1) + '%') + '</span><b>' + (n ? it[0] : '???') + '</b>' + (n > 1 ? '<span class="meta num">×' + n + '</span>' : '') + '</div>'; });
       h += '</div>';
     });
     $('panel-col').innerHTML = h;
@@ -897,17 +1020,87 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   // ---------- 패널: 기록 ----------
   function renderRec() {
     $('panel-rec').innerHTML = '<h2>기록</h2><dl class="kv num"><dt>플레이 시간</dt><dd>' + fmtTime(st.time) + '</dd><dt>대학</dt><dd>' + E.UNIVS[st.univ].name + '</dd><dt>누적 연구비</dt><dd>' + fmt(st.totalMoney) + '</dd><dt>정년 퇴임</dt><dd>' + st.runs + '번</dd><dt>월계관</dt><dd>' + st.laurels + '개</dd><dt>연구력</dt><dd>' + E.power(st).toLocaleString('ko-KR') + '</dd><dt>공사 대기열</dt><dd>' + st.builds.length + '/' + E.buildSlots(st) + '</dd></dl>' +
+      '<button class="btn" id="guideToggle"><span class="t">말풍선 가이드 ' + (st.guideOff ? '켜기' : '끄기') + '</span><span class="s">지금 ' + (st.guideOff ? '꺼짐' : '켜짐') + '</span></button>' +
       '<button class="btn" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">이 기기의 진행이 지워집니다</span></button><div id="resetConfirm" hidden class="btns"><button class="btn" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div>';
+    $('guideToggle').addEventListener('click', () => { st.guideOff = !st.guideOff; save(); renderRec(); updateGuide(true); });
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
     $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 지방 사립대에 조교수로 부임했다.'); });
   }
 
+  // ---------- 실시간 말풍선 가이드 ----------
+  // 엔진의 guide()가 고른 할 일을 지도 위(방·본관) 또는 버튼 위에 말풍선으로 띄운다.
+  let guideKey = '', guideMuteKey = '', guideMuteUntil = 0, pulsed = null;
+  const vis = (el) => el && !el.disabled && el.offsetParent !== null;
+  function guideTarget(g) {
+    const firstOn = (q) => Array.from(document.querySelectorAll(q)).find(vis);
+    if (g.kind === 'promote' || g.kind === 'retire') return { el: $('promoteBtn') };
+    if (g.kind === 'univ') return tab === 'room' && sel === 'univ' && vis($('univBtn')) ? { el: $('univBtn') } : { map: 'univ' };
+    if (g.kind === 'build' || g.kind === 'upgrade') return tab === 'room' && sel === g.room && vis($('upBtn')) ? { el: $('upBtn') } : { map: g.room };
+    if (g.kind === 'equip') return tab === 'room' && sel === g.room && vis(document.querySelector('[data-eq="' + g.i + '"]')) ? { el: document.querySelector('[data-eq="' + g.i + '"]') } : { map: g.room };
+    if (g.kind === 'hire') return tab === 'room' ? { el: $('hireBtn') } : { el: $('tab-room') };
+    if (g.kind === 'tab') {
+      if (tab !== g.tab) return { el: $('tab-' + g.tab) };
+      const q = { cards: st.tickets > 0 ? '#drawBtn' : '[data-enh]:not([disabled]), select[data-card]', mission: '[data-ms]:not([disabled]), #msBonus', shop: '#attendBtn', lab: '[data-rs]:not([disabled])', proj: '[data-proj]:not([disabled])', avatar: '[data-gender]' }[g.tab];
+      const el = q && firstOn(q); return el ? { el } : null;
+    }
+    if (g.kind === 'wait') return { map: g.room, quiet: true };
+    return null;
+  }
+  function clearPulse() { if (pulsed) { pulsed.classList.remove('gpulse'); pulsed = null; } }
+  function updateGuide() {
+    const bub = $('bubble'), gg = $('guideG');
+    const off = st.guideOff || !$('modal').hidden;
+    const g = off ? null : E.guide(st);
+    const key = g ? g.kind + (g.room || g.tab || '') + (g.i != null ? g.i : '') : '';
+    const muted = key && key === guideMuteKey && Date.now() < guideMuteUntil;
+    $('guidebar').hidden = !g || st.guideOff;
+    if (g) $('guidetext').textContent = g.text;
+    const t = g && !muted ? guideTarget(g) : null;
+    // 버튼 말풍선
+    if (t && t.el && vis(t.el)) {
+      if (pulsed !== t.el) { clearPulse(); t.el.classList.add('gpulse'); pulsed = t.el; }
+      const r = t.el.getBoundingClientRect(), below = r.top < 90;
+      bub.hidden = false; bub.className = 'bubble' + (below ? ' below' : '');
+      if (bub.dataset.k !== key + g.text) { bub.dataset.k = key + g.text; bub.firstChild.textContent = g.text; }
+      const w = Math.min(240, bub.offsetWidth || 200);
+      bub.style.left = Math.max(8, Math.min(window.scrollX + r.left + 6, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
+      bub.style.top = (below ? window.scrollY + r.bottom + 10 : window.scrollY + r.top - bub.offsetHeight - 10) + 'px';
+    } else { bub.hidden = true; clearPulse(); }
+    // 지도 말풍선
+    if (gg) {
+      const mk = t && t.map ? key + g.text + t.map : '';
+      if (gg.dataset.k !== mk) {
+        gg.dataset.k = mk;
+        if (!mk) gg.innerHTML = '';
+        else {
+          let x, y;
+          if (t.map === 'univ') { x = center(...UNIV_C)[0]; y = center(...UNIV_C)[1] - 60; } else { const c = center(...E.room(t.map).plot); x = c[0]; y = c[1] - 10; }
+          // 지도에는 짧게, 자세한 설명은 위쪽 가이드 줄에
+          const nm = t.map === 'univ' ? '대학 본관' : E.room(t.map).name;
+          const short = { build: nm + ' 공사하기 ▼', upgrade: nm + ' 업그레이드 ▼', equip: nm + ' 장비 강화 ▼', univ: '본관을 눌러 승격 ▼' }[g.kind] || g.text;
+          const txt = short.length > 24 ? short.slice(0, 23) + '…' : short, w = txt.length * 13.5 + 24;
+          const bx = Math.max(-30, Math.min(820 - w, x - w / 2)), by = y - (t.map === 'univ' ? 150 : 162);
+          gg.innerHTML = (t.quiet ? '' : '<ellipse class="gring" cx="' + x + '" cy="' + (y + 10) + '" rx="' + (W * 0.9) + '" ry="' + (H * 0.9) + '" fill="none" stroke="#e0b030" stroke-width="4"/>') +
+            '<g class="gbub"' + (t.quiet ? ' opacity="0.85"' : '') + '><rect x="' + bx + '" y="' + by + '" width="' + w + '" height="30" rx="8"/><path d="M' + (x - 9) + ' ' + (by + 29) + ' l9 12 l9 -12 z" fill="#fff8e1" stroke="#e0b030" stroke-width="2.5"/><rect x="' + (x - 8) + '" y="' + (by + 26) + '" width="16" height="5" fill="#fff8e1"/><text x="' + (bx + w / 2) + '" y="' + (by + 20) + '" text-anchor="middle">' + esc(txt) + '</text></g>';
+        }
+      }
+    }
+    if (key !== guideKey) guideKey = key;
+  }
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  $('guidebar').addEventListener('click', () => {
+    const g = E.guide(st), t = g && guideTarget(g);
+    if (!t) return;
+    if (t.map) { sel = t.map; switchTab('room'); drawMap(); $('mapbox').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    else if (t.el) t.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
   // ---------- 화면 갱신 ----------
   function switchTab(t) {
     tab = t;
     document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'));
-    ['room', 'lab', 'cards', 'mission', 'col', 'shop', 'ally', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== t; });
+    ['room', 'lab', 'cards', 'proj', 'mission', 'avatar', 'col', 'shop', 'ally', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== t; });
     tabSig = ''; roomSig = '';
     renderTab(true);
   }
@@ -920,12 +1113,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (force || rs + hs !== roomSig) { roomSig = rs + hs; renderRoom(); renderHire(); }
       return;
     }
-    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'col' ? JSON.stringify(st.col) + st.colPity : tab === 'shop' ? st.gems + JSON.stringify(st.daily) + JSON.stringify(st.shop) + JSON.stringify(st.deco) + st.builds.map((b) => b.reqId + Math.ceil((b.endAt - st.time) / 60)).join() + (st.research.active ? Math.ceil((st.research.active.endAt - st.time) / 60) : '') + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
+    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) + Object.keys(st.rooms).filter((k) => st.rooms[k] > 0).join() : tab === 'proj' ? JSON.stringify(st.projects) + st.tier + st.univ + E.PROJECTS.map((x) => E.canStartProject(st, x.id)).join() + st.projects.active.map((a) => Math.ceil(a.endAt - st.time)).join() + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'avatar' ? JSON.stringify(st.look) + JSON.stringify(st.av) + st.gems : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'col' ? JSON.stringify(st.col) + st.colPity : tab === 'shop' ? st.gems + JSON.stringify(st.daily) + JSON.stringify(st.shop) + JSON.stringify(st.deco) + st.builds.map((b) => b.reqId + Math.ceil((b.endAt - st.time) / 60)).join() + (st.research.active ? Math.ceil((st.research.active.endAt - st.time) / 60) : '') + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
     if (!force && sig === tabSig) return;
     tabSig = sig;
     if (tab === 'lab') renderLab();
     if (tab === 'cards') renderCards();
     if (tab === 'mission') renderMission();
+    if (tab === 'proj') renderProj();
+    if (tab === 'avatar') renderAvatar();
     if (tab === 'col') renderCol();
     if (tab === 'shop') renderShop();
     if (tab === 'ally') renderAlly();
@@ -934,6 +1129,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
   $('ticketBtn').addEventListener('click', () => switchTab('cards'));
   $('gemBtn').addEventListener('click', () => switchTab('shop'));
+  $('bubbleX').addEventListener('click', (e) => { e.stopPropagation(); guideMuteKey = guideKey; guideMuteUntil = Date.now() + 60000; updateGuide(); });
+  window.addEventListener('resize', () => updateGuide());
+  window.addEventListener('scroll', () => updateGuide(), { passive: true });
   const stepsHtml = (n, max, cls) => '<span class="steps ' + (cls || '') + '" aria-hidden="true">' + Array.from({ length: max }, (_, i) => '<i class="' + (i < n ? 'on' : '') + '"></i>').join('') + '</span>';
   function refresh(force) {
     const f = E.flow(st);
@@ -960,13 +1158,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     else { pb.hidden = !E.canPromote(st); if (E.canPromote(st)) pb.textContent = E.TIERS[st.tier + 1].name + '(으)로 승진하기'; }
     const dot = (id, on) => { const b = $(id); const has = b.querySelector('.dot'); if (on && !has) b.insertAdjacentHTML('beforeend', '<span class="dot" aria-label="새 소식"></span>'); if (!on && has) has.remove(); };
     dot('tab-mission', Object.keys(E.MISSIONS).some((k) => E.missionDone(st, k) && !st.missions.claimed[k]));
-    dot('tab-cards', st.tickets > 0);
+    dot('tab-cards', st.tickets > 0 || E.anyEnhance(st));
+    dot('tab-proj', st.projects.active.length < E.projSlots(st) && E.PROJECTS.some((x) => E.canStartProject(st, x.id) === true));
     dot('tab-col', st.colNew > 0 && tab !== 'col');
     dot('tab-shop', E.attendReady(st));
     renderTab(force);
     if (force || sigOf() !== mapSig) drawMap();
     drainNotes();
     if (st.ended && !endShown) { endShown = true; showEnding(); }
+    updateGuide();
   }
   function drainNotes() { if (!st.notes.length) return; const n = st.notes.splice(0); say(n[n.length - 1].text); }
 
@@ -1042,6 +1242,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey());
     if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
     endShown = !!st.ended; // 이미 끝난 저장은 버튼으로만 엔딩을 다시 연다
+    if (!st.look.gender) openModal('<h2>교수님, 어서 오세요</h2><p class="hand">작은 나라 지방 사립대에 새로 임용되셨습니다</p><p>교수 아바타를 고르세요. 나중에 아바타 탭에서 바꿀 수 있습니다.</p>', [{ label: '남자 교수', primary: true, fn: () => { E.setGender(st, 'm'); save(); refresh(true); } }, { label: '여자 교수', primary: true, fn: () => { E.setGender(st, 'f'); save(); refresh(true); } }]);
     nextEventAt = st.time + 60;
     refresh(true);
     const sc = $('mapscroll'); sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2;
