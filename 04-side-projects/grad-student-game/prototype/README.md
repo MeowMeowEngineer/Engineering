@@ -11,7 +11,7 @@
 | `engine.js` | 게임 규칙. 화면과 분리돼 Node에서도 돌아감 |
 | `index.html` | 화면 |
 | `sim.js` | 밸런스 시뮬레이터 (`node sim.js`) |
-| `qa.js` | 엔진·브라우저 QA 80개 (`node qa.js`, Playwright 필요) |
+| `qa.js` | 엔진·브라우저 QA 83개 (`node qa.js`, Playwright 필요) |
 
 ## 규칙
 
