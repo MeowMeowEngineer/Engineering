@@ -45,6 +45,19 @@ function mockClaude() {
   ok('실험실 가구·장비 5종', (await p.$$('#roomCard [data-eq]')).length === 5);
   await p.click('#roomCard [data-eq="0"]'); await p.waitForTimeout(250);
   ok('실험대를 들이면 모습 이름이 붙는다', (await p.textContent('#roomCard')).includes('낡은 실험대'));
+  ok('장비 단계 표시 (1단계)와 방 인테리어 단계', (await p.textContent('#roomCard')).includes('1단계 낡은 실험대') && (await p.textContent('#roomCard')).includes('인테리어 1단계 낡은 방'));
+  await p.click('#tab-col'); await p.waitForTimeout(200);
+  ok('도감: 지방 사립대 기념사진 1/39와 확률 공개', (await p.textContent('#panel-col')).includes('1/39') && (await p.textContent('#panel-col')).includes('지방 사립대 정문') && (await p.textContent('#panel-col')).includes('%'));
+  await p.click('#tab-shop'); await p.waitForTimeout(200);
+  await p.click('#attendBtn'); await p.waitForTimeout(250);
+  ok('상점: 출석 보상으로 발전기금 10', (await p.textContent('#gems')) === '10');
+  await p.click('#adBoost'); await p.waitForTimeout(3400);
+  ok('상점: 가상 광고 3초 뒤 연구비 2배', (await p.textContent('#ticker')).includes('연구 지원금') && (await p.$eval('#modal', (e) => e.hidden)));
+  await p.click('[data-sku="starter"]'); await p.waitForTimeout(200); await p.click('#dialog .btn.primary'); await p.waitForTimeout(300);
+  ok('상점: 신임 교수 패키지 가상 구매 → 기금 110, 분수대', (await p.textContent('#gems')) === '110' && (await p.textContent('#panel-shop')).includes('설치됨') && (await p.textContent('#panel-shop')).includes('1,200원'));
+  await p.click('[data-deco="cherry"]'); await p.waitForTimeout(300);
+  ok('상점: 벚꽃길 장식이 지도에 나타난다', (await p.innerHTML('#map')).includes('#f4b6c8') && (await p.textContent('#gems')) === '50');
+  await p.click('#tab-room');
   await p.click('#cheerBtn'); await p.waitForTimeout(250);
   ok('독려하면 ×2 표시와 쿨다운', (await p.textContent('#roomCard')).includes('다시 독려까지') && (await p.$$('.tag.boost')).length === 1);
   await p.click('.plot[data-id="meeting"]'); await p.waitForTimeout(200);
@@ -75,6 +88,7 @@ function mockClaude() {
   ok('대학 승격 공사 (세계적 명문대)', (await p.textContent('#map')).includes('승격 공사') && (await p.textContent('#roomCard')).includes('승격 공사 중'));
   await p.click('.plot[data-id="office"]'); await p.waitForTimeout(200);
   ok('교수실 장비 모습: 마호가니 책상', (await p.textContent('#roomCard')).includes('마호가니 대가의 책상'));
+  ok('장비 5단계와 인테리어 4단계 (교수실 Lv 60)', (await p.textContent('#roomCard')).includes('5단계 마호가니 대가의 책상') && (await p.textContent('#roomCard')).includes('인테리어 4단계 세련된 방') && (await p.textContent('#roomCard')).includes('단계 보너스 ×1.4'));
   await p.screenshot({ path: SP + '/ty-desktop-late.png' });
   await p.click('#tab-lab'); await p.waitForTimeout(200);
   await p.click('[data-rs="exp"]'); await p.waitForTimeout(250);
@@ -125,6 +139,8 @@ function mockClaude() {
   const remain = await p.textContent('#roomCard');
   ok('동료 도움 3번이 내 공사 시간을 줄인다', /남은 시간 (8분|7분)/.test(remain), (remain.match(/남은 시간 [^.]*/) || [''])[0] + (left0 ? '' : ''));
   await p.screenshot({ path: SP + '/ty-ally.png' });
+  { const t = E.newGame(); t.colPity = E.COL_PITY; for (let i = 0; i < 6; i++) t.col.visitors[i] = 1; const r = E.dropCol(t, 'visitors', 1); ok('도감 천장: 중복 4번 뒤 새 항목 확정', r && r.isNew && t.colPity === 0); }
+  { const t = E.newGame(); E.refreshDay(t, '2026-10-23', '2026-10-22'); E.mockBuy(t, 'sub', '2026-10-23', '2026-11-22'); const r = E.offline(t, 10 * 3600); ok('정기구독: 방치 효율 100%, 최대 12시간', r.eff === 1 && r.capH === 12 && !r.capped); }
   ok('콘솔 오류 없음', errors.length === 0, errors.join(' | '));
   console.log(res.join('\n')); console.log('스크린샷: ' + SP); process.exitCode = res.some((r) => r.startsWith('FAIL')) ? 1 : 0; await b.close();
 })();

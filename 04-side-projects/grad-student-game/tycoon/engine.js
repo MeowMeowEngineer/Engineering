@@ -12,7 +12,7 @@
 
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 승진 속도를 맞춘다.
   const CFG = {
-    fameNeed: [0, 0, 1e3, 3e5, 6e7, 1.2e10], // 직급별 승진에 필요한 누적 명성
+    fameNeed: [0, 0, 1e3, 3e5, 6e7, 1.5e10], // 직급별 승진에 필요한 누적 명성
     tierValue: 2.5, fameRate: 0.1,
     prodGrowth: 1.14, stageGrowth: 1.16, hireBase: 30, hireGrowth: 1.32,
     offlineCapH: 8, offlineEff: 0.5, laurelBonus: 0.25, libraryBonus: 0.05,
@@ -45,23 +45,35 @@
   const MILESTONES = [10, 25, 50, 100]; // 이 레벨에 닿으면 효율 2배. 닿는 업그레이드는 대공사(시간이 걸림)
   const MILESTONE_SEC = { 10: 60, 25: 180, 50: 600, 100: 1800 };
 
-  // 방별 가구·장비 5종: [이름, 효과, 레벨당 크기, 등급별 모습 4단계(Lv 1·4·7·10)].
+  // 방별 가구·장비 5종: [이름, 효과, 레벨당 크기, 단계별 모습 5개].
   // 효과 mult=그 방 산출, seat=좌석(레벨당), comfort=휴게 정원, value=연구비, fame=명성
   const EQUIP = {
-    office: [['책상', 'mult', 0.08, ['합판 책상', '원목 책상', '전동 스탠딩 책상', '마호가니 대가의 책상']], ['의자', 'mult', 0.07, ['접이식 의자', '사무용 의자', '메쉬 의자', '가죽 중역 의자']], ['컴퓨터', 'mult', 0.12, ['중고 데스크톱', '듀얼 모니터', '워크스테이션', '트리플 모니터 워크스테이션']], ['책장', 'fame', 0.05, ['철제 선반', '원목 책장', '붙박이 서가', '저서가 꽂힌 서가']], ['상패 진열장', 'fame', 0.07, ['종이 명패', '아크릴 명패', '상패 진열장', '훈장 진열장']]],
-    meeting: [['회의 테이블', 'mult', 0.08, ['접이식 테이블', '원목 테이블', '대형 회의 테이블', '타원형 이사회 테이블']], ['의자', 'mult', 0.06, ['플라스틱 의자', '사무용 의자', '메쉬 의자', '인체공학 의자']], ['화이트보드', 'mult', 0.1, ['이젤 보드', '벽걸이 보드', '유리 보드', '전자 칠판']], ['빔프로젝터', 'mult', 0.12, ['중고 빔', 'HD 빔', '대형 TV', '화상회의 시스템']], ['커피 포트', 'comfort', 1, ['전기 포트', '드립 세트', '캡슐 머신', '바리스타 머신']]],
-    lounge: [['소파', 'comfort', 1.5, ['낡은 소파', '3인 소파', '리클라이너', '안마 소파']], ['커피 머신', 'comfort', 1, ['믹스 커피', '캡슐 머신', '반자동 머신', '바리스타 머신']], ['간식 냉장고', 'comfort', 1, ['미니 냉장고', '음료 냉장고', '간식 자판기', '무한 간식바']], ['낮잠 침대', 'comfort', 1.5, ['간이 침대', '접이식 매트리스', '수면 캡슐', '호텔식 침대']], ['게임기', 'comfort', 2, ['보드게임', '휴대용 게임기', '콘솔 게임기', '아케이드 기계']]],
-    wetlab: [['실험대', 'seat', 0.4, ['낡은 실험대', '스테인리스 실험대', '확장 실험대', '모듈형 실험대']], ['실험 의자', 'mult', 0.06, ['나무 의자', '높이 조절 의자', '실험용 스툴', '인체공학 스툴']], ['피펫·플라스크', 'mult', 0.08, ['유리 플라스크', '수동 피펫', '전자 피펫', '자동 분주기']], ['현미경', 'mult', 0.12, ['교육용 현미경', '광학 현미경', '형광 현미경', '공초점 현미경']], ['흄후드', 'mult', 0.15, ['환풍기', '간이 후드', '흄후드', '안전 캐비닛']]],
-    server: [['서버 랙', 'seat', 0.4, ['선반 랙', '19인치 랙', '이중 랙', '데이터센터 랙']], ['책상과 의자', 'mult', 0.06, ['접이식 책상', '사무용 책상', '스탠딩 책상', '게이밍 책상']], ['GPU', 'mult', 0.15, ['게이밍 GPU', '워크스테이션 GPU', '데이터센터 GPU', 'GPU 클러스터']], ['냉각 장치', 'mult', 0.1, ['선풍기', '에어컨', '항온항습기', '수랭 시스템']], ['무정전 전원', 'mult', 0.08, ['멀티탭', '소형 UPS', '랙 UPS', '이중 전원']]],
-    library: [['서가', 'value', 0.02, ['철제 선반', '원목 서가', '이동식 서가', '자동 서고']], ['열람 책상', 'value', 0.015, ['접이식 책상', '원목 책상', '칸막이 책상', '개인 열람실']], ['열람 의자', 'fame', 0.03, ['플라스틱 의자', '사무용 의자', '메쉬 의자', '인체공학 의자']], ['논문 DB 구독', 'value', 0.03, ['무료 DB', '학회 DB', '통합 DB', '전 세계 DB']], ['스캐너', 'fame', 0.03, ['복사기', '평판 스캐너', '고속 스캐너', '북 스캐너']]],
-    clean: [['방진복 보관함', 'seat', 0.4, ['옷걸이', '보관함', '에어샤워', '자동 보관실']], ['클린 벤치', 'mult', 0.08, ['간이 벤치', '클린 벤치', '층류 벤치', '초정밀 벤치']], ['증착 장비', 'mult', 0.15, ['수동 증착기', '스퍼터', 'CVD', '원자층 증착기']], ['공조 설비', 'mult', 0.1, ['공기청정기', '헤파 필터', '클래스 1000 공조', '클래스 10 공조']], ['측정 장비', 'mult', 0.1, ['돋보기', '광학 측정기', '전자 현미경', '원자간력 현미경']]],
-    bigequip: [['운영 인력석', 'seat', 0.4, ['간이 책상', '운영 책상', '제어실', '통합 관제실']], ['제어 컴퓨터', 'mult', 0.1, ['노트북', '데스크톱', '제어 서버', '실시간 제어 시스템']], ['핵심 장비', 'mult', 0.2, ['중고 장비', '신형 장비', '맞춤 장비', '세계 유일 장비']], ['예약 시스템', 'mult', 0.1, ['종이 장부', '엑셀 시트', '예약 웹', '자동 스케줄러']], ['안전 설비', 'mult', 0.06, ['소화기', '안전 표지', '가스 감지기', '통합 안전 시스템']]],
-    global: [['화상 회의실', 'seat', 0.4, ['노트북 카메라', '회의용 카메라', '화상 회의실', '홀로그램 회의실']], ['공동 서버', 'mult', 0.15, ['공유 드라이브', '공동 서버', '국제 클라우드', '전용 회선']], ['통역 지원', 'mult', 0.1, ['번역기', '통역 아르바이트', '전문 통역사', '동시통역 부스']], ['방문 연구원 숙소', 'mult', 0.08, ['게스트하우스', '원룸', '기숙사', '레지던스']], ['공유 책상', 'mult', 0.06, ['접이식 책상', '공유 책상', '핫데스크', '라운지 오피스']]],
+    office: [['책상', 'mult', 0.08, ['합판 책상', '철제 책상', '원목 책상', '전동 스탠딩 책상', '마호가니 대가의 책상']], ['의자', 'mult', 0.07, ['접이식 의자', '플라스틱 의자', '사무용 의자', '메쉬 의자', '가죽 중역 의자']], ['컴퓨터', 'mult', 0.12, ['중고 데스크톱', '새 데스크톱', '듀얼 모니터', '워크스테이션', '트리플 모니터 워크스테이션']], ['책장', 'fame', 0.05, ['철제 선반', '조립식 책장', '원목 책장', '붙박이 서가', '저서가 꽂힌 서가']], ['상패 진열장', 'fame', 0.07, ['종이 명패', '아크릴 명패', '상패 한 개', '상패 진열장', '훈장 진열장']]],
+    meeting: [['회의 테이블', 'mult', 0.08, ['접이식 테이블', '사무용 테이블', '원목 테이블', '대형 회의 테이블', '타원형 이사회 테이블']], ['의자', 'mult', 0.06, ['플라스틱 의자', '철제 의자', '사무용 의자', '메쉬 의자', '인체공학 의자']], ['화이트보드', 'mult', 0.1, ['이젤 보드', '벽걸이 보드', '대형 보드', '유리 보드', '전자 칠판']], ['빔프로젝터', 'mult', 0.12, ['중고 빔', 'HD 빔', '4K 빔', '대형 TV', '화상회의 시스템']], ['커피 포트', 'comfort', 1, ['전기 포트', '드립 세트', '커피 메이커', '캡슐 머신', '바리스타 머신']]],
+    lounge: [['소파', 'comfort', 1.5, ['낡은 소파', '2인 소파', '3인 소파', '리클라이너', '안마 소파']], ['커피 머신', 'comfort', 1, ['믹스 커피', '드립 세트', '캡슐 머신', '반자동 머신', '바리스타 머신']], ['간식 냉장고', 'comfort', 1, ['미니 냉장고', '가정용 냉장고', '음료 냉장고', '간식 자판기', '무한 간식바']], ['낮잠 침대', 'comfort', 1.5, ['간이 침대', '접이식 매트리스', '소파 베드', '수면 캡슐', '호텔식 침대']], ['게임기', 'comfort', 2, ['보드게임', '다트판', '휴대용 게임기', '콘솔 게임기', '아케이드 기계']]],
+    wetlab: [['실험대', 'seat', 0.4, ['낡은 실험대', '철제 실험대', '스테인리스 실험대', '확장 실험대', '모듈형 실험대']], ['실험 의자', 'mult', 0.06, ['나무 의자', '철제 스툴', '높이 조절 의자', '실험용 스툴', '인체공학 스툴']], ['피펫·플라스크', 'mult', 0.08, ['유리 플라스크', '눈금 실린더', '수동 피펫', '전자 피펫', '자동 분주기']], ['현미경', 'mult', 0.12, ['교육용 현미경', '실체 현미경', '광학 현미경', '형광 현미경', '공초점 현미경']], ['흄후드', 'mult', 0.15, ['환풍기', '간이 후드', '흄후드', '고성능 흄후드', '안전 캐비닛']]],
+    server: [['서버 랙', 'seat', 0.4, ['선반 랙', '철제 랙', '19인치 랙', '이중 랙', '데이터센터 랙']], ['책상과 의자', 'mult', 0.06, ['접이식 책상', '사무용 책상', '듀얼 모니터 책상', '스탠딩 책상', '게이밍 책상']], ['GPU', 'mult', 0.15, ['게이밍 GPU', '고급 게이밍 GPU', '워크스테이션 GPU', '데이터센터 GPU', 'GPU 클러스터']], ['냉각 장치', 'mult', 0.1, ['선풍기', '서큘레이터', '에어컨', '항온항습기', '수랭 시스템']], ['무정전 전원', 'mult', 0.08, ['멀티탭', '서지 보호기', '소형 UPS', '랙 UPS', '이중 전원']]],
+    library: [['서가', 'value', 0.02, ['철제 선반', '조립식 서가', '원목 서가', '이동식 서가', '자동 서고']], ['열람 책상', 'value', 0.015, ['접이식 책상', '사무용 책상', '원목 책상', '칸막이 책상', '개인 열람실']], ['열람 의자', 'fame', 0.03, ['플라스틱 의자', '철제 의자', '사무용 의자', '메쉬 의자', '인체공학 의자']], ['논문 DB 구독', 'value', 0.03, ['무료 DB', '학회 DB', '출판사 DB', '통합 DB', '전 세계 DB']], ['스캐너', 'fame', 0.03, ['복사기', '복합기', '평판 스캐너', '고속 스캐너', '북 스캐너']]],
+    clean: [['방진복 보관함', 'seat', 0.4, ['옷걸이', '사물함', '보관함', '에어샤워', '자동 보관실']], ['클린 벤치', 'mult', 0.08, ['간이 벤치', '클린 벤치', '층류 벤치', '정밀 벤치', '초정밀 벤치']], ['증착 장비', 'mult', 0.15, ['수동 증착기', '열 증착기', '스퍼터', 'CVD', '원자층 증착기']], ['공조 설비', 'mult', 0.1, ['공기청정기', '헤파 필터', '클래스 10000 공조', '클래스 1000 공조', '클래스 10 공조']], ['측정 장비', 'mult', 0.1, ['돋보기', '광학 측정기', '표면 프로파일러', '전자 현미경', '원자간력 현미경']]],
+    bigequip: [['운영 인력석', 'seat', 0.4, ['간이 책상', '운영 책상', '모니터링 책상', '제어실', '통합 관제실']], ['제어 컴퓨터', 'mult', 0.1, ['노트북', '데스크톱', '산업용 PC', '제어 서버', '실시간 제어 시스템']], ['핵심 장비', 'mult', 0.2, ['중고 장비', '보급형 장비', '신형 장비', '맞춤 장비', '세계 유일 장비']], ['예약 시스템', 'mult', 0.1, ['종이 장부', '화이트보드 일정표', '엑셀 시트', '예약 웹', '자동 스케줄러']], ['안전 설비', 'mult', 0.06, ['소화기', '안전 표지', '비상 샤워', '가스 감지기', '통합 안전 시스템']]],
+    global: [['화상 회의실', 'seat', 0.4, ['노트북 카메라', '웹캠', '회의용 카메라', '화상 회의실', '홀로그램 회의실']], ['공동 서버', 'mult', 0.15, ['공유 드라이브', '클라우드 폴더', '공동 서버', '국제 클라우드', '전용 회선']], ['통역 지원', 'mult', 0.1, ['번역기', '통역 아르바이트', '번역 소프트웨어', '전문 통역사', '동시통역 부스']], ['방문 연구원 숙소', 'mult', 0.08, ['게스트하우스', '원룸', '기숙사', '서비스드 아파트', '레지던스']], ['공유 책상', 'mult', 0.06, ['접이식 책상', '공유 책상', '핫데스크', '코워킹 라운지', '라운지 오피스']]],
   };
   const EQUIP_MAX = 10, EQUIP_UNLOCK = [1, 1, 5, 10, 25], EQUIP_MUL = [2, 3, 5, 8, 12];
+  // 장비 단계: 레벨 1·3·5·8·10에서 1~5단계가 되고 모습이 바뀐다. 단계가 하나 오를 때마다 그 장비 효과 +10%
+  const EQ_STAGE_LV = [1, 3, 5, 8, 10];
+  const eqGrade = (l) => { let g = -1; EQ_STAGE_LV.forEach((t, i) => { if (l >= t) g = i; }); return g; };
+  const eqStageBonus = (g) => (g <= 0 ? 1 : 1 + 0.1 * g);
+  // 방 인테리어: 방 레벨에 따라 바닥·벽·조명이 바뀐다(모습만 바뀜)
+  const STYLES = [
+    { lv: 1, name: '낡은 방', desc: '시멘트 바닥과 빛바랜 벽' },
+    { lv: 10, name: '깔끔한 방', desc: '타일 바닥, 흰 벽, 창문 두 개' },
+    { lv: 25, name: '아늑한 방', desc: '원목·카펫 바닥, 액자, 화분, 천장 조명' },
+    { lv: 50, name: '세련된 방', desc: '광택 바닥, 벽 패널, 간접 조명' },
+    { lv: 100, name: '최첨단 방', desc: '대리석 바닥, 유리 벽, 금색 몰딩' },
+  ];
+  const roomStyle = (l) => { let g = 0; STYLES.forEach((x, i) => { if (l >= x.lv) g = i; }); return g; };
   const EQ_N = 5;
   // 장비 레벨에 따른 모습 단계: 0개(-1), Lv 1~3(0), 4~6(1), 7~9(2), 10(3)
-  const eqGrade = (l) => (l <= 0 ? -1 : l >= 10 ? 3 : l >= 7 ? 2 : l >= 4 ? 1 : 0);
 
   // 대학 본관(메인 건물): 클래시 오브 클랜의 마을회관처럼 교수실 최대 레벨과 새 방을 정한다.
   // 작은 나라 지방 사립대에서 시작해 세계적 명문대가 되는 것이 최종 목표다. 승격은 공사 대기열을 쓰고 시간이 걸린다.
@@ -162,10 +174,14 @@
       week: keep.week || { key: '', papers: 0, claimed: {} },
       ally: keep.ally || { id: null, nick: '', donated: {}, weekDonated: 0, helpGiven: 0, helps: {} },
       allyTech: keep.allyTech || {}, lifeFame: keep.lifeFame || 0,
+      col: keep.col || { covers: {}, alumni: {}, visitors: {}, photos: {} }, colPity: keep.colPity || 0, colNew: keep.colNew || 0,
+      gems: keep.gems || 0, daily: keep.daily || { day: '', streak: 0, claimed: '', ads: 0, adBuild: 0, adBoost: 0 },
+      shop: keep.shop || { starter: false, noAds: false, subUntil: '', purchases: [] }, subActive: false, deco: keep.deco || {},
     };
     st.cards.assign = {}; // 새 연구실이라 배치는 다시 한다
     ROOMS.forEach((r) => { st.rooms[r.id] = r.build === 0 ? 1 : 0; st.equip[r.id] = [0, 0, 0, 0, 0]; });
     hireFree(st); hireFree(st);
+    if (!st.col.photos[0]) st.col.photos[0] = 1; // 지방 사립대 기념사진
     return st;
   }
   function hireFree(st) {
@@ -198,7 +214,7 @@
   const eqLv = (st, id, i) => (st.equip[id] || [])[i] || 0;
   const eqLook = (st, id, i) => { const g = eqGrade(eqLv(st, id, i)); return g < 0 ? null : EQUIP[id][i][3][g]; };
   function eqSum(st, id, kind) {
-    return (EQUIP[id] || []).reduce((a, e, i) => a + (e[1] === kind ? e[2] * eqLv(st, id, i) : 0), 0);
+    return (EQUIP[id] || []).reduce((a, e, i) => a + (e[1] === kind ? e[2] * eqLv(st, id, i) * eqStageBonus(eqGrade(eqLv(st, id, i))) : 0), 0);
   }
   const eqAll = (st, kind) => ROOMS.reduce((a, r) => a + eqSum(st, r.id, kind), 0);
   const buffMult = (st, target) => st.buffs.filter((b) => b.until > st.time && (b.target === target || b.target === 'all')).reduce((a, b) => a * b.mult, 1);
@@ -222,7 +238,7 @@
   const perStudent = (st, id) => room(id).rate * lv(st, id) * Math.pow(2, MILESTONES.filter((m) => lv(st, id) >= m).length) * (1 + eqSum(st, id, 'mult')) * cardMult(st, id);
   function stageA(st) {
     const s = seating(st);
-    const g = (1 + 0.1 * rlv(st, 'exp')) * (1 + 0.05 * tech(st, 'lab'));
+    const g = (1 + 0.1 * rlv(st, 'exp')) * (1 + 0.05 * tech(st, 'lab')) * (1 + colBonus(st, 'data'));
     return producers(st).reduce((a, r) => a + perStudent(st, r.id) * (s[r.id] || 0) * buffMult(st, r.id), 0) * g;
   }
   const capOf = (st, id) => room(id).cap * lv(st, id) * Math.pow(2, Math.floor(lv(st, id) / 10)) * Math.pow(1.6, st.tier - 1) * (1 + eqSum(st, id, 'mult')) * cardMult(st, id);
@@ -230,8 +246,8 @@
   const stageC = (st) => capOf(st, 'office') * buffMult(st, 'office') * (1 + 0.1 * rlv(st, 'admin')) * (1 + 0.05 * tech(st, 'office'));
   const comfort = (st) => Math.floor((3 + 2 * lv(st, 'lounge') + eqAll(st, 'comfort') + 2 * rlv(st, 'welfare')) * cardMult(st, 'lounge'));
   const mood = (st) => Math.max(0.35, Math.min(1, 1 - 0.07 * (st.students.length - comfort(st))));
-  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant'));
-  const fameMult = (st) => (1 + eqAll(st, 'fame')) * (1 + 0.1 * rlv(st, 'pr')) * (1 + 0.15 * (st.univ - 1)); // 좋은 대학일수록 논문이 주목받는다
+  const valueMult = (st) => Math.pow(CFG.tierValue, st.tier - 1) * (1 + CFG.libraryBonus * lv(st, 'library') + eqAll(st, 'value')) * (1 + CFG.laurelBonus * st.laurels) * (1 + 0.05 * tech(st, 'grant')) * (1 + colBonus(st, 'money') + colBonus(st, 'all'));
+  const fameMult = (st) => (1 + eqAll(st, 'fame')) * (1 + 0.1 * rlv(st, 'pr')) * (1 + 0.15 * (st.univ - 1)) * (1 + colBonus(st, 'fame') + colBonus(st, 'all')); // 좋은 대학일수록 논문이 주목받는다
   function flow(st) {
     const a = stageA(st), b = stageB(st), c = stageC(st), m = mood(st);
     const t = Math.min(a, b, c) * m;
@@ -284,18 +300,21 @@
       if (b.endAt > st.time) return true;
       if (b.room === 'univ') {
         st.univ = b.toLv;
+        gainPhoto(st, b.toLv - 1);
         note(st, 'univ', '대학이 ' + UNIVS[b.toLv].name + '(으)로 승격했다! 교수실을 Lv ' + UNIVS[b.toLv].cap + '까지 올릴 수 있다.');
         checkEnd(st);
         return false;
       }
       st.rooms[b.room] = b.toLv;
       note(st, 'build', room(b.room).name + (b.toLv === 1 ? ' 공사를 마쳤다!' : ' Lv ' + b.toLv + ' 대공사 완료! 효율 2배'));
+      dropCol(st, 'covers', 0.25);
       return false;
     });
     const r = st.research.active;
     if (r && r.endAt <= st.time) {
       st.research.lv[r.id] = r.toLv; st.research.active = null;
       note(st, 'research', RESEARCH[r.id].name + ' 연구 Lv ' + r.toLv + ' 완료!');
+      dropCol(st, 'covers', 0.35);
     }
   }
   function canUpgrade(st, id) {
@@ -426,14 +445,20 @@
   }
 
   // ---------- 일일 미션 ----------
-  function refreshDay(st, day) {
+  function refreshDay(st, day, yesterday, today) {
     if (st.missions.day !== day) st.missions = { day, prog: {}, claimed: {}, bonus: false };
+    if (st.daily.day !== day) {
+      st.daily.streak = st.daily.day && st.daily.day === yesterday ? st.daily.streak + 1 : 1;
+      st.daily.day = day; st.daily.ads = 0; st.daily.adBuild = 0; st.daily.adBoost = 0;
+    }
+    st.subActive = !!st.shop.subUntil && day <= st.shop.subUntil;
   }
   function track(st, id) { st.missions.prog[id] = (st.missions.prog[id] || 0) + 1; }
   const missionDone = (st, id) => (st.missions.prog[id] || 0) >= MISSIONS[id].goal;
   function claimMission(st, id) {
     if (!missionDone(st, id) || st.missions.claimed[id]) return false;
     st.missions.claimed[id] = true; st.tickets++;
+    dropCol(st, 'alumni', 0.5);
     const v = Math.max(100, flow(st).money * 300); st.money += v; st.totalMoney += v;
     return true;
   }
@@ -448,7 +473,7 @@
     conference: { name: '학회 시즌', text: '학회 발표가 호평을 받았다. 40초 동안 연구비 2배.', apply: (st) => st.buffs.push({ target: 'money', mult: 2, until: st.time + 40, src: '학회 시즌' }) },
   };
   function pickEvent(st) { const k = Object.keys(EVENTS); return k[Math.floor(rnd(st) * k.length)]; }
-  function applyEvent(st, id) { const v = EVENTS[id].apply(st); track(st, 'event'); note(st, 'event', EVENTS[id].text); return v; }
+  function applyEvent(st, id) { const v = EVENTS[id].apply(st); track(st, 'event'); note(st, 'event', EVENTS[id].text); dropCol(st, 'visitors', 0.4); return v; }
   function missEvent(st, id) { if (EVENTS[id].missed) { EVENTS[id].missed(st); note(st, 'event', '감사 대응을 놓쳤다. 1분 동안 교수실 속도가 절반.'); } }
 
   // ---------- 컨소시엄 ----------
@@ -496,10 +521,143 @@
     const g = WEEK_GOALS[i];
     if (!g || st.week.claimed[i] || teamPapers < g.papers) return false;
     st.week.claimed[i] = true; st.tickets += g.tickets;
+    dropCol(st, null, 1);
     const v = Math.max(500, flow(st).money * 60 * g.minutes); st.money += v; st.totalMoney += v;
     return true;
   }
   const power = (st) => st.tier * 1000 + Math.floor(Math.log10(1 + st.lifeFame) * 100) + st.laurels * 300;
+
+  // ---------- 연구실 도감 ----------
+  // 플레이로만 얻고 정년 퇴임해도 남는다. 항목마다 그 갈래 효과가 오르고, 다 모으면 세트 보너스.
+  const COLLECTION = {
+    covers: { name: '학술지 표지 논문', kind: 'fame', how: '학과 연구 완료 35%, 공사·대공사 완료 25%', set: 0.2, items: [['세포 그림 표지', 'c'], ['반도체 웨이퍼 표지', 'c'], ['은하 사진 표지', 'c'], ['단백질 구조 표지', 'c'], ['도시 지도 데이터 표지', 'c'], ['로봇 팔 표지', 'c'], ['양자 칩 표지', 'r'], ['뇌 지도 표지', 'r'], ['기후 모델 표지', 'r'], ['창간 특집호 표지', 'e'], ['올해의 논문 표지', 'e'], ['100주년 기념호 표지', 'l']] },
+    alumni: { name: '졸업생 소식', kind: 'money', how: '일일 미션 보상 받기 50%', set: 0.2, items: [['중소기업 연구원', 'c'], ['스타트업 개발자', 'c'], ['공공기관 연구원', 'c'], ['고등학교 과학 교사', 'c'], ['중견기업 엔지니어', 'c'], ['박사후연구원', 'c'], ['대기업 연구소', 'r'], ['국책 연구소 선임', 'r'], ['스타트업 창업', 'r'], ['교수 임용', 'e'], ['해외 대학 교수', 'e'], ['세계적 학술상 수상', 'l']] },
+    visitors: { name: '연구실 방문객', kind: 'data', how: '돌발 이벤트 처리 40%', set: 0.2, items: [['견학 온 고등학생', 'c'], ['과학 기자', 'c'], ['다른 대학 교수', 'c'], ['장비 영업사원', 'c'], ['총장', 'r'], ['해외 석학', 'r'], ['기업 연구소장', 'r'], ['장관급 인사', 'e'], ['다큐멘터리 촬영팀', 'e'], ['살아있는 전설', 'l']] },
+    photos: { name: '대학 기념사진', kind: 'all', how: '대학 승격 때 확정', set: 0.1, items: [['지방 사립대 정문', 'c'], ['지방 거점 국립대 본관', 'r'], ['수도권 종합대 시계탑', 'r'], ['서울 명문 사립대 졸업식', 'e'], ['세계적 명문대 돔', 'l']] },
+  };
+  const COL_W = { c: 55, r: 30, e: 12, l: 3 }; // 갈래 안에서 등급이 뽑힐 비중
+  const COL_BONUS = { c: 0.01, r: 0.02, e: 0.04, l: 0.08 };
+  const COL_PITY = 4; // 중복이 4번 이어지면 다음은 그 갈래에서 아직 없는 항목
+  const COL_DUP_GEMS = 5;
+  const colCount = (st, g) => Object.keys(st.col[g] || {}).length;
+  const colTotal = (g) => COLLECTION[g].items.length;
+  const colDone = (st, g) => colCount(st, g) >= colTotal(g);
+  function colBonus(st, kind) {
+    if (!st.col) return 0;
+    return Object.keys(COLLECTION).filter((g) => COLLECTION[g].kind === kind).reduce((a, g) => a + COLLECTION[g].items.reduce((b, it, i) => b + (st.col[g][i] ? COL_BONUS[it[1]] : 0), 0) + (colDone(st, g) ? COLLECTION[g].set : 0), 0);
+  }
+  // 항목 하나가 나올 확률(%): 그 등급 비중 ÷ 등급 안 항목 수
+  function colRate(g, i) {
+    const items = COLLECTION[g].items, r = items[i][1];
+    const rs = Object.keys(COL_W).filter((k) => items.some((it) => it[1] === k));
+    const tw = rs.reduce((a, k) => a + COL_W[k], 0);
+    return (COL_W[r] / tw / items.filter((it) => it[1] === r).length) * 100;
+  }
+  function dropCol(st, group, chance) {
+    if (rnd(st) >= chance) return null;
+    const groups = ['covers', 'alumni', 'visitors'];
+    const g = group || groups[Math.floor(rnd(st) * groups.length)];
+    const items = COLLECTION[g].items;
+    let idx;
+    if (st.colPity >= COL_PITY && !colDone(st, g)) {
+      const missing = items.map((_, i) => i).filter((i) => !st.col[g][i]);
+      idx = missing[Math.floor(rnd(st) * missing.length)];
+    } else {
+      const rs = Object.keys(COL_W).filter((k) => items.some((it) => it[1] === k));
+      let x = rnd(st) * rs.reduce((a, k) => a + COL_W[k], 0), r = rs[0];
+      for (const k of rs) { if (x < COL_W[k]) { r = k; break; } x -= COL_W[k]; }
+      const pool = items.map((_, i) => i).filter((i) => items[i][1] === r);
+      idx = pool[Math.floor(rnd(st) * pool.length)];
+    }
+    return giveCol(st, g, idx);
+  }
+  function giveCol(st, g, idx) {
+    const it = COLLECTION[g].items[idx], isNew = !st.col[g][idx];
+    st.col[g][idx] = (st.col[g][idx] || 0) + 1;
+    if (isNew) {
+      st.colPity = 0; st.colNew++;
+      note(st, 'collect', '[' + COLLECTION[g].name + '] ' + RARITY[it[1]].name + ' 「' + it[0] + '」을(를) 도감에 넣었다! (' + colCount(st, g) + '/' + colTotal(g) + ')' + (colDone(st, g) ? ' 세트 완성!' : ''));
+    } else {
+      st.colPity++; st.gems += COL_DUP_GEMS;
+      note(st, 'collect', '[' + COLLECTION[g].name + '] 「' + it[0] + '」 중복. 발전기금 +' + COL_DUP_GEMS);
+    }
+    return { group: g, idx, isNew };
+  }
+  function gainPhoto(st, idx) { if (!st.col.photos[idx]) giveCol(st, 'photos', idx); }
+
+  // ---------- 상점 (BM 시뮬레이션: 실제 결제·광고 없음) ----------
+  // 발전기금(유료 재화)은 시간 단축·선지급·캠퍼스 장식에만 쓴다. 모집권(뽑기)과 도감은 결제로 팔지 않는다.
+  const ATTEND = [10, 10, 20, 20, 30, 30, 60];
+  const AD_LIMITS = { total: 10, build: 5, boost: 5 };
+  const PRODUCTS = {
+    starter: { name: '신임 교수 패키지', price: 1200, desc: '발전기금 100 + 캠퍼스 분수대 (1회)' },
+    noads: { name: '광고 제거', price: 4400, desc: '광고 없이 광고 보상을 바로 받는다. 하루 한도는 같다 (1회)' },
+    sub: { name: '연구년 정기구독', price: 5500, desc: '30일 동안 출석 때 발전기금 +20, 방치 보상 효율 50%→100%, 최대 8→12시간' },
+    g60: { name: '발전기금 60', price: 1200, desc: '' },
+    g330: { name: '발전기금 330', price: 5900, desc: '10% 더' },
+    g700: { name: '발전기금 700', price: 12000, desc: '17% 더' },
+  };
+  const DECOS = {
+    fountain: { name: '분수대', cost: 80, desc: '본관 앞마당에 물줄기가 오른다' },
+    cherry: { name: '벚꽃길', cost: 60, desc: '캠퍼스 나무가 벚나무로 바뀐다' },
+    statue: { name: '설립자 동상', cost: 120, desc: '본관 옆에 동상이 선다' },
+    lamps: { name: '캠퍼스 가로등', cost: 100, desc: '연구동 둘레에 가로등이 켜진다' },
+    gate: { name: '정문 아치', cost: 150, desc: '캠퍼스 입구에 아치형 정문이 생긴다' },
+  };
+  const ADVANCE_GEMS = 30; // 연구비 2시간 치 바로 받기
+  const attendReady = (st) => !!st.daily.day && st.daily.claimed !== st.daily.day;
+  const attendReward = (st) => ATTEND[(Math.max(1, st.daily.streak) - 1) % 7] + (st.subActive ? 20 : 0);
+  function claimAttend(st) {
+    if (!attendReady(st)) return 0;
+    const v = attendReward(st); st.gems += v; st.daily.claimed = st.daily.day;
+    if (((Math.max(1, st.daily.streak) - 1) % 7) + 1 === 7) st.tickets += 1;
+    return v;
+  }
+  function adLeft(st, kind) {
+    const total = AD_LIMITS.total - st.daily.ads;
+    return Math.max(0, Math.min(total, AD_LIMITS[kind] - (kind === 'build' ? st.daily.adBuild : st.daily.adBoost)));
+  }
+  // 광고 보상: build = 진행 중인 공사·연구 하나를 15분 줄임, boost = 30분 동안 연구비 2배
+  function adReward(st, kind, reqId) {
+    if (adLeft(st, kind) <= 0) return false;
+    if (kind === 'build') {
+      const t = timerOf(st, reqId); if (!t) return false;
+      t.endAt = Math.max(st.time, t.endAt - 900); st.daily.adBuild++; finishTimers(st);
+    } else { st.daily.adBoost++; st.buffs.push({ target: 'money', mult: 2, until: st.time + 1800, src: '연구 지원금 광고' }); }
+    st.daily.ads++;
+    return true;
+  }
+  function timerOf(st, reqId) { return st.builds.find((b) => b.reqId === reqId) || (st.research.active && st.research.active.reqId === reqId ? st.research.active : null); }
+  // 즉시 완료: 남은 1분마다 발전기금 1 (최소 1)
+  const finishCost = (st, reqId) => { const t = timerOf(st, reqId); return t ? Math.max(1, Math.ceil((t.endAt - st.time) / 60)) : 0; };
+  function finishNow(st, reqId) {
+    const t = timerOf(st, reqId), c = finishCost(st, reqId);
+    if (!t || st.gems < c) return false;
+    st.gems -= c; t.endAt = st.time; finishTimers(st);
+    return true;
+  }
+  function spendAdvance(st) {
+    if (st.gems < ADVANCE_GEMS) return false;
+    st.gems -= ADVANCE_GEMS;
+    const v = Math.max(1000, flow(st).money * 7200); st.money += v; st.totalMoney += v;
+    return v;
+  }
+  function buyDeco(st, id) {
+    const d = DECOS[id]; if (!d || st.deco[id] || st.gems < d.cost) return false;
+    st.gems -= d.cost; st.deco[id] = true;
+    return true;
+  }
+  function mockBuy(st, sku, today, subEnd) {
+    const p = PRODUCTS[sku]; if (!p) return false;
+    if ((sku === 'starter' && st.shop.starter) || (sku === 'noads' && st.shop.noAds)) return false;
+    if (sku === 'starter') { st.shop.starter = true; st.gems += 100; st.deco.fountain = true; }
+    else if (sku === 'noads') st.shop.noAds = true;
+    else if (sku === 'sub') { st.shop.subUntil = subEnd; st.subActive = true; }
+    else st.gems += { g60: 60, g330: 330, g700: 700 }[sku];
+    st.shop.purchases.push({ sku, price: p.price, day: today });
+    return true;
+  }
+  const spent = (st) => st.shop.purchases.reduce((a, x) => a + x.price, 0);
 
   // ---------- 승진과 정년 ----------
   const nextNeed = (st) => (st.tier < LAST ? CFG.fameNeed[st.tier + 1] : Infinity);
@@ -508,32 +666,37 @@
     if (!canPromote(st)) return false;
     st.tier++; st.promotedAt.push({ tier: st.tier, time: st.time });
     st.tickets += 2;
+    dropCol(st, null, 1);
     checkEnd(st);
     return true;
   }
   const laurelReward = (st) => 3 + Math.min(5, Math.floor(Math.log10(Math.max(1, st.fame / CFG.fameNeed[LAST])) * 2));
   function retire(st) {
     if (!st.ended) return null;
-    const keep = { laurels: st.laurels + laurelReward(st), runs: st.runs + 1, cards: st.cards, tickets: st.tickets, missions: st.missions, week: st.week, ally: st.ally, allyTech: st.allyTech, lifeFame: st.lifeFame };
+    const keep = { laurels: st.laurels + laurelReward(st), runs: st.runs + 1, cards: st.cards, tickets: st.tickets, missions: st.missions, week: st.week, ally: st.ally, allyTech: st.allyTech, lifeFame: st.lifeFame, col: st.col, colPity: st.colPity, colNew: st.colNew, gems: st.gems, daily: st.daily, shop: st.shop, deco: st.deco };
     return newGame(keep);
   }
 
   // 앱을 닫아 둔 시간: 최대 8시간, 효율 50%. 공사·연구 타이머는 그대로 흐른다.
   function offline(st, seconds) {
     const raw = typeof seconds === 'number' && isFinite(seconds) ? seconds : 0;
-    const s = Math.min(Math.max(0, raw), CFG.offlineCapH * 3600);
+    const capH = st.subActive ? 12 : CFG.offlineCapH, eff = st.subActive ? 1 : CFG.offlineEff;
+    const s = Math.min(Math.max(0, raw), capH * 3600);
     const before = { money: st.totalMoney, fame: st.fame };
     if (s > 0 && !st.ended) {
       st.buffs = [];
       const n = 40, dt = s / n;
-      for (let i = 0; i < n; i++) { gain(st, flow(st), dt, CFG.offlineEff); st.time += dt; finishTimers(st); }
+      for (let i = 0; i < n; i++) { gain(st, flow(st), dt, eff); st.time += dt; finishTimers(st); }
     }
     // 오프라인 동안에도 실제 시간은 흐르므로, 상한을 넘긴 시간만큼 타이머만 더 진행한다
     if (raw > s) { st.time += raw - s; finishTimers(st); }
-    return { seconds: s, capped: raw > CFG.offlineCapH * 3600, money: st.totalMoney - before.money, fame: st.fame - before.fame };
+    return { seconds: s, capped: raw > capH * 3600, capH, eff, money: st.totalMoney - before.money, fame: st.fame - before.fame };
   }
 
   return {
+    COLLECTION, COL_W, COL_BONUS, COL_PITY, COL_DUP_GEMS, colCount, colTotal, colDone, colBonus, colRate, dropCol, giveCol,
+    ATTEND, AD_LIMITS, PRODUCTS, DECOS, ADVANCE_GEMS, attendReady, attendReward, claimAttend, adLeft, adReward, finishCost, finishNow, spendAdvance, buyDeco, mockBuy, spent,
+    EQ_STAGE_LV, eqStageBonus, STYLES, roomStyle,
     CFG, TIERS, LAST, ROOMS, MILESTONES, EQUIP, EQUIP_MAX, EQUIP_UNLOCK, EQ_N, UNIVS, UNIV_MAX, MAXLV, eqGrade, eqLook, placeName, canUpgradeUniv, upgradeUniv, RESEARCH, RARITY, CARDS, CARD_PITY, MISSIONS, ALLY_TECH, WEEK_GOALS, HELP_MAX, GRADES, EVENTS, fmt, fmtTime,
     newGame, migrate, tick, flow, room, lv, unlocked, built, seats, seating, maxStudents, perStudent, capOf, comfort, mood, valueMult, maxLevel, building, buildSlots, bigWorkSec,
     upCost, hireCost, canUpgrade, upgrade, canHire, hire, encourage, eqLv, eqCost, canEquip, upgradeEquip, cardMult,

@@ -39,6 +39,18 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
 .badge span { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); }
 .ticket { border: 2px solid var(--gold); color: var(--gold); background: var(--card); padding: 2px 10px; font-weight: 600; cursor: pointer; }
+.ticket.gem { border-color: var(--good); color: var(--good); }
+.stage { display: inline-block; font-size: 0.72rem; font-weight: 700; border: 1px solid currentColor; padding: 0 5px; margin-left: 4px; vertical-align: 1px; }
+.stage.g0 { color: var(--muted); } .stage.g1 { color: var(--ink); } .stage.g2 { color: var(--accent); } .stage.g3 { color: var(--epic); } .stage.g4 { color: var(--gold); }
+.stagebar { display: inline-flex; gap: 2px; vertical-align: middle; } .stagebar i { width: 14px; height: 6px; background: var(--soft); border: 1px solid var(--line); } .stagebar i.on { background: var(--accent); border-color: var(--accent); }
+.colgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 5px; }
+.coli { border: 1px solid var(--line); padding: 5px 7px; font-size: 0.78rem; display: grid; gap: 1px; min-height: 58px; }
+.coli b { font-size: 0.84rem; }
+.coli.missing { background: var(--soft); color: var(--muted); }
+.coli.l { border: 2px solid var(--gold); } .coli.e { border: 2px solid var(--epic); }
+.week7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; font-size: 0.74rem; text-align: center; }
+.week7 span { border: 1px solid var(--line); padding: 3px 0; } .week7 span.on { background: var(--good); color: #fff; border-color: var(--good); } .week7 span.today { outline: 2px solid var(--gold); }
+.mockbar { border: 2px dashed var(--stamp); color: var(--stamp); padding: 4px 8px; font-size: 0.8rem; font-weight: 600; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
 .stat { background: var(--card); border: 1px solid var(--line); padding: 8px 12px; display: grid; gap: 2px; min-width: 0; }
@@ -102,7 +114,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
 /* 패널 */
 .side { display: grid; gap: 10px; min-width: 0; align-content: start; }
-.tabs { display: flex; border-bottom: 2px solid var(--ink); overflow-x: auto; }
+.tabs { display: flex; flex-wrap: wrap; border-bottom: 2px solid var(--ink); }
 .tabs button { border: 0; background: transparent; padding: 7px 10px; cursor: pointer; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.92rem; }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
 .tabs button .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--stamp); margin-left: 4px; vertical-align: 2px; }
@@ -167,6 +179,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   <header class="top">
     <h1 class="brand">랩실 운영하기 <small>교수가 되어 랩실을 운영하라</small></h1>
     <div class="topr">
+      <button class="ticket gem num" id="gemBtn" aria-label="발전기금, 상점 탭 열기">기금 <span id="gems">0</span></button>
       <button class="ticket num" id="ticketBtn" aria-label="연구원 모집권, 연구원 탭 열기">🎫 <span id="tickets">0</span></button>
       <div class="badge"><b id="univName">지방 사립대</b><span id="tierName">조교수</span></div>
     </div>
@@ -184,7 +197,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   <div class="main">
     <section aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
       <div class="mapbox" id="mapbox">
-        <div class="mapscroll" id="mapscroll"><svg class="map" id="map" viewBox="-40 -370 880 910" role="img" aria-label="대학 본관과 연구실 아이소메트릭 지도"></svg></div>
+        <div class="mapscroll" id="mapscroll"><svg class="map" id="map" viewBox="-40 -400 880 940" role="img" aria-label="대학 본관과 연구실 아이소메트릭 지도"></svg></div>
         <span class="maptip">본관이나 방을 눌러 업그레이드하세요. 폰에서는 지도를 좌우로 밀어 보세요.</span>
       </div>
       <div class="flow num" id="flow"></div>
@@ -198,6 +211,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <button role="tab" data-tab="lab" id="tab-lab" aria-selected="false">학과 연구</button>
         <button role="tab" data-tab="cards" id="tab-cards" aria-selected="false">연구원</button>
         <button role="tab" data-tab="mission" id="tab-mission" aria-selected="false">미션</button>
+        <button role="tab" data-tab="col" id="tab-col" aria-selected="false">도감</button>
+        <button role="tab" data-tab="shop" id="tab-shop" aria-selected="false">상점</button>
         <button role="tab" data-tab="ally" id="tab-ally" aria-selected="false">컨소시엄</button>
         <button role="tab" data-tab="rec" id="tab-rec" aria-selected="false">기록</button>
       </nav>
@@ -205,6 +220,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       <div id="panel-lab" class="card" hidden></div>
       <div id="panel-cards" class="card" hidden></div>
       <div id="panel-mission" class="card" hidden></div>
+      <div id="panel-col" class="card" hidden></div>
+      <div id="panel-shop" style="display:grid;gap:10px" hidden></div>
       <div id="panel-ally" style="display:grid;gap:10px" hidden></div>
       <div id="panel-rec" class="card" hidden></div>
     </aside>
@@ -252,85 +269,170 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   const SHIRTS = ['#6f8fb8', '#b5574f', '#4f8a6a', '#8a6fb8', '#c0873f', '#4f6684'];
   const RAR_COL = { c: '#9aa9bb', r: '#2346a3', e: '#8a4fd1', l: '#c79a2e' };
   // 장비 등급(0~3)별 색: 의자, 책상, 화면
-  const CHAIR = ['#9aa5b2', '#4f6684', '#2b3443', '#7a3b2e'];
-  const DESK = [['#c9b28e', '#a99470', '#998462'], ['#a58a62', '#8a7150', '#7a6244'], ['#e9edf2', '#c3ccd6', '#b3bdca'], ['#6b3a2a', '#552c1f', '#4a2619']];
-  const SCREEN = ['#9fb7d6', '#7fb2f0', '#6fd3e0', '#ffd98a'];
-  const chair = (x, y, g) => (g < 0 ? '' : '<rect x="' + (x - 5) + '" y="' + (y - 4) + '" width="10" height="4" fill="' + CHAIR[g] + '"/><rect x="' + (x + 3) + '" y="' + (y - 15) + '" width="3" height="12" rx="1" fill="' + CHAIR[g] + '"/>' + (g >= 2 ? '<rect x="' + (x + 2) + '" y="' + (y - 19) + '" width="5" height="5" rx="2" fill="' + CHAIR[g] + '"/>' : ''));
-  function monitor(x, y, g, n) { let s = ''; for (let i = 0; i < n; i++) { const mx = x + (i - (n - 1) / 2) * 15; s += '<rect x="' + (mx - 7) + '" y="' + (y - 11) + '" width="14" height="10" fill="#1d2735"/><rect class="glow" x="' + (mx - 6) + '" y="' + (y - 10) + '" width="12" height="7" fill="' + SCREEN[Math.max(0, g)] + '"/><rect x="' + (mx - 1) + '" y="' + (y - 1) + '" width="2" height="3" fill="#1d2735"/>'; } return s; }
+  // 장비 단계(0~4)별 색과 모양: 단계가 오를수록 의자 등받이가 높아지고 팔걸이·머리받침이 붙고, 책상은 합판 → 철제 → 원목 → 흰 전동 → 마호가니
+  const CHAIR = ['#b3bac3', '#8a96a5', '#4f6684', '#2b3443', '#7a3b2e'];
+  const DESK = [['#d8c7a5', '#b9a682', '#a8966f'], ['#c3cbd4', '#9aa5b2', '#8a96a5'], ['#a58a62', '#8a7150', '#7a6244'], ['#eef1f5', '#c3ccd6', '#b3bdca'], ['#6b3a2a', '#552c1f', '#4a2619']];
+  const SCREEN = ['#9fb7d6', '#8fb0e0', '#7fb2f0', '#6fd3e0', '#ffd98a'];
+  function chair(x, y, g) {
+    if (g < 0) return '';
+    const c = CHAIR[g], back = 10 + g * 2;
+    let s = '<rect x="' + (x - 5) + '" y="' + (y - 4) + '" width="10" height="4" rx="' + (g >= 2 ? 1.5 : 0) + '" fill="' + c + '"/><rect x="' + (x + 3) + '" y="' + (y - 3 - back) + '" width="' + (g >= 3 ? 4 : 3) + '" height="' + back + '" rx="1" fill="' + c + '"/>';
+    if (g >= 2) s += '<path d="M' + (x - 4) + ' ' + y + ' l-2 4 M' + (x + 4) + ' ' + y + ' l2 4" stroke="#55657a" stroke-width="1.5"/>';
+    if (g >= 3) s += '<rect x="' + (x + 2) + '" y="' + (y - 7 - back) + '" width="6" height="5" rx="2" fill="' + c + '"/>';
+    if (g >= 4) s += '<rect x="' + (x - 6) + '" y="' + (y - 8) + '" width="2" height="5" fill="#d4a72c"/><rect x="' + (x + 7) + '" y="' + (y - 8) + '" width="2" height="5" fill="#d4a72c"/>';
+    return s;
+  }
+  function monitor(x, y, g, n) { let s = ''; for (let i = 0; i < n; i++) { const mx = x + (i - (n - 1) / 2) * 15, w = g >= 3 ? 16 : 14; s += '<rect x="' + (mx - w / 2) + '" y="' + (y - 11) + '" width="' + w + '" height="10" rx="' + (g >= 3 ? 1 : 0) + '" fill="#1d2735"/><rect class="glow" x="' + (mx - w / 2 + 1) + '" y="' + (y - 10) + '" width="' + (w - 2) + '" height="7" fill="' + SCREEN[Math.max(0, g)] + '"/><rect x="' + (mx - 1) + '" y="' + (y - 1) + '" width="2" height="3" fill="#1d2735"/>'; } return s; }
+  // 책상: 단계가 오르면 서랍, 다리, 금색 테두리가 붙는다
+  function desk(cx, cy, u0, v0, u1, v1, h, g) {
+    const d = DESK[Math.max(0, g)];
+    let s = box(cx, cy, u0, v0, u1, v1, h, d[0], d[1], d[2]);
+    if (g >= 2) { const a = P(cx, cy, u1, v0 + (v1 - v0) * 0.55, h * 0.7), b = P(cx, cy, u1, v1 - 0.03, h * 0.7); s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#00000040"/>'; }
+    if (g >= 4) s += '<polyline points="' + pts([P(cx, cy, u0, v1, h), P(cx, cy, u1, v1, h), P(cx, cy, u1, v0, h)]) + '" fill="none" stroke="#d4a72c" stroke-width="1.5"/>';
+    return s;
+  }
 
-  function furniture(id, cx, cy, L) {
-    const g = (i) => E.eqGrade(E.eqLv(st, id, i)); // 장비 등급: 없으면 -1
+  function furniture(id, cx, cy) {
+    const g = (i) => E.eqGrade(E.eqLv(st, id, i)); // 장비 단계 0~4, 없으면 -1
+    const G = (i) => Math.max(0, g(i));
+    const book = (i) => ['#b5574f', '#4f8a6a', '#2346a3', '#c0873f', '#8a6fb8'][i % 5];
     switch (id) {
       case 'office': {
-        const d = DESK[Math.max(0, g(0))], shelfH = 26 + Math.max(0, g(3)) * 8;
-        let s = box(cx, cy, -0.6, -0.75, 0.4, -0.5, shelfH, '#a58a62', '#8a7150', '#7a6244');
-        const books = 3 + Math.max(0, g(3)) * 2;
-        for (let i = 0; i < books; i++) { const q = P(cx, cy, -0.55 + i * (0.9 / books), -0.5, shelfH - 6); s += '<rect x="' + (q[0] - 2) + '" y="' + q[1] + '" width="4" height="9" fill="' + ['#b5574f', '#4f8a6a', '#2346a3', '#c0873f'][i % 4] + '"/>'; }
-        if (g(4) >= 0) { s += box(cx, cy, 0.55, -0.75, 0.85, -0.5, 30, '#d9dfe6', '#c3ccd6', '#b3bdca'); for (let i = 0; i <= g(4); i++) { const q = P(cx, cy, 0.62 + i * 0.06, -0.5, 18 + (i % 2) * 8); s += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="3" fill="#e0b030" stroke="#a86a00"/>'; } }
-        s += box(cx, cy, -0.2, -0.05, 0.5, 0.3, 18, d[0], d[1], d[2]);
-        const m = P(cx, cy, 0.15, 0.0, 18); s += monitor(m[0], m[1], g(2), g(2) < 0 ? 1 : [1, 2, 2, 3][g(2)]);
-        const pc = P(cx, cy, 0.0, 0.55); s += chair(pc[0] + 6, pc[1] + 2, Math.max(0, g(1))) + person(pc[0], pc[1] + 2, '#2c3e66', '', '#55555f', null, true);
+        // 책장: 단계마다 높아지고 책이 늘어난다. 5단계는 금색 저서 줄
+        const shelfH = 24 + G(3) * 7, shelf = g(3) >= 2 ? ['#8a6a46', '#73573a', '#664c33'] : ['#9aa5b2', '#7d8896', '#6b7684'];
+        let s = box(cx, cy, -0.6, -0.75, 0.4, -0.5, shelfH, shelf[0], shelf[1], shelf[2]);
+        const rows = 1 + (G(3) >= 2 ? 1 : 0) + (G(3) >= 4 ? 1 : 0), per = 3 + G(3);
+        for (let r = 0; r < rows; r++) for (let i = 0; i < per; i++) { const q = P(cx, cy, -0.55 + i * (0.9 / per), -0.5, shelfH - 6 - r * 12); s += '<rect x="' + (q[0] - 2) + '" y="' + q[1] + '" width="4" height="9" fill="' + (g(3) >= 4 && r === 0 ? '#d4a72c' : book(i + r)) + '"/>'; }
+        // 상패: 명패 → 진열장 → 훈장
+        if (g(4) >= 0) {
+          if (g(4) >= 3) s += box(cx, cy, 0.55, -0.75, 0.85, -0.5, 26 + g(4) * 4, '#d9dfe6', '#c3ccd6', '#b3bdca');
+          for (let i = 0; i <= g(4); i++) { const q = P(cx, cy, 0.6 + i * 0.05, -0.5, g(4) >= 3 ? 14 + (i % 2) * 10 : 18); s += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + (g(4) >= 4 && i === g(4) ? 4.5 : 3) + '" fill="#e0b030" stroke="#a86a00"/>'; }
+        }
+        s += desk(cx, cy, -0.2, -0.05, 0.5, 0.3, 18, G(0));
+        const m = P(cx, cy, 0.15, 0.0, 18); s += monitor(m[0], m[1], g(2), [1, 1, 2, 2, 3][G(2)]);
+        if (g(2) >= 3) s += box(cx, cy, 0.38, 0.05, 0.48, 0.25, 22, '#2d3646', '#202836', '#1a212d', 0) ;
+        const pc = P(cx, cy, 0.0, 0.55); s += chair(pc[0] + 6, pc[1] + 2, G(1)) + person(pc[0], pc[1] + 2, '#2c3e66', '', '#55555f', null, true);
         return s;
       }
       case 'meeting': {
-        const d = DESK[Math.max(0, g(0))];
-        let s = box(cx, cy, -0.45, -0.2, 0.45, 0.25, 14, d[0], d[1], d[2]);
-        [[-0.35, -0.42], [0.1, -0.42], [-0.65, 0.05], [0.62, 0]].forEach((p, i) => { const q = P(cx, cy, p[0], p[1]); s += chair(q[0] + 6, q[1] + 6, Math.max(0, g(1))) + person(q[0], q[1] + 6, SHIRTS[i], 'bob b' + (i + 1), null, null, true); });
-        const wb = g(2) >= 3 ? '#1d2735' : '#fdfdfb';
-        s += '<polygon points="' + pts([P(cx, cy, 0.97, -0.85, 56), P(cx, cy, 0.97, -0.15, 56), P(cx, cy, 0.97, -0.15, 24), P(cx, cy, 0.97, -0.85, 24)]) + '" fill="' + wb + '" stroke="#7d8896"/>';
-        s += '<polyline points="' + pts([P(cx, cy, 0.97, -0.75, 46), P(cx, cy, 0.97, -0.6, 36), P(cx, cy, 0.97, -0.45, 42), P(cx, cy, 0.97, -0.3, 32)]) + '" fill="none" stroke="' + (g(2) >= 3 ? '#6fd3e0' : '#2346a3') + '" stroke-width="2"/>';
-        if (g(3) >= 0) s += '<polygon class="glow" points="' + pts([P(cx, cy, -0.97, -0.6, 50), P(cx, cy, -0.97, 0.2, 50), P(cx, cy, -0.97, 0.2, 24), P(cx, cy, -0.97, -0.6, 24)]) + '" fill="' + SCREEN[g(3)] + '"/>';
-        if (g(4) >= 0) s += box(cx, cy, 0.55, 0.45, 0.75, 0.65, 12, '#55657a', '#45546a', '#3b485c');
+        let s = desk(cx, cy, -0.45 - G(0) * 0.04, -0.2, 0.45 + G(0) * 0.04, 0.25, 14, G(0));
+        const seatsN = 3 + Math.min(3, G(1));
+        [[-0.35, -0.42], [0.1, -0.42], [-0.65, 0.05], [0.62, 0], [-0.1, 0.5], [0.35, 0.5]].slice(0, seatsN).forEach((p, i) => { const q = P(cx, cy, p[0], p[1]); s += chair(q[0] + 6, q[1] + 6, G(1)) + person(q[0], q[1] + 6, SHIRTS[i], 'bob b' + ((i % 4) + 1), null, null, true); });
+        // 화이트보드: 이젤 → 벽걸이 → 대형 → 유리 → 전자 칠판
+        const wb = ['#fdfdfb', '#fdfdfb', '#fdfdfb', '#e6f4fb', '#1d2735'][G(2)], z1 = 44 + G(2) * 4, v0 = -0.8 - G(2) * 0.02, v1 = -0.3 + G(2) * 0.05;
+        s += '<polygon points="' + pts([P(cx, cy, 0.97, v0, z1), P(cx, cy, 0.97, v1, z1), P(cx, cy, 0.97, v1, 24), P(cx, cy, 0.97, v0, 24)]) + '" fill="' + wb + '" stroke="' + (G(2) >= 3 ? '#8a96a5' : '#7d8896') + '"/>';
+        s += '<polyline points="' + pts([P(cx, cy, 0.97, -0.75, 40), P(cx, cy, 0.97, -0.6, 32), P(cx, cy, 0.97, -0.45, 38), P(cx, cy, 0.97, -0.3, 30)]) + '" fill="none" stroke="' + (G(2) >= 4 ? '#6fd3e0' : '#2346a3') + '" stroke-width="2"/>';
+        if (g(3) >= 0) s += '<polygon class="glow" points="' + pts([P(cx, cy, -0.97, -0.6, 44 + g(3) * 3), P(cx, cy, -0.97, 0.1 + g(3) * 0.05, 44 + g(3) * 3), P(cx, cy, -0.97, 0.1 + g(3) * 0.05, 24), P(cx, cy, -0.97, -0.6, 24)]) + '" fill="' + SCREEN[g(3)] + '" stroke="#1d2735" stroke-width="' + (g(3) >= 3 ? 3 : 1) + '"/>';
+        if (g(4) >= 0) s += box(cx, cy, 0.55, 0.45, 0.75, 0.65, 10 + g(4) * 2, ['#cdd6e0', '#9aa5b2', '#55657a', '#2b3443', '#7a3b2e'][g(4)], '#45546a', '#3b485c');
         return s;
       }
       case 'lounge': {
-        const sofa = [['#c86b5a', '#a85646', '#984c3e'], ['#4f8a6a', '#3f7055', '#36604a'], ['#4f6684', '#3f5470', '#364862'], ['#8a6fb8', '#715a99', '#634f86']][Math.max(0, g(0))];
-        let s = box(cx, cy, -0.65, -0.35, 0.1, 0.0, 14, sofa[0], sofa[1], sofa[2]) + box(cx, cy, -0.65, -0.55, 0.1, -0.35, 26, sofa[0], sofa[1], sofa[2]);
-        s += box(cx, cy, 0.35, -0.8, 0.62, -0.52, 34, '#55657a', '#45546a', '#3b485c') + '<circle class="glow" cx="' + P(cx, cy, 0.48, -0.66, 34)[0] + '" cy="' + (P(cx, cy, 0.48, -0.66, 34)[1] + 8) + '" r="3" fill="' + (g(1) >= 0 ? '#ffb347' : '#8a96a5') + '"/>';
-        if (g(2) >= 0) s += box(cx, cy, 0.68, -0.8, 0.9, -0.55, 44, '#eef2f6', '#cdd6e0', '#bcc6d2');
-        if (g(3) >= 0) s += box(cx, cy, -0.75, 0.25, -0.15, 0.6, 10, '#f2f5f8', '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.75, 0.25, -0.6, 0.6, 14, '#a0c4f2', '#86aedc', '#7aa0cc');
-        if (g(4) >= 0) { s += box(cx, cy, 0.0, 0.4, 0.3, 0.6, 10, '#3b4a6a', '#2d3a55', '#26314a'); const q = P(cx, cy, 0.15, 0.5, 10); s += '<rect class="glow" x="' + (q[0] - 8) + '" y="' + (q[1] - 12) + '" width="16" height="10" fill="' + SCREEN[g(4)] + '"/>'; }
+        const SOFA = [['#a89a8a', '#8f8273', '#7f7365'], ['#c86b5a', '#a85646', '#984c3e'], ['#4f8a6a', '#3f7055', '#36604a'], ['#4f6684', '#3f5470', '#364862'], ['#8a6fb8', '#715a99', '#634f86']];
+        const so = SOFA[G(0)], len = 0.55 + G(0) * 0.08;
+        let s = box(cx, cy, -0.65, -0.35, -0.65 + len, 0.0, 14, so[0], so[1], so[2]) + box(cx, cy, -0.65, -0.55, -0.65 + len, -0.35, 22 + G(0) * 2, so[0], so[1], so[2]);
+        if (G(0) >= 3) s += box(cx, cy, -0.65, -0.35, -0.55, 0.0, 20, so[1], so[2], so[2]);
+        if (g(1) >= 0) { s += box(cx, cy, 0.35, -0.8, 0.62, -0.52, 20 + g(1) * 4, ['#cdd6e0', '#9aa5b2', '#55657a', '#2d3646', '#a86a00'][g(1)], '#45546a', '#3b485c'); s += '<circle class="glow" cx="' + P(cx, cy, 0.48, -0.66, 20 + g(1) * 4)[0] + '" cy="' + (P(cx, cy, 0.48, -0.66, 20 + g(1) * 4)[1] + 8) + '" r="3" fill="#ffb347"/>'; }
+        if (g(2) >= 0) s += box(cx, cy, 0.68, -0.8, 0.9, -0.55, 26 + g(2) * 6, g(2) >= 3 ? '#dbe9f8' : '#eef2f6', '#cdd6e0', '#bcc6d2') + (g(2) >= 3 ? '<rect class="glow" x="' + (P(cx, cy, 0.9, -0.68, 30)[0] - 1) + '" y="' + P(cx, cy, 0.9, -0.68, 30)[1] + '" width="3" height="12" fill="#ffd54a"/>' : '');
+        if (g(3) >= 0) s += box(cx, cy, -0.75, 0.25, -0.15, 0.6, 8 + g(3) * 2, '#f2f5f8', '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.75, 0.25, -0.6, 0.6, 12 + g(3) * 2, ['#cdd6e0', '#a0c4f2', '#a0c4f2', '#c3b8ea', '#e6c46a'][g(3)], '#86aedc', '#7aa0cc');
+        if (g(4) >= 0) { s += box(cx, cy, 0.0, 0.4, 0.3, 0.6, 8 + g(4) * 4, '#3b4a6a', '#2d3a55', '#26314a'); const q = P(cx, cy, 0.15, 0.5, 8 + g(4) * 4); s += '<rect class="glow" x="' + (q[0] - 6 - g(4) * 2) + '" y="' + (q[1] - 12) + '" width="' + (12 + g(4) * 4) + '" height="10" fill="' + SCREEN[g(4)] + '"/>'; }
         s += '<g class="tree"><rect x="' + (P(cx, cy, 0.5, 0.45)[0] - 2) + '" y="' + (P(cx, cy, 0.5, 0.45)[1] - 14) + '" width="4" height="10" fill="#7a5a3a"/><circle cx="' + P(cx, cy, 0.5, 0.45)[0] + '" cy="' + (P(cx, cy, 0.5, 0.45)[1] - 22) + '" r="11" fill="#4f9a5a"/></g>';
         return s;
       }
       case 'wetlab': {
-        const benchTop = ['#cdd6e0', '#f2f5f8', '#f2f5f8', '#e6f2ff'][Math.max(0, g(0))];
-        let s = box(cx, cy, -0.8, -0.65, 0.55, -0.3, 16, benchTop, '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.8, 0.2, 0.2, 0.55, 16, benchTop, '#cdd6e0', '#bcc6d2');
-        if (g(0) >= 2) s += box(cx, cy, 0.5, 0.0, 0.8, 0.6, 16, benchTop, '#cdd6e0', '#bcc6d2');
-        if (g(4) >= 0) s += box(cx, cy, 0.62, -0.8, 0.85, -0.45, 40 + g(4) * 4, '#dfe5ec', '#c3ccd8', '#b3bdca') + '<rect class="glow" x="' + (P(cx, cy, 0.85, -0.62, 28)[0] - 1) + '" y="' + P(cx, cy, 0.85, -0.62, 28)[1] + '" width="3" height="8" fill="' + SCREEN[g(4)] + '"/>';
-        const fl = 2 + Math.max(0, g(2));
-        [[-0.6, -0.48, '#7fd0b0'], [-0.3, -0.48, '#f2a0a0'], [0.0, -0.48, '#a0c4f2'], [-0.6, 0.38, '#f2d37a'], [-0.3, 0.38, '#c39bff']].slice(0, fl).forEach((f) => { const q = P(cx, cy, f[0], f[1], 16); s += '<path d="M' + (q[0] - 3) + ' ' + (q[1] - 14) + ' h6 v5 l5 9 h-16 l5 -9 z" fill="' + f[2] + '" stroke="#7d8896"/>'; });
-        if (g(3) >= 0) { const q = P(cx, cy, 0.3, -0.48, 16); const c = ['#55657a', '#2b3443', '#2346a3', '#8a4fd1'][g(3)]; s += '<path d="M' + (q[0] - 6) + ' ' + q[1] + ' h12 M' + q[0] + ' ' + q[1] + ' v-6 l6 -10 l3 2 l-5 9" stroke="' + c + '" stroke-width="3" fill="none"/><circle cx="' + (q[0] + 7) + '" cy="' + (q[1] - 17) + '" r="3" fill="' + c + '"/>'; }
+        const top = ['#cdd6e0', '#b8c2cc', '#f2f5f8', '#f7fbff', '#e6f2ff'][G(0)], side = G(0) >= 2 ? ['#cdd6e0', '#bcc6d2'] : ['#9aa5b2', '#8a96a5'];
+        let s = box(cx, cy, -0.8, -0.65, 0.55, -0.3, 16, top, side[0], side[1]) + box(cx, cy, -0.8, 0.2, 0.2, 0.55, 16, top, side[0], side[1]);
+        if (G(0) >= 3) s += box(cx, cy, 0.5, 0.0, 0.8, 0.6, 16, top, side[0], side[1]);
+        if (G(0) >= 4) s += '<polygon class="glow" points="' + pts([P(cx, cy, -0.8, -0.3, 16), P(cx, cy, 0.55, -0.3, 16), P(cx, cy, 0.55, -0.3, 13), P(cx, cy, -0.8, -0.3, 13)]) + '" fill="#7fd0f0"/>';
+        if (g(4) >= 0) s += box(cx, cy, 0.62, -0.8, 0.85, -0.45, 30 + g(4) * 6, g(4) >= 3 ? '#f2f5f8' : '#dfe5ec', '#c3ccd8', '#b3bdca') + '<rect class="glow" x="' + (P(cx, cy, 0.85, -0.62, 24)[0] - 1) + '" y="' + P(cx, cy, 0.85, -0.62, 24)[1] + '" width="3" height="' + (6 + g(4) * 2) + '" fill="' + SCREEN[g(4)] + '"/>';
+        const fl = 2 + G(2);
+        [[-0.65, -0.48, '#7fd0b0'], [-0.4, -0.48, '#f2a0a0'], [-0.15, -0.48, '#a0c4f2'], [-0.65, 0.38, '#f2d37a'], [-0.4, 0.38, '#c39bff'], [-0.15, 0.38, '#7fd0b0']].slice(0, fl).forEach((f, i) => {
+          const q = P(cx, cy, f[0], f[1], 16);
+          if (G(2) >= 3 && i % 2) s += '<rect x="' + (q[0] - 2) + '" y="' + (q[1] - 16) + '" width="4" height="16" rx="1" fill="#55657a"/><rect x="' + (q[0] - 1) + '" y="' + (q[1] - 13) + '" width="2" height="5" fill="' + f[2] + '"/>';
+          else s += '<path d="M' + (q[0] - 3) + ' ' + (q[1] - 14) + ' h6 v5 l5 9 h-16 l5 -9 z" fill="' + f[2] + '" stroke="#7d8896"/>';
+        });
+        if (g(3) >= 0) { const q = P(cx, cy, 0.3, -0.48, 16), c = ['#8a96a5', '#55657a', '#2b3443', '#2346a3', '#8a4fd1'][g(3)], k = 1 + g(3) * 0.12; s += '<g transform="translate(' + q[0] + ' ' + q[1] + ') scale(' + k + ')"><path d="M-6 0 h12 M0 0 v-6 l6 -10 l3 2 l-5 9" stroke="' + c + '" stroke-width="3" fill="none"/><circle cx="7" cy="-17" r="3" fill="' + c + '"/>' + (g(3) >= 3 ? '<circle class="glow" cx="0" cy="-6" r="2" fill="#7fd0b0"/>' : '') + '</g>'; }
         return s;
       }
       case 'server': {
         let s = '';
-        const n = Math.min(5, 2 + Math.max(0, g(0) + 1)), led = ['#6fd39a', '#5b8def', '#b56fe0', '#ffd54a'][Math.max(0, g(2))];
+        const n = Math.min(5, 1 + (g(0) + 1)), led = ['#6fd39a', '#6fd39a', '#5b8def', '#b56fe0', '#ffd54a'][G(2)], rack = G(0) >= 3 ? ['#1d2735', '#141c28', '#10161f'] : ['#2d3646', '#202836', '#1a212d'];
         for (let i = 0; i < n; i++) {
-          const u = -0.8 + i * 0.34; s += box(cx, cy, u, -0.78, u + 0.28, -0.45, 50, '#2d3646', '#202836', '#1a212d');
-          const q = P(cx, cy, u + 0.28, -0.6, 36); s += '<circle class="led" cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="' + led + '"/><circle class="led l2" cx="' + q[0] + '" cy="' + (q[1] + 8) + '" r="2" fill="#ffd54a"/><circle class="led" cx="' + q[0] + '" cy="' + (q[1] + 16) + '" r="2" fill="' + led + '"/>';
+          const u = -0.8 + i * 0.34; s += box(cx, cy, u, -0.78, u + 0.28, -0.45, 38 + G(0) * 4, rack[0], rack[1], rack[2]);
+          const q = P(cx, cy, u + 0.28, -0.6, 30 + G(0) * 2); s += '<circle class="led" cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="' + led + '"/><circle class="led l2" cx="' + q[0] + '" cy="' + (q[1] + 8) + '" r="2" fill="#ffd54a"/>' + (G(2) >= 2 ? '<circle class="led" cx="' + q[0] + '" cy="' + (q[1] + 16) + '" r="2" fill="' + led + '"/>' : '');
         }
-        if (g(3) >= 1) s += box(cx, cy, 0.6, 0.3, 0.85, 0.6, 30, '#dbe9f8', '#b8cde4', '#a6bed8');
-        const d = DESK[Math.max(0, g(1))]; s += box(cx, cy, -0.2, 0.2, 0.4, 0.45, 14, d[0], d[1], d[2]);
-        const m = P(cx, cy, 0.1, 0.3, 14); s += monitor(m[0], m[1], g(1), 1);
+        if (g(3) >= 2) s += box(cx, cy, 0.6, 0.3, 0.85, 0.6, 24 + g(3) * 3, '#dbe9f8', '#b8cde4', '#a6bed8') + (g(3) >= 4 ? '<path d="M' + P(cx, cy, 0.6, 0.45, 20)[0] + ' ' + P(cx, cy, 0.6, 0.45, 20)[1] + ' L' + P(cx, cy, -0.45, -0.45, 20)[0] + ' ' + P(cx, cy, -0.45, -0.45, 20)[1] + '" stroke="#5b8def" stroke-width="2" stroke-dasharray="4 3"/>' : '');
+        else if (g(3) >= 0) { const q = P(cx, cy, 0.7, 0.45); s += '<circle cx="' + q[0] + '" cy="' + (q[1] - 14) + '" r="7" fill="none" stroke="#8a96a5" stroke-width="2"/><line x1="' + q[0] + '" y1="' + (q[1] - 7) + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke="#8a96a5" stroke-width="2"/>'; }
+        if (g(4) >= 2) s += box(cx, cy, 0.62, -0.3, 0.85, -0.05, 16 + g(4) * 3, '#2d3646', '#202836', '#1a212d');
+        s += desk(cx, cy, -0.2, 0.2, 0.4, 0.45, 14, G(1));
+        const m = P(cx, cy, 0.1, 0.3, 14); s += monitor(m[0], m[1], g(1), G(1) >= 2 ? 2 : 1);
         return s;
       }
       case 'library': {
         let s = '';
-        [[-0.8, -0.8], [-0.35, -0.8], [0.1, -0.8]].slice(0, 2 + (g(0) >= 0 ? 1 : 0)).forEach((p, i) => { s += box(cx, cy, p[0], p[1], p[0] + 0.4, p[1] + 0.22, 48, '#8a6a46', '#73573a', '#664c33'); for (let k = 0; k < 4; k++) { const q = P(cx, cy, p[0] + 0.05 + k * 0.08, p[1] + 0.22, 36 - (k % 2) * 14); s += '<rect x="' + q[0] + '" y="' + (q[1] - 9) + '" width="4" height="9" fill="' + SHIRTS[(i + k) % 6] + '"/>'; } });
-        const d = DESK[Math.max(0, g(1))]; s += box(cx, cy, -0.2, 0.1, 0.45, 0.42, 12, d[0], d[1], d[2]);
-        const q = P(cx, cy, 0.1, 0.6); s += chair(q[0] + 6, q[1] + 4, Math.max(0, g(2))) + person(q[0], q[1] + 4, '#8a6fb8', 'bob', null, null, true);
+        const shelf = G(0) >= 2 ? ['#8a6a46', '#73573a', '#664c33'] : ['#9aa5b2', '#7d8896', '#6b7684'], sh = 36 + G(0) * 4;
+        [[-0.8, -0.8], [-0.35, -0.8], [0.1, -0.8], [0.55, -0.8]].slice(0, 2 + Math.min(2, g(0) + 1)).forEach((p, i) => { s += box(cx, cy, p[0], p[1], p[0] + 0.4, p[1] + 0.22, sh, shelf[0], shelf[1], shelf[2]); for (let k = 0; k < 4; k++) { const q = P(cx, cy, p[0] + 0.05 + k * 0.08, p[1] + 0.22, sh - 12 - (k % 2) * 14); s += '<rect x="' + q[0] + '" y="' + (q[1] - 9) + '" width="4" height="9" fill="' + SHIRTS[(i + k) % 6] + '"/>'; } });
+        s += desk(cx, cy, -0.2, 0.1, 0.45, 0.42, 12, G(1));
+        if (g(3) >= 0) { const m = P(cx, cy, 0.1, 0.2, 12); s += monitor(m[0], m[1], g(3), 1); }
+        if (g(4) >= 0) s += box(cx, cy, -0.8, 0.3, -0.5, 0.6, 12 + g(4) * 3, '#eef2f6', '#cdd6e0', '#bcc6d2');
+        const q = P(cx, cy, 0.1, 0.6); s += chair(q[0] + 6, q[1] + 4, G(2)) + person(q[0], q[1] + 4, '#8a6fb8', 'bob', null, null, true);
         return s;
       }
-      case 'clean': return box(cx, cy, -0.75, -0.55, 0.65, -0.22, 18, '#ffffff', '#dfe5ec', '#cfd7e0') + box(cx, cy, -0.75, 0.2, 0.2, 0.52, 18, '#ffffff', '#dfe5ec', '#cfd7e0') +
-        '<polygon class="glow" points="' + pts([P(cx, cy, -0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 56), P(cx, cy, -0.9, -0.9, 56)]) + '" fill="#9cc3f0"/>' +
-        (g(2) >= 0 ? box(cx, cy, 0.4, 0.15, 0.75, 0.55, 30 + g(2) * 6, '#e6edf5', '#cdd6e0', '#bcc6d2') : '');
-      case 'bigequip': { const q = P(cx, cy, -0.1, -0.2), core = SCREEN[Math.max(0, g(2))]; return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 4) + '" rx="60" ry="28" fill="#00000020"/><ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="56" ry="26" fill="#8a7fb0"/><rect x="' + (q[0] - 56) + '" y="' + (q[1] - 52) + '" width="112" height="52" fill="#a497cf"/><path d="M' + (q[0] - 56) + ' ' + (q[1] - 30) + ' h112" stroke="#8a7fb0" stroke-width="3"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="56" ry="26" fill="#c3b8ea"/><ellipse class="glow" cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="22" ry="10" fill="' + core + '"/>'; }
-      case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 2) + '" rx="26" ry="8" fill="#00000022"/><circle cx="' + q[0] + '" cy="' + (q[1] - 32) + '" r="27" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 27) + ' ' + (q[1] - 32) + ' h54 M' + q[0] + ' ' + (q[1] - 59) + ' v54" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 44) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + box(cx, cy, 0.2, 0.0, 0.8, 0.35, 14, '#c9b28e', '#a99470', '#998462') + '<rect class="glow" x="' + (P(cx, cy, 0.5, 0.0, 14)[0] - 10) + '" y="' + (P(cx, cy, 0.5, 0.0, 14)[1] - 20) + '" width="20" height="13" fill="#7fb2f0" stroke="#2c5d8a"/>'; }
+      case 'clean': {
+        let s = box(cx, cy, -0.75, -0.55, 0.65, -0.22, 18, '#ffffff', '#dfe5ec', '#cfd7e0') + box(cx, cy, -0.75, 0.2, 0.2, 0.52, 18, '#ffffff', '#dfe5ec', '#cfd7e0');
+        s += '<polygon class="glow" points="' + pts([P(cx, cy, -0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 56), P(cx, cy, -0.9, -0.9, 56)]) + '" fill="' + ['#cfd7e0', '#bcd3ee', '#9cc3f0', '#8ab4f8', '#ffe08a'][G(3)] + '"/>';
+        if (g(2) >= 0) s += box(cx, cy, 0.4, 0.15, 0.75, 0.55, 24 + g(2) * 6, g(2) >= 3 ? '#e6edf5' : '#cdd6e0', '#b3bdca', '#a6b0bd') + (g(2) >= 2 ? '<rect class="glow" x="' + (P(cx, cy, 0.75, 0.35, 20)[0] - 1) + '" y="' + P(cx, cy, 0.75, 0.35, 20)[1] + '" width="3" height="8" fill="' + SCREEN[g(2)] + '"/>' : '');
+        if (g(4) >= 0) { const q = P(cx, cy, -0.3, -0.38, 18); s += '<rect x="' + (q[0] - 5) + '" y="' + (q[1] - 12 - g(4) * 2) + '" width="10" height="' + (12 + g(4) * 2) + '" fill="#55657a"/><rect class="glow" x="' + (q[0] - 3) + '" y="' + (q[1] - 10 - g(4) * 2) + '" width="6" height="4" fill="' + SCREEN[g(4)] + '"/>'; }
+        return s;
+      }
+      case 'bigequip': { const q = P(cx, cy, -0.1, -0.2), core = SCREEN[G(2)], body = ['#8a96a5', '#8a7fb0', '#a497cf', '#b5a9e0', '#d4c46a'][G(2)]; return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 4) + '" rx="60" ry="28" fill="#00000020"/><ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="56" ry="26" fill="#8a7fb0"/><rect x="' + (q[0] - 56) + '" y="' + (q[1] - 52) + '" width="112" height="52" fill="' + body + '"/><path d="M' + (q[0] - 56) + ' ' + (q[1] - 30) + ' h112" stroke="#8a7fb0" stroke-width="3"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="56" ry="26" fill="#c3b8ea"/><ellipse class="glow" cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="' + (16 + G(2) * 4) + '" ry="' + (7 + G(2) * 2) + '" fill="' + core + '"/>' + (g(1) >= 0 ? desk(cx, cy, 0.45, 0.3, 0.85, 0.6, 14, g(1)) : ''); }
+      case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 2) + '" rx="26" ry="8" fill="#00000022"/><circle cx="' + q[0] + '" cy="' + (q[1] - 32) + '" r="27" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 27) + ' ' + (q[1] - 32) + ' h54 M' + q[0] + ' ' + (q[1] - 59) + ' v54" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 44) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + desk(cx, cy, 0.2, 0.0, 0.8, 0.35, 14, G(4)) + '<rect class="glow" x="' + (P(cx, cy, 0.5, 0.0, 14)[0] - 10 - G(0) * 2) + '" y="' + (P(cx, cy, 0.5, 0.0, 14)[1] - 20) + '" width="' + (20 + G(0) * 4) + '" height="13" fill="' + SCREEN[G(0)] + '" stroke="#2c5d8a"/>'; }
       default: return '';
     }
   }
   const SEATS = [[-0.45, -0.1], [0.05, -0.1], [-0.45, 0.72], [0.0, 0.72], [0.45, 0.35], [0.62, -0.15]];
+  // 방 껍데기: 방 레벨에 따라 바닥·벽·창·조명·소품이 단계적으로 좋아진다 (E.STYLES)
+  const WARM = { office: 1, meeting: 1, library: 1, lounge: 1 };
+  function roomShell(r, cx, cy, built, col, L, q) {
+    const [top, right, bottom, left] = q, sty = built ? E.roomStyle(L) : -1, warm = !!WARM[r.id];
+    const WALLS = { '-1': ['#d9dfe6', '#ced5de'], 0: ['#b9bec5', '#a6acb4'], 1: ['#d3dbe5', '#bfcad8'], 2: warm ? ['#e8dcc8', '#d9cbb3'] : ['#d6e0ea', '#c3cfdc'], 3: warm ? ['#efe4d2', '#ddd0ba'] : ['#dfe7ef', '#cbd5e1'], 4: ['#cfe8f7', '#b9dcf2'] };
+    const wc = WALLS[sty];
+    const lw = [left, top, [top[0], top[1] - WALL], [left[0], left[1] - WALL]], rw = [top, right, [right[0], right[1] - WALL], [top[0], top[1] - WALL]];
+    const on = (a, b2, t, z) => [a[0] + (b2[0] - a[0]) * t, a[1] + (b2[1] - a[1]) * t - z];
+    const quad = (a, b2, t0, t1, z0, z1) => pts([on(a, b2, t0, z0), on(a, b2, t1, z0), on(a, b2, t1, z1), on(a, b2, t0, z1)]);
+    let s = '<polygon points="' + pts(lw) + '" fill="' + wc[0] + '"' + (sty === 4 ? ' fill-opacity="0.8"' : '') + '/><polygon points="' + pts(rw) + '" fill="' + wc[1] + '"' + (sty === 4 ? ' fill-opacity="0.8"' : '') + '/>';
+    if (sty === 0) s += '<ellipse cx="' + on(left, top, 0.7, 12)[0] + '" cy="' + on(left, top, 0.7, 12)[1] + '" rx="9" ry="5" fill="#8a8f96" opacity="0.35"/><path d="M' + on(top, right, 0.2, 40) + ' l4 8 l-3 6 l5 9" stroke="#8a8f96" fill="none"/>';
+    if (sty >= 2 && sty < 4) { s += '<polygon points="' + quad(left, top, 0, 1, 0, 5) + '" fill="' + (warm ? '#8a6a46' : '#9aa5b2') + '"/><polygon points="' + quad(top, right, 0, 1, 0, 5) + '" fill="' + (warm ? '#73573a' : '#8a96a5') + '"/>'; }
+    if (sty === 3) for (let t = 0.1; t < 1; t += 0.16) { s += '<path d="M' + on(left, top, t, 5) + ' L' + on(left, top, t, WALL - 6) + ' M' + on(top, right, t, 5) + ' L' + on(top, right, t, WALL - 6) + '" stroke="#00000014"/>'; }
+    if (sty === 4) for (let t = 0.2; t < 1; t += 0.2) { s += '<path d="M' + on(left, top, t, 0) + ' L' + on(left, top, t, WALL) + ' M' + on(top, right, t, 0) + ' L' + on(top, right, t, WALL) + '" stroke="#8fb4cc" stroke-width="2"/>'; }
+    // 창문: 낡은 방은 작은 창 하나, 세련된 방부터 큰 창
+    if (built && sty < 4) {
+      const big = sty >= 3, small = sty === 0;
+      const win = (a, b2, t0, t1, z0, z1) => '<polygon points="' + quad(a, b2, t0, t1, z0, z1) + '" fill="#d9ecfb" stroke="' + (big ? '#55657a' : '#8a96a5') + '" stroke-width="1.5"/><path d="M' + on(a, b2, (t0 + t1) / 2, z0) + ' L' + on(a, b2, (t0 + t1) / 2, z1) + '" stroke="#8a96a5"/>';
+      if (r.id !== 'meeting') s += small ? win(left, top, 0.4, 0.55, 18, 30) : big ? win(left, top, 0.18, 0.72, 10, 37) : win(left, top, 0.3, 0.62, 14, 34);
+      if (!small && r.id !== 'server' && r.id !== 'library') s += big ? win(top, right, 0.3, 0.82, 10, 37) : win(top, right, 0.38, 0.7, 14, 34);
+    }
+    // 몰딩과 간접 조명
+    s += '<polyline points="' + pts([[left[0], left[1] - WALL], [top[0], top[1] - WALL], [right[0], right[1] - WALL]]) + '" fill="none" stroke="' + (sty === 4 ? '#d4a72c' : '#8a96a5') + '" stroke-width="4"/>';
+    if (sty >= 3) s += '<polyline class="glow" points="' + pts([[left[0], left[1] - WALL + 5], [top[0], top[1] - WALL + 5], [right[0], right[1] - WALL + 5]]) + '" fill="none" stroke="' + (sty === 4 ? '#ffe08a' : '#9fe0ff') + '" stroke-width="2"/>';
+    // 바닥
+    const floorFill = sty < 0 ? col[0] : sty === 0 ? '#d2d5d9' : sty === 1 ? col[0] : sty <= 3 ? (warm ? (r.id === 'lounge' ? '#b9cfa8' : '#d9b98c') : col[0]) : (warm ? '#f3f0ea' : '#eef6ff');
+    s += '<polygon class="floor" points="' + pts([top, right, bottom, left]) + '" fill="' + floorFill + '" stroke="' + (built ? '#8a96a5' : '#9aa9bb') + '" stroke-width="1.5"' + (built ? '' : ' stroke-dasharray="6 5"') + '/>';
+    if (sty === 0) s += '<path d="M' + P(cx, cy, -0.3, 0.2) + ' l20 6 l8 -4 l14 8" stroke="#a6acb4" fill="none"/>';
+    else if (sty >= 2 && warm && sty <= 3) { for (let i = -0.8; i < 0.9; i += 0.16) { const a1 = P(cx, cy, i, -0.94), a2 = P(cx, cy, i, 0.94); s += '<path d="M' + a1 + ' L' + a2 + '" stroke="' + (r.id === 'lounge' ? '#a8c096' : '#c4a274') + '" stroke-width="1"/>'; } }
+    else if (sty === 4 && warm) { s += '<path d="M' + P(cx, cy, -0.7, -0.2) + ' q30 10 50 -4 t60 8 M' + P(cx, cy, -0.2, 0.5) + ' q20 -6 40 4" stroke="#d9d3c7" fill="none" stroke-width="1.5"/>'; }
+    else { const tc = sty === 4 ? '#d7e6f5' : col[1]; for (let i = -0.75; i < 0.8; i += 0.25) { const a1 = P(cx, cy, i, -0.94), a2 = P(cx, cy, i, 0.94), b1 = P(cx, cy, -0.94, i), b2 = P(cx, cy, 0.94, i); s += '<path d="M' + a1 + ' L' + a2 + ' M' + b1 + ' L' + b2 + '" stroke="' + tc + '" stroke-width="1"/>'; } }
+    if (sty >= 3) s += '<polygon points="' + pts([P(cx, cy, -0.6, -0.9), P(cx, cy, -0.35, -0.9), P(cx, cy, 0.4, 0.9), P(cx, cy, 0.15, 0.9)]) + '" fill="#ffffff" opacity="0.18"/>';
+    // 소품: 아늑한 방부터 액자·화분, 최첨단 방은 금색 명판
+    if (sty >= 2) {
+      const f = quad(left, top, 0.62, 0.8, 18, 32);
+      if (r.id !== 'meeting') s += '<polygon points="' + f + '" fill="' + (warm ? '#c0873f' : '#2346a3') + '" stroke="' + (sty === 4 ? '#d4a72c' : '#55657a') + '" stroke-width="2"/>';
+      const pl = (u, v) => { const q2 = P(cx, cy, u, v); return '<rect x="' + (q2[0] - 4) + '" y="' + (q2[1] - 8) + '" width="8" height="8" fill="#a5634a"/><circle cx="' + q2[0] + '" cy="' + (q2[1] - 14) + '" r="7" fill="#4f9a5a"/><circle cx="' + (q2[0] - 4) + '" cy="' + (q2[1] - 18) + '" r="4" fill="#5fae6a"/>'; };
+      s += pl(-0.85, -0.85);
+      if (sty >= 3) s += pl(-0.85, 0.7);
+    }
+    if (sty === 4) { const np = quad(top, right, 0.05, 0.25, 26, 34); s += '<polygon points="' + np + '" fill="#d4a72c"/>'; }
+    return s;
+  }
   function scaffold(cx, cy, b, scale) {
     const k = scale || 1, pct = Math.max(0, Math.min(1, 1 - (b.endAt - st.time) / b.total));
     let s = '';
@@ -370,6 +472,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       s += box(cx, cy, half - 0.3, -0.45, half, -0.15, h + 50, c[0], c[1], c[2]) + box(cx, cy, -half, -0.45, -half + 0.3, -0.15, h + 50, c[0], c[1], c[2]); }
     // 국기 (지방 거점 국립대부터)
     if (u >= 2) { const f0 = P(cx, cy, half - 0.15, 0.3, h); s += '<line x1="' + f0[0] + '" y1="' + f0[1] + '" x2="' + f0[0] + '" y2="' + (f0[1] - 40) + '" stroke="#55657a" stroke-width="2"/><rect class="flag" x="' + f0[0] + '" y="' + (f0[1] - 40) + '" width="20" height="12" fill="' + ['', '', '#2346a3', '#2b7a4b', '#7a1f2b', '#a86a00'][u] + '"/>'; }
+    // 상점 장식: 분수대와 설립자 동상
+    if (st.deco.fountain) { const q = P(cx, cy, half * 0.65, 0.88); s += '<ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="22" ry="9" fill="#9aa5b2"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 2) + '" rx="18" ry="7" fill="#7fb2f0"/><path class="glow" d="M' + q[0] + ' ' + (q[1] - 2) + ' q-6 -18 0 -24 q6 6 0 24 M' + (q[0] - 8) + ' ' + (q[1] - 2) + ' q-2 -10 4 -14 M' + (q[0] + 8) + ' ' + (q[1] - 2) + ' q2 -10 -4 -14" stroke="#d9ecfb" stroke-width="2" fill="none"/>'; }
+    if (st.deco.statue) { const q = P(cx, cy, -half * 0.65, 0.88); s += box(cx, cy, -half * 0.65 - 0.08, 0.8, -half * 0.65 + 0.08, 0.96, 14, '#bfb6a6', '#a69d8e', '#958c7e') + '<path d="M' + (q[0] - 5) + ' ' + (q[1] - 14) + ' q0 -16 5 -16 q5 0 5 16 z" fill="#8a7a55"/><circle cx="' + q[0] + '" cy="' + (q[1] - 34) + '" r="5" fill="#8a7a55"/>'; }
     // 학생들이 정문 앞을 오간다
     for (let i = 0; i < Math.min(5, u + 1); i++) { const q = P(cx, cy, -0.5 + i * 0.25, 0.9); s += person(q[0], q[1], SHIRTS[i], 'bob b' + ((i % 4) + 1), null, i); }
     s += '</g>';
@@ -388,10 +493,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     s += '<polygon points="' + pts(bp) + '" fill="#c3ccd6"/>';
     const path0 = center(2.1, 2.1), path1 = center(2.7, 2.7);
     s += '<path d="M' + (path0[0] - 18) + ' ' + (path0[1] + 60) + ' L' + (path1[0] - 18) + ' ' + (path1[1] + 60) + ' L' + (path1[0] + 18) + ' ' + (path1[1] + 60) + ' L' + (path0[0] + 18) + ' ' + (path0[1] + 60) + ' Z" fill="#e3d6bd"/>';
-    [[-0.55, 1], [-0.55, 2.2], [2.55, 0.1], [2.55, 1.4], [0.8, 2.6], [-2.0, -0.4], [-0.4, -2.0], [1.0, -1.4], [-1.4, 1.0]].forEach((t, i) => { const c = center(t[0], t[1]); s += '<g class="tree" style="animation-delay:' + i * 0.6 + 's"><ellipse cx="' + c[0] + '" cy="' + (c[1] + 4) + '" rx="14" ry="5" fill="#00000022"/><rect x="' + (c[0] - 3) + '" y="' + (c[1] - 18) + '" width="6" height="20" fill="#7a5a3a"/><circle cx="' + c[0] + '" cy="' + (c[1] - 30) + '" r="17" fill="#5a9e5e"/><circle cx="' + (c[0] - 8) + '" cy="' + (c[1] - 24) + '" r="11" fill="#4f8f53"/></g>'; });
+    [[-0.55, 1], [-0.55, 2.2], [2.55, 0.1], [2.55, 1.4], [0.8, 2.6], [-2.0, -0.4], [-0.4, -2.0], [1.0, -1.4], [-1.4, 1.0]].forEach((t, i) => { const c = center(t[0], t[1]); s += '<g class="tree" style="animation-delay:' + i * 0.6 + 's"><ellipse cx="' + c[0] + '" cy="' + (c[1] + 4) + '" rx="14" ry="5" fill="#00000022"/><rect x="' + (c[0] - 3) + '" y="' + (c[1] - 18) + '" width="6" height="20" fill="#7a5a3a"/><circle cx="' + c[0] + '" cy="' + (c[1] - 30) + '" r="17" fill="' + (st.deco.cherry ? '#f4b6c8' : '#5a9e5e') + '"/><circle cx="' + (c[0] - 8) + '" cy="' + (c[1] - 24) + '" r="11" fill="' + (st.deco.cherry ? '#eb9db5' : '#4f8f53') + '"/></g>'; });
+    // 상점 장식: 가로등과 정문 아치
+    if (st.deco.lamps) [[-0.95, 0.4], [-0.95, 1.6], [0.4, 2.95], [1.6, 2.95], [2.95, 1.6], [2.95, 0.4]].forEach((t) => { const c = center(t[0], t[1]); s += '<line x1="' + c[0] + '" y1="' + c[1] + '" x2="' + c[0] + '" y2="' + (c[1] - 46) + '" stroke="#3b485c" stroke-width="3"/><circle class="glow" cx="' + c[0] + '" cy="' + (c[1] - 48) + '" r="6" fill="#ffe08a"/><ellipse cx="' + c[0] + '" cy="' + (c[1] + 2) + '" rx="10" ry="3" fill="#00000022"/>'; });
+    if (st.deco.gate) { const g0 = center(2.62, 2.62); const x = g0[0], y = g0[1] + 60; s += '<rect x="' + (x - 34) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><rect x="' + (x + 24) + '" y="' + (y - 58) + '" width="10" height="58" fill="#c9b28e"/><path d="M' + (x - 36) + ' ' + (y - 56) + ' q36 -28 72 0 v-8 q-36 -28 -72 0 z" fill="#a58a62"/><rect x="' + (x - 18) + '" y="' + (y - 76) + '" width="36" height="10" fill="#1b2838"/><text x="' + x + '" y="' + (y - 68) + '" text-anchor="middle" font-size="8" fill="#ffd54a" font-family="IBM Plex Sans KR, sans-serif">' + E.UNIVS[st.univ].name.slice(0, 6) + '</text>'; }
     return s;
   }
-  const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
+  const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.deco) + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
   let mapSig = '';
   function drawMap() {
     const seat = E.seating(st), f = E.flow(st);
@@ -411,20 +519,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const built = E.built(st, r.id), open = E.unlocked(st, r.id), b = E.building(st, r.id);
       const col = built ? ROOM_COLOR[r.id] : open ? ['#eef2f6', '#e3e9f0'] : ['#c9d1db', '#bcc5d0'];
       s += '<g class="plot' + (sel === r.id ? ' sel' : '') + '" data-id="' + r.id + '" tabindex="0" role="button" aria-label="' + r.name + (built ? ' 레벨 ' + L : open ? ' 공사 가능' : ' 잠김') + '">';
-      // 뒤쪽 벽 두 면(창문과 위쪽 몰딩)
-      const lw = [left, top, [top[0], top[1] - WALL], [left[0], left[1] - WALL]], rw = [top, right, [right[0], right[1] - WALL], [top[0], top[1] - WALL]];
-      s += '<polygon points="' + pts(lw) + '" fill="' + (built ? '#c4cedb' : '#d9dfe6') + '"/><polygon points="' + pts(rw) + '" fill="' + (built ? '#afbccc' : '#ced5de') + '"/>';
-      s += '<polyline points="' + pts([[left[0], left[1] - WALL], [top[0], top[1] - WALL], [right[0], right[1] - WALL]]) + '" fill="none" stroke="#8a96a5" stroke-width="4"/>';
+      s += roomShell(r, cx, cy, built, col, L, [top, right, bottom, left]);
       if (built) {
-        const wl = (a, b2, t0, t1, z0, z1) => { const p = (t, z) => [a[0] + (b2[0] - a[0]) * t, a[1] + (b2[1] - a[1]) * t - z]; return '<polygon points="' + pts([p(t0, z0), p(t1, z0), p(t1, z1), p(t0, z1)]) + '" fill="#d9ecfb" stroke="#8a96a5" stroke-width="1.5"/><line x1="' + p((t0 + t1) / 2, z0)[0] + '" y1="' + p((t0 + t1) / 2, z0)[1] + '" x2="' + p((t0 + t1) / 2, z1)[0] + '" y2="' + p((t0 + t1) / 2, z1)[1] + '" stroke="#8a96a5"/>'; };
-        if (r.id !== 'meeting') s += wl(left, top, 0.3, 0.62, 14, 34);
-        if (r.id !== 'server' && r.id !== 'library') s += wl(top, right, 0.38, 0.7, 14, 34);
-      }
-      s += '<polygon class="floor" points="' + pts([top, right, bottom, left]) + '" fill="' + col[0] + '" stroke="' + (built ? '#8a96a5' : '#9aa9bb') + '" stroke-width="1.5"' + (built ? '' : ' stroke-dasharray="6 5"') + '/>';
-      // 바닥 타일 줄
-      for (let i = -0.75; i < 0.8; i += 0.25) { const a1 = P(cx, cy, i, -0.94), a2 = P(cx, cy, i, 0.94), b1 = P(cx, cy, -0.94, i), b2 = P(cx, cy, 0.94, i); s += '<path d="M' + a1 + ' L' + a2 + ' M' + b1 + ' L' + b2 + '" stroke="' + col[1] + '" stroke-width="1"/>'; }
-      if (built) {
-        s += furniture(r.id, cx, cy, L);
+        s += furniture(r.id, cx, cy);
         if (r.role === 'A') { const n = Math.min(6, seat[r.id] || 0), cg = Math.max(0, E.eqGrade(E.eqLv(st, r.id, 1))); for (let i = 0; i < n; i++) { const q = P(cx, cy, SEATS[i][0], SEATS[i][1]); s += chair(q[0] + 6, q[1] + 4, cg) + person(q[0], q[1] + 4, SHIRTS[i % SHIRTS.length], 'bob b' + ((i % 4) + 1), null, null, true) + '<rect x="' + (q[0] - 5) + '" y="' + (q[1] - 12) + '" width="10" height="6" fill="#1d2735"/><rect class="glow" x="' + (q[0] - 4) + '" y="' + (q[1] - 11) + '" width="8" height="4" fill="#7fb2f0"/>'; } }
       } else if (!b) {
         s += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="15" font-weight="600" fill="#5a6879" font-family="IBM Plex Sans KR, sans-serif">' + (open ? '공사하기 · ' + fmt(E.upCost(st, r.id)) : '🔒 대학 ' + r.tier + '단계부터') + '</text>';
@@ -500,7 +597,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     return [['연구비 배율', '×' + E.valueMult(st).toFixed(1)]];
   }
   const EQ_DESC = { mult: (a) => '산출 +' + Math.round(a * 100) + '%', seat: (a) => '좌석 +' + a + '석', comfort: (a) => '휴게 정원 +' + a + '명', value: (a) => '연구비 +' + (a * 100).toFixed(1).replace(/\.0$/, '') + '%', fame: (a) => '명성 +' + Math.round(a * 100) + '%' };
-  const nextLookLv = (l) => (l < 1 ? 1 : l < 4 ? 4 : l < 7 ? 7 : l < 10 ? 10 : null);
+  EQ_DESC.seat = (a) => '좌석 +' + (Math.round(a * 10) / 10) + '석'; EQ_DESC.comfort = (a) => '휴게 정원 +' + (Math.round(a * 10) / 10) + '명';
+  const nextStageLv = (l) => E.EQ_STAGE_LV.find((t) => t > l) || null;
+  const stageBar = (g, n) => '<span class="stagebar" aria-hidden="true">' + Array.from({ length: n }, (_, i) => '<i class="' + (i <= g ? 'on' : '') + '"></i>').join('') + '</span>';
+  function interiorLine(id) {
+    const L = E.lv(st, id), g = E.roomStyle(L), x = E.STYLES[g], nx = E.STYLES[g + 1];
+    return '<div class="rowi"><div><div class="nm">인테리어 <span class="stage g' + g + '">' + (g + 1) + '단계</span> ' + x.name + ' ' + stageBar(g, E.STYLES.length) + '</div><div class="meta">' + x.desc + (nx ? ' · 방 Lv ' + nx.lv + '에 「' + nx.name + '」(' + nx.desc + ')' : ' · 최고 단계') + '</div></div><span></span></div>';
+  }
   function renderUniv() {
     const box = $('roomCard'), u = E.UNIVS[st.univ], b = E.building(st, 'univ'), c = E.canUpgradeUniv(st), nx = E.UNIVS[st.univ + 1];
     let h = '<h2>대학 본관 <small class="num">' + st.univ + '/' + E.UNIV_MAX + '단계</small></h2><p class="note">' + u.name + ' · ' + u.desc + '</p>' +
@@ -528,10 +631,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       '<button class="btn" id="up10Btn"' + (built && can === true && !big ? '' : ' disabled') + '><span class="t">×10 올리기</span><span class="s">대공사 전까지</span></button>' +
       '<button class="btn wide" id="cheerBtn"' + (built && !cd ? '' : ' disabled') + '><span class="t">독려하기</span><span class="s num">' + (cd ? '다시 독려까지 ' + cd + '초' : '15초 동안 이 방 2배') + '</span></button></div>';
     if (built) {
-      h += '<h3>가구·장비 <small>하나씩 따로 올린다</small></h3>';
+      h += interiorLine(sel) + '<h3>가구·장비 <small>단계가 오를수록 모습이 바뀌고 효과 +10%</small></h3>';
       E.EQUIP[sel].forEach((e, i) => {
-        const l = E.eqLv(st, sel, i), c = E.canEquip(st, sel, i), look = E.eqLook(st, sel, i), nl = nextLookLv(l);
-        h += '<div class="rowi"><div><div class="nm">' + e[0] + ' <span class="look">' + (look || '없음') + '</span></div><div class="pips num" aria-label="레벨 ' + l + '/' + E.EQUIP_MAX + '">' + '●'.repeat(l) + '○'.repeat(E.EQUIP_MAX - l) + '</div><div class="meta">레벨마다 ' + EQ_DESC[e[1]](e[2]) + (nl ? ' · Lv ' + nl + '에 「' + e[3][E.eqGrade(nl)] + '」' : '') + '</div></div><button class="btn" data-eq="' + i + '"' + (c === true ? '' : ' disabled') + '><span class="t num">' + (c === true || c === '연구비 부족' ? fmt(E.eqCost(st, sel, i)) : c) + '</span><span class="s">' + (l >= E.EQUIP_MAX ? '' : l ? '강화' : '들이기') + '</span></button></div>';
+        const l = E.eqLv(st, sel, i), c = E.canEquip(st, sel, i), look = E.eqLook(st, sel, i), nl = nextStageLv(l), g = E.eqGrade(l);
+        const total = e[2] * l * E.eqStageBonus(g);
+        h += '<div class="rowi"><div><div class="nm">' + e[0] + (g >= 0 ? ' <span class="stage g' + g + '">' + (g + 1) + '단계</span> <span class="look">' + look + '</span>' : ' <span class="look">없음</span>') + '</div><div class="num">' + stageBar(g, 5) + ' <span class="meta">Lv ' + l + '/' + E.EQUIP_MAX + '</span></div><div class="meta">' + (l ? '지금 ' + EQ_DESC[e[1]](total) + (g >= 1 ? ' (단계 보너스 ×' + E.eqStageBonus(g).toFixed(1) + ')' : '') : '레벨마다 ' + EQ_DESC[e[1]](e[2])) + (nl ? ' · Lv ' + nl + '에 ' + (E.eqGrade(nl) + 1) + '단계 「' + e[3][E.eqGrade(nl)] + '」' : ' · 최고 단계') + '</div></div><button class="btn" data-eq="' + i + '"' + (c === true ? '' : ' disabled') + '><span class="t num">' + (c === true || c === '연구비 부족' ? fmt(E.eqCost(st, sel, i)) : c) + '</span><span class="s">' + (l >= E.EQUIP_MAX ? '' : l ? '강화' : '들이기') + '</span></button></div>';
       });
       const cid = st.cards.assign[sel];
       h += '<h3>스타 연구원 <small>방 하나에 한 명</small></h3>';
@@ -603,6 +707,60 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('panel-mission').innerHTML = h;
     $('panel-mission').querySelectorAll('[data-ms]').forEach((b) => b.addEventListener('click', () => { if (E.claimMission(st, b.dataset.ms)) { save(); renderMission(); refresh(true); } }));
     $('msBonus').addEventListener('click', () => { if (E.claimMissionBonus(st)) { save(); renderMission(); refresh(true); } });
+  }
+
+  // ---------- 패널: 도감 ----------
+  const KIND_NAME = { fame: '명성', money: '연구비', data: '데이터 생산', all: '연구비·명성' };
+  function renderCol() {
+    st.colNew = 0;
+    const keys = Object.keys(E.COLLECTION), got = keys.reduce((a, g) => a + E.colCount(st, g), 0), all = keys.reduce((a, g) => a + E.colTotal(g), 0);
+    let h = '<h2>연구실 도감 <small class="num">' + got + '/' + all + '</small></h2><p class="note">플레이로만 모으고, 정년 퇴임해도 남는다. 결제로 파는 항목은 없다.</p>' +
+      '<p class="meta">항목 하나마다 그 갈래 효과가 일반 1% · 희귀 2% · 영웅 4% · 전설 8% 오르고, 갈래를 다 모으면 세트 보너스가 붙는다. 중복은 발전기금 ' + E.COL_DUP_GEMS + '으로 바뀌고, 중복이 ' + E.COL_PITY + '번 이어지면 다음은 아직 없는 항목이 확정이다 (지금 ' + st.colPity + '/' + E.COL_PITY + ').</p>';
+    keys.forEach((g) => {
+      const C = E.COLLECTION[g], b = C.items.reduce((a, it, i) => a + (st.col[g][i] ? E.COL_BONUS[it[1]] : 0), 0);
+      h += '<h3>' + C.name + ' <small class="num">' + E.colCount(st, g) + '/' + E.colTotal(g) + ' · ' + KIND_NAME[C.kind] + ' +' + Math.round(b * 100) + '%' + (E.colDone(st, g) ? ' + 세트 ' + Math.round(C.set * 100) + '%' : '') + '</small></h3><p class="meta">얻는 곳: ' + C.how + ' · 다 모으면 ' + KIND_NAME[C.kind] + ' +' + Math.round(C.set * 100) + '%</p><div class="colgrid">';
+      C.items.forEach((it, i) => { const n = st.col[g][i]; h += '<div class="coli ' + it[1] + (n ? '' : ' missing') + '"><span class="rar ' + it[1] + '">' + E.RARITY[it[1]].name + (g === 'photos' ? '' : ' · ' + E.colRate(g, i).toFixed(1) + '%') + '</span><b>' + (n ? it[0] : '???') + '</b>' + (n > 1 ? '<span class="meta num">×' + n + '</span>' : '') + '</div>'; });
+      h += '</div>';
+    });
+    $('panel-col').innerHTML = h;
+  }
+
+  // ---------- 패널: 상점 (BM 시뮬레이션) ----------
+  const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function renderShop() {
+    const box = $('panel-shop');
+    let h = '<div class="mockbar">시뮬레이션 상점입니다. 실제 결제나 광고는 일어나지 않습니다.</div>';
+    // 출석
+    const day = ((Math.max(1, st.daily.streak) - 1) % 7);
+    h += '<div class="card"><h2>출석 <small class="num">연속 ' + st.daily.streak + '일</small></h2><div class="week7 num">' + E.ATTEND.map((v, i) => '<span class="' + (i < day || (i === day && !E.attendReady(st)) ? 'on' : '') + (i === day ? ' today' : '') + '">' + (i + 1) + '일<br>' + v + (i === 6 ? '+🎫' : '') + '</span>').join('') + '</div>' +
+      '<button class="btn primary center" id="attendBtn"' + (E.attendReady(st) ? '' : ' disabled') + '><span class="t">' + (E.attendReady(st) ? '출석 보상 받기 · 발전기금 ' + E.attendReward(st) : '오늘은 받았다') + '</span></button></div>';
+    // 광고
+    const timers = E.helpRequests(st);
+    h += '<div class="card"><h2>광고 보상 <small class="num">오늘 ' + (E.AD_LIMITS.total - st.daily.ads) + '회 남음</small></h2><p class="meta">버튼을 눌러야만 광고가 나온다(가상).' + (st.shop.noAds ? ' 광고 제거를 사서 바로 받는다.' : '') + '</p>' +
+      '<div class="btns"><button class="btn" id="adBoost"' + (E.adLeft(st, 'boost') > 0 ? '' : ' disabled') + '><span class="t">연구비 2배 30분</span><span class="s num">오늘 ' + E.adLeft(st, 'boost') + '회</span></button><button class="btn" id="adBuild"' + (E.adLeft(st, 'build') > 0 && timers.length ? '' : ' disabled') + '><span class="t">공사·연구 15분 단축</span><span class="s num">' + (timers.length ? timers[0].label : '진행 중인 공사 없음') + '</span></button></div></div>';
+    // 발전기금 사용
+    h += '<div class="card"><h2>발전기금 쓰기 <small class="num">가진 기금 ' + st.gems + '</small></h2><p class="meta">발전기금은 시간 단축, 선지급, 캠퍼스 장식에만 쓴다. 모집권(뽑기)과 도감 항목은 팔지 않는다.</p>';
+    timers.forEach((t) => { const c = E.finishCost(st, t.reqId); h += '<div class="rowi"><div><div class="nm">' + t.label + '</div><div class="meta num">남은 시간 ' + fmtTime(t.endAt - st.time) + '</div></div><button class="btn gold" data-finish="' + t.reqId + '"' + (st.gems >= c ? '' : ' disabled') + '><span class="t num">기금 ' + c + '</span><span class="s">즉시 완료</span></button></div>'; });
+    h += '<div class="rowi"><div><div class="nm">연구비 선지급</div><div class="meta num">연구비 2시간 치(' + fmt(Math.max(1000, E.flow(st).money * 7200)) + ')를 바로 받는다</div></div><button class="btn gold" id="advBtn"' + (st.gems >= E.ADVANCE_GEMS ? '' : ' disabled') + '><span class="t num">기금 ' + E.ADVANCE_GEMS + '</span><span class="s">받기</span></button></div>';
+    h += '<h3>캠퍼스 장식 <small>모습만 바뀐다</small></h3>';
+    Object.keys(E.DECOS).forEach((id) => { const d = E.DECOS[id], own = st.deco[id]; h += '<div class="rowi"><div><div class="nm">' + d.name + '</div><div class="meta">' + d.desc + '</div></div><button class="btn gold" data-deco="' + id + '"' + (!own && st.gems >= d.cost ? '' : ' disabled') + '><span class="t num">' + (own ? '설치됨' : '기금 ' + d.cost) + '</span><span class="s">' + (own ? '' : '설치') + '</span></button></div>'; });
+    h += '</div>';
+    // 결제 상품 (가상)
+    h += '<div class="card"><h2>상품 <small>가상 결제</small></h2>';
+    Object.keys(E.PRODUCTS).forEach((sku) => { const p = E.PRODUCTS[sku], done = (sku === 'starter' && st.shop.starter) || (sku === 'noads' && st.shop.noAds), subOn = sku === 'sub' && st.subActive; h += '<div class="rowi"><div><div class="nm">' + p.name + '</div><div class="meta">' + (p.desc || '') + (subOn ? ' · ' + st.shop.subUntil + '까지 이용 중' : '') + '</div></div><button class="btn" data-sku="' + sku + '"' + (done ? ' disabled' : '') + '><span class="t num">' + (done ? '구매함' : p.price.toLocaleString('ko-KR') + '원') + '</span><span class="s">' + (subOn ? '연장' : done ? '' : '가상 구매') + '</span></button></div>'; });
+    h += '<p class="meta num">가상 구매 ' + st.shop.purchases.length + '건 · 합계 ' + E.spent(st).toLocaleString('ko-KR') + '원</p></div>';
+    box.innerHTML = h;
+    $('attendBtn').addEventListener('click', () => { const v = E.claimAttend(st); if (v) { say('출석 보상: 발전기금 +' + v); save(); refresh(true); } });
+    const watch = (kind, fn) => { if (st.shop.noAds) { fn(); return; } openModal('<h2>광고 시청 중</h2><p class="hand">(가상 광고 · 실제 광고는 없습니다)</p><p>3초 뒤 보상을 받는다.</p>', []); setTimeout(() => { showNext(); fn(); }, 3000); };
+    $('adBoost').addEventListener('click', () => watch('boost', () => { if (E.adReward(st, 'boost')) { say('연구 지원금! 30분 동안 연구비 2배.'); save(); refresh(true); } }));
+    $('adBuild').addEventListener('click', () => watch('build', () => { const t = E.helpRequests(st)[0]; if (t && E.adReward(st, 'build', t.reqId)) { say(t.label + ' 15분 단축!'); save(); refresh(true); } }));
+    box.querySelectorAll('[data-finish]').forEach((b) => b.addEventListener('click', () => { if (E.finishNow(st, b.dataset.finish)) { save(); refresh(true); } }));
+    $('advBtn').addEventListener('click', () => { const v = E.spendAdvance(st); if (v) { say('연구비 선지급 +' + fmt(v)); save(); refresh(true); } });
+    box.querySelectorAll('[data-deco]').forEach((b) => b.addEventListener('click', () => { if (E.buyDeco(st, b.dataset.deco)) { say('캠퍼스에 ' + E.DECOS[b.dataset.deco].name + '을(를) 설치했다.'); save(); refresh(true); } }));
+    box.querySelectorAll('[data-sku]').forEach((b) => b.addEventListener('click', () => {
+      const sku = b.dataset.sku, p = E.PRODUCTS[sku];
+      openModal('<h2>가상 구매</h2><p>' + p.name + ' · ' + p.price.toLocaleString('ko-KR') + '원</p><p class="meta">실제 결제는 일어나지 않습니다. BM 시험용 기록만 남습니다.</p>', [{ label: '가상으로 구매', primary: true, fn: () => { const end = sku === 'sub' ? (st.subActive && st.shop.subUntil > dayKey() ? (() => { const d = new Date(st.shop.subUntil); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10); })() : addDays(30)) : ''; if (E.mockBuy(st, sku, dayKey(), end)) { say(p.name + ' (가상) 구매 완료'); save(); refresh(true); } } }, { label: '취소' }]);
+    }));
   }
 
   // ---------- 패널: 컨소시엄 (claude.ai에서 열었을 때만) ----------
@@ -742,14 +900,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       '<button class="btn" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">이 기기의 진행이 지워집니다</span></button><div id="resetConfirm" hidden class="btns"><button class="btn" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div>';
     $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
     $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
-    $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 지방 사립대에 조교수로 부임했다.'); });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 지방 사립대에 조교수로 부임했다.'); });
   }
 
   // ---------- 화면 갱신 ----------
   function switchTab(t) {
     tab = t;
     document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'));
-    ['room', 'lab', 'cards', 'mission', 'ally', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== t; });
+    ['room', 'lab', 'cards', 'mission', 'col', 'shop', 'ally', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== t; });
     tabSig = ''; roomSig = '';
     renderTab(true);
   }
@@ -762,17 +920,20 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (force || rs + hs !== roomSig) { roomSig = rs + hs; renderRoom(); renderHire(); }
       return;
     }
-    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
+    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'col' ? JSON.stringify(st.col) + st.colPity : tab === 'shop' ? st.gems + JSON.stringify(st.daily) + JSON.stringify(st.shop) + JSON.stringify(st.deco) + st.builds.map((b) => b.reqId + Math.ceil((b.endAt - st.time) / 60)).join() + (st.research.active ? Math.ceil((st.research.active.endAt - st.time) / 60) : '') + Math.floor(Math.log10(1 + E.flow(st).money) * 10) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
     if (!force && sig === tabSig) return;
     tabSig = sig;
     if (tab === 'lab') renderLab();
     if (tab === 'cards') renderCards();
     if (tab === 'mission') renderMission();
+    if (tab === 'col') renderCol();
+    if (tab === 'shop') renderShop();
     if (tab === 'ally') renderAlly();
     if (tab === 'rec') renderRec();
   }
   document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
   $('ticketBtn').addEventListener('click', () => switchTab('cards'));
+  $('gemBtn').addEventListener('click', () => switchTab('shop'));
   const stepsHtml = (n, max, cls) => '<span class="steps ' + (cls || '') + '" aria-hidden="true">' + Array.from({ length: max }, (_, i) => '<i class="' + (i < n ? 'on' : '') + '"></i>').join('') + '</span>';
   function refresh(force) {
     const f = E.flow(st);
@@ -789,6 +950,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $('papers').textContent = Math.floor(st.papers).toLocaleString('ko-KR') + '편';
     $('laurelNote').textContent = st.laurels ? '월계관 ' + st.laurels + '개 (+' + Math.round(st.laurels * E.CFG.laurelBonus * 100) + '%)' : '';
     $('tickets').textContent = st.tickets;
+    $('gems').textContent = st.gems;
     $('univName').textContent = E.UNIVS[st.univ].name; $('tierName').textContent = E.TIERS[st.tier].name;
     const gs = st.univ + '/' + st.tier + '/' + st.ended;
     if ($('goal').dataset.s !== gs) { $('goal').dataset.s = gs; $('goal').innerHTML = '<b>최종 목표</b><span>세계적 명문대의 대가 랩실</span><span>대학 ' + stepsHtml(st.univ, E.UNIV_MAX, 'u') + ' ' + E.UNIVS[st.univ].name + '</span><span>직급 ' + stepsHtml(st.tier, E.LAST) + ' ' + E.TIERS[st.tier].name + '</span>' + (st.ended ? '<b style="color:var(--stamp)">달성!</b>' : ''); }
@@ -799,6 +961,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const dot = (id, on) => { const b = $(id); const has = b.querySelector('.dot'); if (on && !has) b.insertAdjacentHTML('beforeend', '<span class="dot" aria-label="새 소식"></span>'); if (!on && has) has.remove(); };
     dot('tab-mission', Object.keys(E.MISSIONS).some((k) => E.missionDone(st, k) && !st.missions.claimed[k]));
     dot('tab-cards', st.tickets > 0);
+    dot('tab-col', st.colNew > 0 && tab !== 'col');
+    dot('tab-shop', E.attendReady(st));
     renderTab(force);
     if (force || sigOf() !== mapSig) drawMap();
     drainNotes();
@@ -820,7 +984,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     openModal('<span class="bigstamp">전설</span><h2>세계적 명문대의 대가 랩실</h2><p class="hand">작은 나라 지방 사립대에서 여기까지</p><p>' + fmtTime(st.time) + ' 만에 살아있는 교과서가 되었고, 대학은 세계적 명문대가 되었다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 지방 사립대에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%. 스타 연구원·모집권·컨소시엄은 그대로 남습니다.</p>',
       [{ label: '정년 퇴임하고 새 연구실로', primary: true, fn: doRetire }, { label: '이대로 감상하기' }]);
   }
-  function doRetire() { const n = E.retire(st); if (!n) return; st = n; sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); save(); refresh(true); pushMe(true); say('새 지방 사립대에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); }
+  function doRetire() { const n = E.retire(st); if (!n) return; st = n; sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); save(); refresh(true); pushMe(true); say('새 지방 사립대에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); }
   $('promoteBtn').addEventListener('click', () => {
     if (st.ended) { showEnding(); return; }
     if (!E.promote(st)) return;
@@ -853,7 +1017,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (!(sec > 30)) return;
     const r = E.offline(st, sec);
     if (r.money <= 0) return;
-    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + fmtTime(r.seconds) + ' 동안 (효율 50%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다. 공사·연구 타이머도 그만큼 흘렀다.</p>' + (r.capped ? '<p class="meta">연구비·명성은 최대 8시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
+    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + fmtTime(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다. 공사·연구 타이머도 그만큼 흘렀다.</p>' + (r.capped ? '<p class="meta">연구비·명성은 최대 ' + r.capH + '시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
     save();
   }
 
@@ -863,7 +1027,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     if (!document.hidden && $('modal').hidden) { E.tick(st, dt); stepWalkers(dt); checkEvent(); }
     requestAnimationFrame(frame);
   }
-  setInterval(() => { E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); refresh(false); }, 250);
+  setInterval(() => { E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey()); refresh(false); }, 250);
   setInterval(save, 5000);
   window.addEventListener('pagehide', save);
   document.addEventListener('visibilitychange', () => {
@@ -875,7 +1039,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const saved = data && data.st ? data : load();
     const restored = saved && E.migrate(saved.st);
     st = restored || E.newGame();
-    E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey());
+    E.refreshDay(st, dayKey(), addDays(-1)); E.refreshWeek(st, weekKey());
     if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
     endShown = !!st.ended; // 이미 끝난 저장은 버튼으로만 엔딩을 다시 연다
     nextEventAt = st.time + 60;
