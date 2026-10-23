@@ -259,7 +259,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   // 앞에서 연 페이지가 많으면 브라우저가 메모리 부족으로 죽는다. 이 뒤로는 앞 페이지를 쓰지 않으니 닫는다
   for (const c of browser.contexts()) await c.close();
   { const ps = await page(undefined, JSON.stringify({ st: Object.assign(E.newGame(), { tier: E.LAST, ended: true, century: true, papers: 45, paperTitles: [E.FINAL_TITLE, '다른 논문'] }), at: Date.now() }));
-    await ps.waitForTimeout(300); while (await clickModal(ps, '받기') || await clickModal(ps, '닫기')) await ps.waitForTimeout(150);
+    await ps.waitForTimeout(300); for (let k = 0; k < 5 && !(await ps.isHidden('#modal')); k++) { if (!(await clickModal(ps, '받기')) && !(await clickModal(ps, '닫기'))) break; await ps.waitForTimeout(150); }
     ok('엔딩을 닫아도 재입학 버튼이 남는다', (await ps.textContent('#promoteBtn')).includes('재입학') && !(await ps.isHidden('#promoteBtn')));
     await ps.click('#promoteBtn'); await ps.waitForTimeout(200);
     ok('엔딩 제목은 세기의 연구', (await modalText(ps)).includes(E.FINAL_TITLE + '」이')); }
