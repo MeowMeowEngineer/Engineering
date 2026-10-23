@@ -253,8 +253,9 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('폰 너비 가로 스크롤 없음', (await p11.evaluate(() => document.documentElement.scrollWidth)) <= 400);
   { const g = E.newGame(); g.taps = 20; g.data = 1e3; const a1 = E.guide(g); g.skills.night = 1e9; const a2 = E.guide(g, { prof: true }); ok('가이드 엔진: 논문을 쓸 수 있으면 논문, 교수님이 지나가면 교수님', a1 && a1.kind === 'write' && a2 && a2.kind === 'prof', JSON.stringify([a1 && a1.kind, a2 && a2.kind])); }
   // QA 에이전트가 찾은 버그 회귀 검사
+  const fmtN = (n) => E.fmt(n);
   { const g = E.newGame(); g.buffs.push({ kind: 'prod', mult: 2, until: g.time + 1800, src: '연구 지원금' }); E.offline(g, 60); ok('자리를 비워도 버프가 남는다 (남은 시간만 줄어듦)', g.buffs.length === 1 && Math.round(g.buffs[0].until - g.time) === 1740); }
-  { const g = E.newGame(); g.tier = 3; g.data = 1e6; E.startProject(g, 'i1'); g.gens.lab = 300; const before = g.total; g.time = g.projects[0].endAt - 0.01; E.tick(g, 0.02); ok('과제 보상은 끝날 때의 생산 기준', g.total - before >= E.projReward(g, E.PROJECTS[0]) * 0.99); }
+  { const g = E.newGame(); g.tier = 3; g.data = 1e6; E.startProject(g, 'i1'); const gid = E.GENS[2].id; const atStart = g.projects[0].reward; g.gens[gid] = 300; g.time = g.projects[0].endAt - 0.01; const want = E.projReward(g, E.PROJECTS[0]); const before = g.total; E.tick(g, 0.02); ok('과제 보상은 끝날 때의 생산 기준', want > atStart * 2 && g.total - before >= want * 0.99, fmtN(atStart) + ' → ' + fmtN(want)); }
   { let okm = true; try { const m = E.migrate({ v: 2, col: null, gens: null, daily: null, buffs: null, papers: '5' }); E.tick(m, 1); E.refreshDay(m, '2026-10-23', '2026-10-22'); okm = m.papers === 5; } catch (e) { okm = false; } ok('깨진 저장본(null 칸, 문자열 숫자)도 열린다', okm); }
   // 앞에서 연 페이지가 많으면 브라우저가 메모리 부족으로 죽는다. 이 뒤로는 앞 페이지를 쓰지 않으니 닫는다
   for (const c of browser.contexts()) await c.close();
