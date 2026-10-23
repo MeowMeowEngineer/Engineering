@@ -4,39 +4,41 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Pen+Script&display=swap">
 <style>
-/* 레이아웃: 위에 연구실 지도(아이소메트릭), 넓은 화면에서는 오른쪽에 운영 패널. 폰에서는 지도 아래로 쌓는다. */
+/* 레이아웃: 위에 아이소메트릭 캠퍼스 지도(뒤쪽에 대학 본관), 넓은 화면에서는 오른쪽에 탭으로 나뉜 운영 패널. 폰에서는 지도 아래로 쌓는다. */
 :root {
   --paper: #eef2f6; --card: #ffffff; --line: #c8d4e0; --ink: #1b2838; --muted: #5a6879;
-  --accent: #2346a3; --accent-ink: #ffffff; --stamp: #c3303a; --good: #2b7a4b; --gold: #a86a00; --soft: #e5ecf5;
-  --map: #dfe7ef; --scrim: rgba(10, 16, 28, 0.55);
+  --accent: #2346a3; --accent-ink: #ffffff; --stamp: #c3303a; --good: #2b7a4b; --gold: #a86a00; --soft: #e5ecf5; --epic: #8a4fd1;
+  --sky: #cfe3f2; --scrim: rgba(10, 16, 28, 0.55);
   --font-display: "Black Han Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-hand: "Nanum Pen Script", "Apple SD Gothic Neo", cursive;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --paper: #0e1828; --card: #142238; --line: #2a3f5c; --ink: #e5edf7; --muted: #93a4b9;
-  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48;
-  --map: #182739; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
+  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48; --epic: #c39bff;
+  --sky: #13233a; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
 } }
 :root[data-theme="dark"] {
   --paper: #0e1828; --card: #142238; --line: #2a3f5c; --ink: #e5edf7; --muted: #93a4b9;
-  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48;
-  --map: #182739; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
+  --accent: #8eaeff; --accent-ink: #0e1828; --stamp: #ff6d75; --good: #6fd39a; --gold: #f0b552; --soft: #1b2d48; --epic: #c39bff;
+  --sky: #13233a; --scrim: rgba(0, 0, 0, 0.6); color-scheme: dark;
 }
 [hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
-.wrap { max-width: 1180px; margin: 0 auto; padding-block: 14px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 12px; }
+.wrap { max-width: 1220px; margin: 0 auto; padding-block: 14px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 12px; }
 .num { font-variant-numeric: tabular-nums; }
-button { font: inherit; color: inherit; }
-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button, select { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 16px; }
 .brand { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; }
 .brand small { display: block; font-family: var(--font-hand); font-size: 1.3rem; color: var(--muted); }
+.topr { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .badge { border: 2px solid var(--ink); background: var(--card); padding: 2px 10px; display: inline-flex; gap: 8px; align-items: baseline; }
 .badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
 .badge span { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); }
+.ticket { border: 2px solid var(--gold); color: var(--gold); background: var(--card); padding: 2px 10px; font-weight: 600; cursor: pointer; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
 .stat { background: var(--card); border: 1px solid var(--line); padding: 8px 12px; display: grid; gap: 2px; min-width: 0; }
@@ -46,37 +48,51 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .bar { height: 7px; background: var(--soft); border: 1px solid var(--line); }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 200ms; }
 
+.goal { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; background: var(--card); border: 1px solid var(--line); padding: 8px 12px; font-size: 0.86rem; }
+.goal b { font-family: var(--font-display); font-weight: 400; font-size: 1rem; }
+.steps { display: inline-flex; gap: 3px; vertical-align: middle; }
+.steps i { width: 18px; height: 8px; border: 1px solid var(--line); background: var(--soft); }
+.steps i.on { background: var(--accent); border-color: var(--accent); }
+.steps.u i.on { background: var(--gold); border-color: var(--gold); }
+
 .main { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 940px) { .main { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); } }
+@media (min-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; } .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow-y: auto; } }
 
 /* 지도 */
-.mapbox { position: relative; background: var(--map); border: 1px solid var(--line); overflow: hidden; }
+.mapbox { position: relative; background: linear-gradient(var(--sky), var(--paper)); border: 1px solid var(--line); overflow: hidden; }
 .mapscroll { overflow-x: auto; overscroll-behavior-x: contain; }
 .map { display: block; width: 100%; height: auto; touch-action: pan-x pan-y; }
-@media (max-width: 640px) { .map { width: 640px; max-width: none; } }
+@media (max-width: 680px) { .map { width: 680px; max-width: none; } }
 .plot { cursor: pointer; }
 .plot:focus-visible { outline: none; }
 .plot:focus-visible .floor, .plot.sel .floor { stroke: #2346a3; stroke-width: 4; }
-.plot:hover .floor { filter: brightness(1.05); }
-.sign rect { fill: #fdfdfb; stroke: #1b2838; stroke-width: 1.5; }
+.plot:hover .floor { filter: brightness(1.04); }
+.plot.sel .uni { filter: drop-shadow(0 0 6px #2346a3); }
+.sign rect.bg { fill: #fdfdfb; stroke: #1b2838; stroke-width: 1.5; }
 .sign text { font-family: "IBM Plex Sans KR", sans-serif; font-weight: 600; font-size: 13px; fill: #1b2838; }
+.sign .timer { fill: #a86a00; font-size: 11px; }
+.sign.big rect.bg { fill: #1b2838; } .sign.big text { fill: #ffd54a; font-size: 15px; }
 .tag rect { fill: #c3303a; } .tag text { fill: #fff; font-size: 11px; font-weight: 700; font-family: "IBM Plex Sans KR", sans-serif; }
 .boost rect { fill: #2b7a4b; }
-.led { animation: led 1s steps(2) infinite; }
-.led.l2 { animation-delay: 0.5s; }
+.led { animation: led 1s steps(2) infinite; } .led.l2 { animation-delay: 0.5s; }
 @keyframes led { 50% { opacity: 0.2; } }
 .bob { animation: bob 1.6s ease-in-out infinite; }
 .bob.b2 { animation-delay: 0.4s; } .bob.b3 { animation-delay: 0.8s; } .bob.b4 { animation-delay: 1.2s; }
 @keyframes bob { 50% { transform: translateY(-2px); } }
 .glow { animation: glowp 1.8s ease-in-out infinite alternate; }
-@keyframes glowp { from { opacity: 0.5; } to { opacity: 1; } }
+@keyframes glowp { from { opacity: 0.45; } to { opacity: 1; } }
+.crane { animation: crane 3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
+@keyframes crane { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 .coin { animation: coin 1.2s ease-out forwards; }
 @keyframes coin { to { transform: translateY(-40px); opacity: 0; } }
+.tree { animation: sway 4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom center; }
+@keyframes sway { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
+.flag { animation: flag 1.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
+@keyframes flag { from { transform: skewY(-6deg); } to { transform: skewY(6deg); } }
 .event { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); border: 3px double var(--stamp); background: var(--card); color: var(--stamp); padding: 6px 14px; font-weight: 700; cursor: pointer; animation: pulse 1s ease-in-out infinite; z-index: 2; max-width: calc(100% - 24px); }
 @keyframes pulse { 50% { transform: translateX(-50%) scale(1.05); } }
-.maptip { position: absolute; left: 10px; bottom: 6px; font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); pointer-events: none; }
+.maptip { position: absolute; left: 10px; bottom: 6px; font-family: var(--font-hand); font-size: 1.15rem; color: var(--muted); pointer-events: none; }
 
-/* 흐름 */
 .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 4px; align-items: center; font-size: 0.82rem; }
 .flow .st { background: var(--card); border: 1px solid var(--line); padding: 6px 8px; text-align: center; min-width: 0; }
 .flow .st b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
@@ -85,27 +101,58 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .flow .arrow { color: var(--muted); }
 
 /* 패널 */
-.side { display: grid; gap: 10px; min-width: 0; }
+.side { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.tabs { display: flex; border-bottom: 2px solid var(--ink); overflow-x: auto; }
+.tabs button { border: 0; background: transparent; padding: 7px 10px; cursor: pointer; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.92rem; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs button .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--stamp); margin-left: 4px; vertical-align: 2px; }
 .card { background: var(--card); border: 1px solid var(--line); padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
-.card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.card h2 small { font-family: var(--font-body); font-size: 0.85rem; color: var(--muted); }
+.card h2, .card h3 { margin: 0; font-family: var(--font-display); font-weight: 400; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card h2 { font-size: 1.25rem; } .card h3 { font-size: 1.05rem; }
+.card h2 small, .card h3 small { font-family: var(--font-body); font-size: 0.82rem; color: var(--muted); }
 .note { font-family: var(--font-hand); font-size: 1.2rem; color: var(--muted); line-height: 1.2; margin: 0; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.88rem; }
+.meta { font-size: 0.82rem; color: var(--muted); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.88rem; margin: 0; }
 .kv dt { color: var(--muted); } .kv dd { margin: 0; text-align: right; }
 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.btn { border: 2px solid var(--ink); background: var(--card); padding: 8px 10px; cursor: pointer; display: grid; gap: 1px; text-align: left; }
+.btn { border: 2px solid var(--ink); background: var(--card); padding: 7px 10px; cursor: pointer; display: grid; gap: 1px; text-align: left; }
 .btn:hover:not(:disabled) { background: var(--soft); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn .t { font-weight: 600; } .btn .s { font-size: 0.78rem; color: var(--muted); }
+.btn .t { font-weight: 600; } .btn .s { font-size: 0.76rem; color: var(--muted); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.primary .s { color: inherit; opacity: 0.85; }
+.btn.gold { border-color: var(--gold); }
 .btn.wide { grid-column: 1 / -1; }
+.btn.center { text-align: center; }
+.rowi { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; border-top: 1px dashed var(--line); padding-top: 6px; }
+.rowi .nm { font-weight: 600; font-size: 0.9rem; }
+.rowi .btn { min-width: 96px; text-align: right; }
+.look { font-weight: 400; color: var(--accent); font-size: 0.82rem; }
+.pips { letter-spacing: 1px; color: var(--accent); font-size: 0.8rem; }
+.rar { font-size: 0.72rem; font-weight: 700; }
+.rar.c { color: var(--muted); } .rar.r { color: var(--accent); } .rar.e { color: var(--epic); } .rar.l { color: var(--gold); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.cardi { border: 1px solid var(--line); padding: 6px 8px; display: grid; gap: 2px; font-size: 0.82rem; background: var(--card); }
+.cardi.l { border: 2px solid var(--gold); } .cardi.e { border: 2px solid var(--epic); }
+.cardi.missing { background: var(--soft); color: var(--muted); }
+.cardi select { border: 1px solid var(--line); background: var(--card); padding: 2px; font-size: 0.8rem; max-width: 100%; }
+.ulist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 0.86rem; }
+.ulist li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 5px 8px; }
+.ulist li.cur { border: 2px solid var(--gold); }
+.ulist li.done { color: var(--muted); }
+.ulist .n { font-family: var(--font-display); text-align: center; }
 .stampbtn { border: 3px double var(--stamp); color: var(--stamp); background: var(--card); font-family: var(--font-display); font-size: 1.25rem; padding: 8px; cursor: pointer; animation: pulse2 1.2s ease-in-out infinite; }
 @keyframes pulse2 { 50% { transform: scale(1.03); } }
-.ticker { font-family: var(--font-hand); font-size: 1.25rem; min-height: 1.5em; }
-.students { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px; font-size: 0.85rem; max-height: 180px; overflow-y: auto; }
+.ticker { font-family: var(--font-hand); font-size: 1.2rem; min-height: 1.5em; }
+.students { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; font-size: 0.82rem; max-height: 140px; overflow-y: auto; }
 .students li { border: 1px solid var(--line); padding: 3px 8px; }
-.students li span { color: var(--muted); font-size: 0.75rem; display: block; }
+.students li span { color: var(--muted); font-size: 0.72rem; display: block; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 6px 10px; font-size: 0.86rem; }
+.list li.me { border: 2px solid var(--accent); }
+.list .sub { font-size: 0.76rem; color: var(--muted); }
+.join { display: flex; gap: 6px; flex-wrap: wrap; }
+.join input { font: inherit; padding: 6px 10px; border: 2px solid var(--ink); background: var(--card); color: var(--ink); min-width: 0; flex: 1 1 140px; }
 
 .modal { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; padding: 16px; z-index: 20; }
 .dialog { background: var(--card); border: 2px solid var(--ink); max-width: 420px; width: 100%; max-height: calc(100% - 32px); overflow-y: auto; padding: 20px; display: grid; gap: 12px; text-align: center; }
@@ -119,7 +166,10 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 <div class="wrap">
   <header class="top">
     <h1 class="brand">랩실 운영하기 <small>교수가 되어 랩실을 운영하라</small></h1>
-    <div class="badge"><b id="tierName">조교수</b><span id="tierTitle">신임 교수</span></div>
+    <div class="topr">
+      <button class="ticket num" id="ticketBtn" aria-label="연구원 모집권, 연구원 탭 열기">🎫 <span id="tickets">0</span></button>
+      <div class="badge"><b id="univName">지방 사립대</b><span id="tierName">조교수</span></div>
+    </div>
   </header>
 
   <div class="stats">
@@ -129,32 +179,34 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     <div class="stat"><span class="k">연구실 분위기</span><span class="v num" id="mood">100%</span><span class="s" id="moodNote"></span></div>
     <div class="stat"><span class="k">쓴 논문</span><span class="v num" id="papers">0</span><span class="s" id="laurelNote"></span></div>
   </div>
+  <div class="goal" id="goal"></div>
 
   <div class="main">
-    <section class="mapcol" aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
+    <section aria-label="연구실 지도" style="display:grid;gap:8px;min-width:0">
       <div class="mapbox" id="mapbox">
-        <div class="mapscroll" id="mapscroll"><svg class="map" id="map" viewBox="20 -50 760 540" role="img" aria-label="연구실 아이소메트릭 지도"></svg></div>
-        <span class="maptip" id="maptip">방을 눌러 업그레이드하고 독려하세요. 폰에서는 지도를 좌우로 밀어 보세요.</span>
+        <div class="mapscroll" id="mapscroll"><svg class="map" id="map" viewBox="-40 -370 880 910" role="img" aria-label="대학 본관과 연구실 아이소메트릭 지도"></svg></div>
+        <span class="maptip">본관이나 방을 눌러 업그레이드하세요. 폰에서는 지도를 좌우로 밀어 보세요.</span>
       </div>
       <div class="flow num" id="flow"></div>
+      <div class="card"><div class="ticker" id="ticker" aria-live="polite">작은 나라 지방 사립대에 임용된 첫날. 빈 실험실에 학생 둘이 앉아 있다.</div></div>
     </section>
 
     <aside class="side" aria-label="운영 패널">
       <button class="stampbtn" id="promoteBtn" hidden>승진하기</button>
-      <div class="card" id="roomCard"></div>
-      <div class="card">
-        <h2>학생 모집 <small class="num" id="hireInfo"></small></h2>
-        <p class="note">학생은 생산 공간의 빈자리에 앉아 데이터를 만든다. 휴게실 정원을 넘기면 분위기가 떨어진다.</p>
-        <button class="btn primary" id="hireBtn"><span class="t">학생 뽑기</span><span class="s num" id="hireCost"></span></button>
-        <ul class="students" id="studentList"></ul>
-      </div>
-      <div class="card"><div class="ticker" id="ticker" aria-live="polite">임용 첫날. 빈 실험실에 학생 둘이 앉아 있다.</div></div>
-      <div class="card">
-        <h2>기록</h2>
-        <dl class="kv num" id="record"></dl>
-        <button class="btn" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">이 기기의 진행이 지워집니다</span></button>
-        <div id="resetConfirm" hidden class="btns"><button class="btn" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div>
-      </div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="room" id="tab-room" aria-selected="true">방</button>
+        <button role="tab" data-tab="lab" id="tab-lab" aria-selected="false">학과 연구</button>
+        <button role="tab" data-tab="cards" id="tab-cards" aria-selected="false">연구원</button>
+        <button role="tab" data-tab="mission" id="tab-mission" aria-selected="false">미션</button>
+        <button role="tab" data-tab="ally" id="tab-ally" aria-selected="false">컨소시엄</button>
+        <button role="tab" data-tab="rec" id="tab-rec" aria-selected="false">기록</button>
+      </nav>
+      <div id="panel-room" style="display:grid;gap:10px"><div class="card" id="roomCard"></div><div class="card" id="hireCard"></div></div>
+      <div id="panel-lab" class="card" hidden></div>
+      <div id="panel-cards" class="card" hidden></div>
+      <div id="panel-mission" class="card" hidden></div>
+      <div id="panel-ally" style="display:grid;gap:10px" hidden></div>
+      <div id="panel-rec" class="card" hidden></div>
     </aside>
   </div>
 </div>
@@ -164,130 +216,267 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 <script src="engine.js"></script>
 <script>
 (function () {
-  const E = window.LabEngine, fmt = E.fmt;
+  const E = window.LabEngine, fmt = E.fmt, fmtTime = E.fmtTime;
   const KEY = 'labtycoon.v1';
   const $ = (id) => document.getElementById(id);
-  let st, sel = 'wetlab', lastFrame = performance.now(), hiddenAt = 0, event = null, nextEventAt = 0;
+  let st, sel = 'wetlab', tab = 'room', lastFrame = performance.now(), hiddenAt = 0, event = null, nextEventAt = 0, walkClock = 0, endShown = false;
+  const dayKey = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  // ISO 주차 (월요일 시작). 컨소시엄 주간 목표가 이 값으로 바뀐다
+  const weekKey = () => { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y = t.getUTCFullYear(); const w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7); return y + '-W' + String(w).padStart(2, '0'); };
 
-  // ---------- 아이소메트릭 좌표 ----------
-  const W = 120, H = 70, OX = 400, OY = 80, WALL = 38;
+  // ---------- 아이소메트릭 그리기 ----------
+  const W = 120, H = 70, OX = 400, OY = 80, WALL = 44;
   const center = (gx, gy) => [OX + (gx - gy) * W, OY + (gx + gy) * H];
-  // 방 안 좌표(u: 오른쪽 아래 축, v: 왼쪽 아래 축, -1~1)와 높이 z를 화면 좌표로
   const P = (cx, cy, u, v, z) => [cx + (u - v) * W * 0.5, cy + (u + v) * H * 0.5 - (z || 0)];
   const pts = (arr) => arr.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-  // 상자: 바닥 (u0,v0)~(u1,v1), 높이 h. 윗면과 앞쪽 두 면을 그린다.
-  function box(cx, cy, u0, v0, u1, v1, h, top, side1, side2, z0) {
+  function box(cx, cy, u0, v0, u1, v1, h, top, s1, s2, z0) {
     const z = z0 || 0;
     const t = [P(cx, cy, u0, v0, z + h), P(cx, cy, u1, v0, z + h), P(cx, cy, u1, v1, z + h), P(cx, cy, u0, v1, z + h)];
     const fr = [P(cx, cy, u1, v0, z), P(cx, cy, u1, v1, z), P(cx, cy, u1, v1, z + h), P(cx, cy, u1, v0, z + h)];
     const fl = [P(cx, cy, u0, v1, z), P(cx, cy, u1, v1, z), P(cx, cy, u1, v1, z + h), P(cx, cy, u0, v1, z + h)];
-    return '<polygon points="' + pts(fl) + '" fill="' + side2 + '"/><polygon points="' + pts(fr) + '" fill="' + side1 + '"/><polygon points="' + pts(t) + '" fill="' + top + '"/>';
+    const sh = [P(cx, cy, u0 + 0.06, v0 + 0.06), P(cx, cy, u1 + 0.1, v0 + 0.06), P(cx, cy, u1 + 0.1, v1 + 0.1), P(cx, cy, u0 + 0.06, v1 + 0.1)];
+    return (z ? '' : '<polygon points="' + pts(sh) + '" fill="#00000018"/>') + '<polygon points="' + pts(fl) + '" fill="' + s2 + '"/><polygon points="' + pts(fr) + '" fill="' + s1 + '"/><polygon points="' + pts(t) + '" fill="' + top + '" stroke="#00000018" stroke-width="0.8"/>';
   }
-  function person(x, y, shirt, cls, hair) {
-    return '<g class="' + (cls || '') + '"><ellipse cx="' + x + '" cy="' + (y + 1) + '" rx="7" ry="3" fill="#00000022"/><path d="M' + (x - 6) + ' ' + y + ' q0 -14 6 -14 q6 0 6 14 z" fill="' + shirt + '"/><circle cx="' + x + '" cy="' + (y - 19) + '" r="5.5" fill="#f3cba8"/><path d="M' + (x - 5.5) + ' ' + (y - 20) + ' q5.5 -8 11 0 q-5.5 -3 -11 0z" fill="' + (hair || '#2a2a33') + '"/></g>';
+  // 앞면(v = v1)과 옆면(u = u1)에 창문을 붙인다
+  function winsL(cx, cy, u0, u1, v, z0, z1, n, col) { let s = ''; const du = (u1 - u0) / n; for (let i = 0; i < n; i++) { const a = u0 + du * (i + 0.25), b = a + du * 0.5; s += '<polygon points="' + pts([P(cx, cy, a, v, z0), P(cx, cy, b, v, z0), P(cx, cy, b, v, z1), P(cx, cy, a, v, z1)]) + '" fill="' + col + '" stroke="#00000030"/>'; } return s; }
+  function winsR(cx, cy, v0, v1, u, z0, z1, n, col) { let s = ''; const dv = (v1 - v0) / n; for (let i = 0; i < n; i++) { const a = v0 + dv * (i + 0.25), b = a + dv * 0.5; s += '<polygon points="' + pts([P(cx, cy, u, a, z0), P(cx, cy, u, b, z0), P(cx, cy, u, b, z1), P(cx, cy, u, a, z1)]) + '" fill="' + col + '" stroke="#00000030"/>'; } return s; }
+  // 사람: 서 있거나 걸을 때는 다리를 그리고, phase로 다리를 번갈아 움직인다
+  function person(x, y, shirt, cls, hair, phase, seated) {
+    let legs = '';
+    if (!seated) { const k = phase == null ? 0 : Math.sin(phase) * 3; legs = '<path d="M' + (x - 2) + ' ' + (y - 2) + ' l' + (-1 + k) + ' 8 M' + (x + 2) + ' ' + (y - 2) + ' l' + (1 - k) + ' 8" stroke="#2b3443" stroke-width="2.4" stroke-linecap="round"/>'; }
+    const by = seated ? y : y - 6;
+    return '<g class="' + (cls || '') + '"><ellipse cx="' + x + '" cy="' + (y + (seated ? 1 : 7)) + '" rx="7" ry="2.6" fill="#00000026"/>' + legs +
+      '<path d="M' + (x - 6) + ' ' + by + ' q0 -13 6 -13 q6 0 6 13 z" fill="' + shirt + '"/><circle cx="' + x + '" cy="' + (by - 18) + '" r="5.5" fill="#f3cba8"/><path d="M' + (x - 5.6) + ' ' + (by - 19) + ' q5.6 -8.5 11.2 0 q-5.6 -3 -11.2 0z" fill="' + (hair || '#2a2a33') + '"/></g>';
   }
-  const ROOM_COLOR = { office: '#e8dcc6', meeting: '#d9e4f1', lounge: '#e3eedb', wetlab: '#dcefe9', server: '#d7dbe6', library: '#efe4d2', clean: '#f4f7fb', bigequip: '#e6dff2', global: '#dbe9f7' };
+  const ROOM_COLOR = { office: ['#ead9bd', '#dcc9a8'], meeting: ['#dbe6f3', '#c9d8ea'], lounge: ['#e2efd8', '#d0e3c4'], wetlab: ['#dcf0ea', '#c7e4db'], server: ['#d6dae6', '#c4c9d8'], library: ['#efe2cc', '#e2d2b6'], clean: ['#f5f8fc', '#e6edf5'], bigequip: ['#e6def3', '#d6cbea'], global: ['#dbe9f8', '#c8dcf1'] };
   const SHIRTS = ['#6f8fb8', '#b5574f', '#4f8a6a', '#8a6fb8', '#c0873f', '#4f6684'];
+  const RAR_COL = { c: '#9aa9bb', r: '#2346a3', e: '#8a4fd1', l: '#c79a2e' };
+  // 장비 등급(0~3)별 색: 의자, 책상, 화면
+  const CHAIR = ['#9aa5b2', '#4f6684', '#2b3443', '#7a3b2e'];
+  const DESK = [['#c9b28e', '#a99470', '#998462'], ['#a58a62', '#8a7150', '#7a6244'], ['#e9edf2', '#c3ccd6', '#b3bdca'], ['#6b3a2a', '#552c1f', '#4a2619']];
+  const SCREEN = ['#9fb7d6', '#7fb2f0', '#6fd3e0', '#ffd98a'];
+  const chair = (x, y, g) => (g < 0 ? '' : '<rect x="' + (x - 5) + '" y="' + (y - 4) + '" width="10" height="4" fill="' + CHAIR[g] + '"/><rect x="' + (x + 3) + '" y="' + (y - 15) + '" width="3" height="12" rx="1" fill="' + CHAIR[g] + '"/>' + (g >= 2 ? '<rect x="' + (x + 2) + '" y="' + (y - 19) + '" width="5" height="5" rx="2" fill="' + CHAIR[g] + '"/>' : ''));
+  function monitor(x, y, g, n) { let s = ''; for (let i = 0; i < n; i++) { const mx = x + (i - (n - 1) / 2) * 15; s += '<rect x="' + (mx - 7) + '" y="' + (y - 11) + '" width="14" height="10" fill="#1d2735"/><rect class="glow" x="' + (mx - 6) + '" y="' + (y - 10) + '" width="12" height="7" fill="' + SCREEN[Math.max(0, g)] + '"/><rect x="' + (mx - 1) + '" y="' + (y - 1) + '" width="2" height="3" fill="#1d2735"/>'; } return s; }
 
-  function furniture(id, cx, cy) {
+  function furniture(id, cx, cy, L) {
+    const g = (i) => E.eqGrade(E.eqLv(st, id, i)); // 장비 등급: 없으면 -1
     switch (id) {
-      case 'office': return box(cx, cy, -0.55, -0.7, 0.35, -0.45, 34, '#a58a62', '#8a7150', '#7a6244') + box(cx, cy, -0.2, -0.05, 0.45, 0.3, 18, '#8a6a46', '#73573a', '#664c33') +
-        '<rect x="' + (cx + 4) + '" y="' + (cy - 26) + '" width="16" height="10" fill="#1d2735"/>' + person(cx - 2, cy + 22, '#2c3e66', '', '#55555f');
-      case 'meeting': return box(cx, cy, -0.45, -0.2, 0.45, 0.25, 14, '#c9b28e', '#a99470', '#998462') +
-        [[-0.35, -0.42], [0.1, -0.42], [-0.65, 0.05], [0.62, 0]].map((p, i) => { const q = P(cx, cy, p[0], p[1]); return person(q[0], q[1] + 6, SHIRTS[i], 'bob b' + (i + 1)); }).join('') +
-        '<polygon points="' + pts([P(cx, cy, 0.95, -0.9, 52), P(cx, cy, 0.95, -0.1, 52), P(cx, cy, 0.95, -0.1, 24), P(cx, cy, 0.95, -0.9, 24)]) + '" fill="#fdfdfb" stroke="#9aa9bb"/>';
-      case 'lounge': return box(cx, cy, -0.6, -0.3, 0.1, 0.05, 14, '#c86b5a', '#a85646', '#984c3e') + box(cx, cy, 0.35, -0.75, 0.6, -0.5, 30, '#55657a', '#45546a', '#3b485c') +
-        '<circle cx="' + P(cx, cy, 0.5, 0.45)[0] + '" cy="' + (P(cx, cy, 0.5, 0.45)[1] - 14) + '" r="11" fill="#4f9a5a"/>' + box(cx, cy, 0.42, 0.37, 0.58, 0.53, 8, '#c0873f', '#a0702f', '#906528');
-      case 'wetlab': return box(cx, cy, -0.75, -0.6, 0.55, -0.25, 16, '#f2f5f8', '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.75, 0.2, 0.2, 0.55, 16, '#f2f5f8', '#cdd6e0', '#bcc6d2') +
-        [[-0.4, -0.45, '#7fd0b0'], [0.1, -0.45, '#f2a0a0'], [-0.4, 0.38, '#a0c4f2']].map((f) => { const q = P(cx, cy, f[0], f[1], 16); return '<path d="M' + (q[0] - 3) + ' ' + (q[1] - 14) + ' h6 v5 l5 9 h-16 l5 -9 z" fill="' + f[2] + '" stroke="#7d8896"/>'; }).join('');
-      case 'server': {
-        let s = '';
-        [[-0.7, -0.7], [-0.25, -0.7], [0.2, -0.7]].forEach((p) => { s += box(cx, cy, p[0], p[1], p[0] + 0.32, p[1] + 0.3, 46, '#2d3646', '#202836', '#1a212d'); const q = P(cx, cy, p[0] + 0.32, p[1] + 0.15, 30); s += '<circle class="led" cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="#6fd39a"/><circle class="led l2" cx="' + q[0] + '" cy="' + (q[1] + 8) + '" r="2" fill="#ffd54a"/>'; });
+      case 'office': {
+        const d = DESK[Math.max(0, g(0))], shelfH = 26 + Math.max(0, g(3)) * 8;
+        let s = box(cx, cy, -0.6, -0.75, 0.4, -0.5, shelfH, '#a58a62', '#8a7150', '#7a6244');
+        const books = 3 + Math.max(0, g(3)) * 2;
+        for (let i = 0; i < books; i++) { const q = P(cx, cy, -0.55 + i * (0.9 / books), -0.5, shelfH - 6); s += '<rect x="' + (q[0] - 2) + '" y="' + q[1] + '" width="4" height="9" fill="' + ['#b5574f', '#4f8a6a', '#2346a3', '#c0873f'][i % 4] + '"/>'; }
+        if (g(4) >= 0) { s += box(cx, cy, 0.55, -0.75, 0.85, -0.5, 30, '#d9dfe6', '#c3ccd6', '#b3bdca'); for (let i = 0; i <= g(4); i++) { const q = P(cx, cy, 0.62 + i * 0.06, -0.5, 18 + (i % 2) * 8); s += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="3" fill="#e0b030" stroke="#a86a00"/>'; } }
+        s += box(cx, cy, -0.2, -0.05, 0.5, 0.3, 18, d[0], d[1], d[2]);
+        const m = P(cx, cy, 0.15, 0.0, 18); s += monitor(m[0], m[1], g(2), g(2) < 0 ? 1 : [1, 2, 2, 3][g(2)]);
+        const pc = P(cx, cy, 0.0, 0.55); s += chair(pc[0] + 6, pc[1] + 2, Math.max(0, g(1))) + person(pc[0], pc[1] + 2, '#2c3e66', '', '#55555f', null, true);
         return s;
       }
-      case 'library': return [[-0.75, -0.75], [-0.3, -0.75], [0.15, -0.75]].map((p) => box(cx, cy, p[0], p[1], p[0] + 0.38, p[1] + 0.22, 44, '#8a6a46', '#73573a', '#664c33')).join('') +
-        box(cx, cy, -0.2, 0.1, 0.4, 0.4, 12, '#c9b28e', '#a99470', '#998462');
-      case 'clean': return box(cx, cy, -0.7, -0.5, 0.6, -0.2, 18, '#ffffff', '#dfe5ec', '#cfd7e0') + box(cx, cy, -0.7, 0.2, 0.2, 0.5, 18, '#ffffff', '#dfe5ec', '#cfd7e0') +
-        '<rect class="glow" x="' + (cx - 60) + '" y="' + (cy - 60) + '" width="120" height="6" fill="#9cc3f0" opacity="0.6"/>';
-      case 'bigequip': { const q = P(cx, cy, -0.1, -0.2); return '<ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="56" ry="26" fill="#8a7fb0"/><rect x="' + (q[0] - 56) + '" y="' + (q[1] - 50) + '" width="112" height="50" fill="#a497cf"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 50) + '" rx="56" ry="26" fill="#c3b8ea"/><ellipse class="glow" cx="' + q[0] + '" cy="' + (q[1] - 50) + '" rx="22" ry="10" fill="#ffd54a"/>'; }
-      case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<circle cx="' + q[0] + '" cy="' + (q[1] - 30) + '" r="26" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 26) + ' ' + (q[1] - 30) + ' h52 M' + q[0] + ' ' + (q[1] - 56) + ' v52" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 42) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + box(cx, cy, 0.25, 0.05, 0.75, 0.35, 14, '#c9b28e', '#a99470', '#998462'); }
+      case 'meeting': {
+        const d = DESK[Math.max(0, g(0))];
+        let s = box(cx, cy, -0.45, -0.2, 0.45, 0.25, 14, d[0], d[1], d[2]);
+        [[-0.35, -0.42], [0.1, -0.42], [-0.65, 0.05], [0.62, 0]].forEach((p, i) => { const q = P(cx, cy, p[0], p[1]); s += chair(q[0] + 6, q[1] + 6, Math.max(0, g(1))) + person(q[0], q[1] + 6, SHIRTS[i], 'bob b' + (i + 1), null, null, true); });
+        const wb = g(2) >= 3 ? '#1d2735' : '#fdfdfb';
+        s += '<polygon points="' + pts([P(cx, cy, 0.97, -0.85, 56), P(cx, cy, 0.97, -0.15, 56), P(cx, cy, 0.97, -0.15, 24), P(cx, cy, 0.97, -0.85, 24)]) + '" fill="' + wb + '" stroke="#7d8896"/>';
+        s += '<polyline points="' + pts([P(cx, cy, 0.97, -0.75, 46), P(cx, cy, 0.97, -0.6, 36), P(cx, cy, 0.97, -0.45, 42), P(cx, cy, 0.97, -0.3, 32)]) + '" fill="none" stroke="' + (g(2) >= 3 ? '#6fd3e0' : '#2346a3') + '" stroke-width="2"/>';
+        if (g(3) >= 0) s += '<polygon class="glow" points="' + pts([P(cx, cy, -0.97, -0.6, 50), P(cx, cy, -0.97, 0.2, 50), P(cx, cy, -0.97, 0.2, 24), P(cx, cy, -0.97, -0.6, 24)]) + '" fill="' + SCREEN[g(3)] + '"/>';
+        if (g(4) >= 0) s += box(cx, cy, 0.55, 0.45, 0.75, 0.65, 12, '#55657a', '#45546a', '#3b485c');
+        return s;
+      }
+      case 'lounge': {
+        const sofa = [['#c86b5a', '#a85646', '#984c3e'], ['#4f8a6a', '#3f7055', '#36604a'], ['#4f6684', '#3f5470', '#364862'], ['#8a6fb8', '#715a99', '#634f86']][Math.max(0, g(0))];
+        let s = box(cx, cy, -0.65, -0.35, 0.1, 0.0, 14, sofa[0], sofa[1], sofa[2]) + box(cx, cy, -0.65, -0.55, 0.1, -0.35, 26, sofa[0], sofa[1], sofa[2]);
+        s += box(cx, cy, 0.35, -0.8, 0.62, -0.52, 34, '#55657a', '#45546a', '#3b485c') + '<circle class="glow" cx="' + P(cx, cy, 0.48, -0.66, 34)[0] + '" cy="' + (P(cx, cy, 0.48, -0.66, 34)[1] + 8) + '" r="3" fill="' + (g(1) >= 0 ? '#ffb347' : '#8a96a5') + '"/>';
+        if (g(2) >= 0) s += box(cx, cy, 0.68, -0.8, 0.9, -0.55, 44, '#eef2f6', '#cdd6e0', '#bcc6d2');
+        if (g(3) >= 0) s += box(cx, cy, -0.75, 0.25, -0.15, 0.6, 10, '#f2f5f8', '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.75, 0.25, -0.6, 0.6, 14, '#a0c4f2', '#86aedc', '#7aa0cc');
+        if (g(4) >= 0) { s += box(cx, cy, 0.0, 0.4, 0.3, 0.6, 10, '#3b4a6a', '#2d3a55', '#26314a'); const q = P(cx, cy, 0.15, 0.5, 10); s += '<rect class="glow" x="' + (q[0] - 8) + '" y="' + (q[1] - 12) + '" width="16" height="10" fill="' + SCREEN[g(4)] + '"/>'; }
+        s += '<g class="tree"><rect x="' + (P(cx, cy, 0.5, 0.45)[0] - 2) + '" y="' + (P(cx, cy, 0.5, 0.45)[1] - 14) + '" width="4" height="10" fill="#7a5a3a"/><circle cx="' + P(cx, cy, 0.5, 0.45)[0] + '" cy="' + (P(cx, cy, 0.5, 0.45)[1] - 22) + '" r="11" fill="#4f9a5a"/></g>';
+        return s;
+      }
+      case 'wetlab': {
+        const benchTop = ['#cdd6e0', '#f2f5f8', '#f2f5f8', '#e6f2ff'][Math.max(0, g(0))];
+        let s = box(cx, cy, -0.8, -0.65, 0.55, -0.3, 16, benchTop, '#cdd6e0', '#bcc6d2') + box(cx, cy, -0.8, 0.2, 0.2, 0.55, 16, benchTop, '#cdd6e0', '#bcc6d2');
+        if (g(0) >= 2) s += box(cx, cy, 0.5, 0.0, 0.8, 0.6, 16, benchTop, '#cdd6e0', '#bcc6d2');
+        if (g(4) >= 0) s += box(cx, cy, 0.62, -0.8, 0.85, -0.45, 40 + g(4) * 4, '#dfe5ec', '#c3ccd8', '#b3bdca') + '<rect class="glow" x="' + (P(cx, cy, 0.85, -0.62, 28)[0] - 1) + '" y="' + P(cx, cy, 0.85, -0.62, 28)[1] + '" width="3" height="8" fill="' + SCREEN[g(4)] + '"/>';
+        const fl = 2 + Math.max(0, g(2));
+        [[-0.6, -0.48, '#7fd0b0'], [-0.3, -0.48, '#f2a0a0'], [0.0, -0.48, '#a0c4f2'], [-0.6, 0.38, '#f2d37a'], [-0.3, 0.38, '#c39bff']].slice(0, fl).forEach((f) => { const q = P(cx, cy, f[0], f[1], 16); s += '<path d="M' + (q[0] - 3) + ' ' + (q[1] - 14) + ' h6 v5 l5 9 h-16 l5 -9 z" fill="' + f[2] + '" stroke="#7d8896"/>'; });
+        if (g(3) >= 0) { const q = P(cx, cy, 0.3, -0.48, 16); const c = ['#55657a', '#2b3443', '#2346a3', '#8a4fd1'][g(3)]; s += '<path d="M' + (q[0] - 6) + ' ' + q[1] + ' h12 M' + q[0] + ' ' + q[1] + ' v-6 l6 -10 l3 2 l-5 9" stroke="' + c + '" stroke-width="3" fill="none"/><circle cx="' + (q[0] + 7) + '" cy="' + (q[1] - 17) + '" r="3" fill="' + c + '"/>'; }
+        return s;
+      }
+      case 'server': {
+        let s = '';
+        const n = Math.min(5, 2 + Math.max(0, g(0) + 1)), led = ['#6fd39a', '#5b8def', '#b56fe0', '#ffd54a'][Math.max(0, g(2))];
+        for (let i = 0; i < n; i++) {
+          const u = -0.8 + i * 0.34; s += box(cx, cy, u, -0.78, u + 0.28, -0.45, 50, '#2d3646', '#202836', '#1a212d');
+          const q = P(cx, cy, u + 0.28, -0.6, 36); s += '<circle class="led" cx="' + q[0] + '" cy="' + q[1] + '" r="2" fill="' + led + '"/><circle class="led l2" cx="' + q[0] + '" cy="' + (q[1] + 8) + '" r="2" fill="#ffd54a"/><circle class="led" cx="' + q[0] + '" cy="' + (q[1] + 16) + '" r="2" fill="' + led + '"/>';
+        }
+        if (g(3) >= 1) s += box(cx, cy, 0.6, 0.3, 0.85, 0.6, 30, '#dbe9f8', '#b8cde4', '#a6bed8');
+        const d = DESK[Math.max(0, g(1))]; s += box(cx, cy, -0.2, 0.2, 0.4, 0.45, 14, d[0], d[1], d[2]);
+        const m = P(cx, cy, 0.1, 0.3, 14); s += monitor(m[0], m[1], g(1), 1);
+        return s;
+      }
+      case 'library': {
+        let s = '';
+        [[-0.8, -0.8], [-0.35, -0.8], [0.1, -0.8]].slice(0, 2 + (g(0) >= 0 ? 1 : 0)).forEach((p, i) => { s += box(cx, cy, p[0], p[1], p[0] + 0.4, p[1] + 0.22, 48, '#8a6a46', '#73573a', '#664c33'); for (let k = 0; k < 4; k++) { const q = P(cx, cy, p[0] + 0.05 + k * 0.08, p[1] + 0.22, 36 - (k % 2) * 14); s += '<rect x="' + q[0] + '" y="' + (q[1] - 9) + '" width="4" height="9" fill="' + SHIRTS[(i + k) % 6] + '"/>'; } });
+        const d = DESK[Math.max(0, g(1))]; s += box(cx, cy, -0.2, 0.1, 0.45, 0.42, 12, d[0], d[1], d[2]);
+        const q = P(cx, cy, 0.1, 0.6); s += chair(q[0] + 6, q[1] + 4, Math.max(0, g(2))) + person(q[0], q[1] + 4, '#8a6fb8', 'bob', null, null, true);
+        return s;
+      }
+      case 'clean': return box(cx, cy, -0.75, -0.55, 0.65, -0.22, 18, '#ffffff', '#dfe5ec', '#cfd7e0') + box(cx, cy, -0.75, 0.2, 0.2, 0.52, 18, '#ffffff', '#dfe5ec', '#cfd7e0') +
+        '<polygon class="glow" points="' + pts([P(cx, cy, -0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 60), P(cx, cy, 0.9, -0.9, 56), P(cx, cy, -0.9, -0.9, 56)]) + '" fill="#9cc3f0"/>' +
+        (g(2) >= 0 ? box(cx, cy, 0.4, 0.15, 0.75, 0.55, 30 + g(2) * 6, '#e6edf5', '#cdd6e0', '#bcc6d2') : '');
+      case 'bigequip': { const q = P(cx, cy, -0.1, -0.2), core = SCREEN[Math.max(0, g(2))]; return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 4) + '" rx="60" ry="28" fill="#00000020"/><ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="56" ry="26" fill="#8a7fb0"/><rect x="' + (q[0] - 56) + '" y="' + (q[1] - 52) + '" width="112" height="52" fill="#a497cf"/><path d="M' + (q[0] - 56) + ' ' + (q[1] - 30) + ' h112" stroke="#8a7fb0" stroke-width="3"/><ellipse cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="56" ry="26" fill="#c3b8ea"/><ellipse class="glow" cx="' + q[0] + '" cy="' + (q[1] - 52) + '" rx="22" ry="10" fill="' + core + '"/>'; }
+      case 'global': { const q = P(cx, cy, -0.2, -0.3); return '<ellipse cx="' + q[0] + '" cy="' + (q[1] + 2) + '" rx="26" ry="8" fill="#00000022"/><circle cx="' + q[0] + '" cy="' + (q[1] - 32) + '" r="27" fill="#6fa8dc" stroke="#2c5d8a" stroke-width="2"/><path d="M' + (q[0] - 27) + ' ' + (q[1] - 32) + ' h54 M' + q[0] + ' ' + (q[1] - 59) + ' v54" stroke="#2c5d8a" fill="none"/><path d="M' + (q[0] - 14) + ' ' + (q[1] - 44) + ' q10 4 6 14 q-8 4 -4 12" stroke="#4f9a5a" stroke-width="5" fill="none"/>' + box(cx, cy, 0.2, 0.0, 0.8, 0.35, 14, '#c9b28e', '#a99470', '#998462') + '<rect class="glow" x="' + (P(cx, cy, 0.5, 0.0, 14)[0] - 10) + '" y="' + (P(cx, cy, 0.5, 0.0, 14)[1] - 20) + '" width="20" height="13" fill="#7fb2f0" stroke="#2c5d8a"/>'; }
       default: return '';
     }
   }
-  // 학생 자리: 생산 공간에 앉은 학생 수만큼(최대 6명) 그린다
-  const SEATS = [[-0.45, -0.05], [0.0, -0.05], [-0.45, 0.75], [0.0, 0.75], [0.45, 0.4], [0.6, -0.1]];
+  const SEATS = [[-0.45, -0.1], [0.05, -0.1], [-0.45, 0.72], [0.0, 0.72], [0.45, 0.35], [0.62, -0.15]];
+  function scaffold(cx, cy, b, scale) {
+    const k = scale || 1, pct = Math.max(0, Math.min(1, 1 - (b.endAt - st.time) / b.total));
+    let s = '';
+    for (let i = -0.8; i <= 0.81; i += 0.4) { const a = P(cx, cy, i * k, -0.95), c = P(cx, cy, i * k, -0.95, 60 * k); s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + c[0] + '" y2="' + c[1] + '" stroke="#e0a030" stroke-width="3"/>'; }
+    const l0 = P(cx, cy, -0.9 * k, -0.95, 30 * k), l1 = P(cx, cy, 0.9 * k, -0.95, 30 * k); s += '<line x1="' + l0[0] + '" y1="' + l0[1] + '" x2="' + l1[0] + '" y2="' + l1[1] + '" stroke="#e0a030" stroke-width="3" stroke-dasharray="8 5"/>';
+    const m = P(cx, cy, 0.7 * k, 0.6); s += '<rect x="' + (m[0] - 3) + '" y="' + (m[1] - 96 * k) + '" width="6" height="' + 96 * k + '" fill="#e0a030"/><g class="crane"><rect x="' + m[0] + '" y="' + (m[1] - 98 * k) + '" width="80" height="5" fill="#e0a030"/><line x1="' + (m[0] + 60) + '" y1="' + (m[1] - 93 * k) + '" x2="' + (m[0] + 60) + '" y2="' + (m[1] - 60 * k) + '" stroke="#55657a"/><rect x="' + (m[0] + 54) + '" y="' + (m[1] - 60 * k) + '" width="12" height="9" fill="#8a96a5"/></g>';
+    const bw = 90, bx = cx - bw / 2, by = cy + 18; s += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="8" fill="#ffffff" stroke="#55657a"/><rect x="' + bx + '" y="' + by + '" width="' + (bw * pct).toFixed(1) + '" height="8" fill="#e0a030"/>';
+    return s;
+  }
+  // 대학 본관: 대학 단계가 오를수록 건물이 커지고 탑·돔·국기가 붙는다
+  const UC = [null, ['#c27a5c', '#a5634a', '#93573f'], ['#c98a5a', '#ad744a', '#9a6640'], ['#d4bf98', '#b9a47e', '#a69270'], ['#ddd3c3', '#c2b7a6', '#b0a594'], ['#f3f4f6', '#d7dbe1', '#c6ccd4']];
+  const UNIV_C = [-1.55, -1.55];
+  function univBuilding() {
+    const [cx, cy] = center(...UNIV_C), u = st.univ, c = UC[u];
+    const half = [0, 0.75, 1.05, 1.3, 1.45, 1.6][u], h = [0, 52, 64, 72, 82, 90][u];
+    let s = '<g class="uni">';
+    // 앞마당
+    s += '<polygon points="' + pts([P(cx, cy, -half - 0.3, -0.75), P(cx, cy, half + 0.3, -0.75), P(cx, cy, half + 0.3, 1.1), P(cx, cy, -half - 0.3, 1.1)]) + '" fill="#d9cfb8"/>';
+    if (u >= 3) { s += box(cx, cy, -half - 0.1, -0.55, -half + 0.45, 0.55, h * 0.75, c[0], c[1], c[2]) + winsR(cx, cy, -0.45, 0.45, -half + 0.45, h * 0.2, h * 0.5, 3, '#d9ecfb'); }
+    s += box(cx, cy, -half, -0.45, half, 0.45, h, c[0], c[1], c[2]);
+    s += winsL(cx, cy, -half, half, 0.45, h * 0.12, h * 0.38, Math.round(half * 6), '#d9ecfb') + winsL(cx, cy, -half, half, 0.45, h * 0.55, h * 0.8, Math.round(half * 6), '#d9ecfb');
+    s += winsR(cx, cy, -0.45, 0.45, half, h * 0.12, h * 0.38, 3, '#d9ecfb') + winsR(cx, cy, -0.45, 0.45, half, h * 0.55, h * 0.8, 3, '#d9ecfb');
+    // 정문 계단과 문
+    s += box(cx, cy, -0.25, 0.45, 0.25, 0.7, 6, '#bfb6a6', '#a69d8e', '#958c7e');
+    s += '<polygon points="' + pts([P(cx, cy, -0.13, 0.45, 6), P(cx, cy, 0.13, 0.45, 6), P(cx, cy, 0.13, 0.45, 34), P(cx, cy, -0.13, 0.45, 34)]) + '" fill="#5a3b2a"/>';
+    if (u >= 4) for (let i = -2; i <= 2; i++) { const a = P(cx, cy, i * 0.12, 0.52, 6), b2 = P(cx, cy, i * 0.12, 0.52, 46); s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b2[0] + '" y2="' + b2[1] + '" stroke="#ffffff" stroke-width="4"/>'; }
+    if (u >= 4) s += '<polygon points="' + pts([P(cx, cy, -0.32, 0.52, 46), P(cx, cy, 0.32, 0.52, 46), P(cx, cy, 0, 0.52, 66)]) + '" fill="' + c[0] + '" stroke="' + c[2] + '"/>';
+    // 시계탑 (수도권 종합대부터)
+    if (u >= 3) {
+      const th = [0, 0, 0, 52, 78, 70][u];
+      s += box(cx, cy, -0.18, -0.18, 0.18, 0.18, th, c[0], c[1], c[2], h);
+      const ck = P(cx, cy, 0, 0.18, h + th * 0.6); s += '<circle cx="' + ck[0] + '" cy="' + ck[1] + '" r="8" fill="#fdfdfb" stroke="#55657a" stroke-width="2"/><path d="M' + ck[0] + ' ' + ck[1] + ' v-5 M' + ck[0] + ' ' + ck[1] + ' h4" stroke="#1b2838" stroke-width="1.5"/>';
+      if (u === 4) s += '<polygon points="' + pts([P(cx, cy, -0.18, 0.18, h + th), P(cx, cy, 0.18, 0.18, h + th), P(cx, cy, 0.18, -0.18, h + th), P(cx, cy, 0, 0, h + th + 40)]) + '" fill="#4f6684"/>';
+    }
+    // 돔 (세계적 명문대)
+    if (u >= 5) { const t0 = P(cx, cy, 0, 0, h + 70); s += '<ellipse cx="' + t0[0] + '" cy="' + t0[1] + '" rx="30" ry="9" fill="#c6ccd4"/><path d="M' + (t0[0] - 30) + ' ' + t0[1] + ' a30 32 0 0 1 60 0 z" fill="#5f9ea0"/><rect x="' + (t0[0] - 2) + '" y="' + (t0[1] - 44) + '" width="4" height="14" fill="#e0b030"/>';
+      s += box(cx, cy, half - 0.3, -0.45, half, -0.15, h + 50, c[0], c[1], c[2]) + box(cx, cy, -half, -0.45, -half + 0.3, -0.15, h + 50, c[0], c[1], c[2]); }
+    // 국기 (지방 거점 국립대부터)
+    if (u >= 2) { const f0 = P(cx, cy, half - 0.15, 0.3, h); s += '<line x1="' + f0[0] + '" y1="' + f0[1] + '" x2="' + f0[0] + '" y2="' + (f0[1] - 40) + '" stroke="#55657a" stroke-width="2"/><rect class="flag" x="' + f0[0] + '" y="' + (f0[1] - 40) + '" width="20" height="12" fill="' + ['', '', '#2346a3', '#2b7a4b', '#7a1f2b', '#a86a00'][u] + '"/>'; }
+    // 학생들이 정문 앞을 오간다
+    for (let i = 0; i < Math.min(5, u + 1); i++) { const q = P(cx, cy, -0.5 + i * 0.25, 0.9); s += person(q[0], q[1], SHIRTS[i], 'bob b' + ((i % 4) + 1), null, i); }
+    s += '</g>';
+    return { s, cx, cy, top: cy - h - (u >= 5 ? 130 : u >= 4 ? 160 : u >= 3 ? 90 : 30) };
+  }
+  function ground() {
+    // 잔디 캠퍼스와 건물 바닥판, 나무, 길
+    const a = -2.7, b0 = 2.75;
+    const gp = [[center(a, a)[0], center(a, a)[1] - H], [center(b0, a)[0] + W, center(b0, a)[1]], [center(b0, b0)[0], center(b0, b0)[1] + H], [center(a, b0)[0] - W, center(a, b0)[1]]];
+    let s = '<polygon points="' + pts(gp) + '" fill="#a9cf8f"/>';
+    const b = [center(-0.08, -0.08), center(2.08, -0.08), center(2.08, 2.08), center(-0.08, 2.08)];
+    const bp = [[b[0][0], b[0][1] - H], [b[1][0] + W, b[1][1]], [b[2][0], b[2][1] + H], [b[3][0] - W, b[3][1]]];
+    const T = 16;
+    s += '<polygon points="' + pts([bp[3], bp[2], [bp[2][0], bp[2][1] + T], [bp[3][0], bp[3][1] + T]]) + '" fill="#9aa5b2"/>';
+    s += '<polygon points="' + pts([bp[2], bp[1], [bp[1][0], bp[1][1] + T], [bp[2][0], bp[2][1] + T]]) + '" fill="#7f8b99"/>';
+    s += '<polygon points="' + pts(bp) + '" fill="#c3ccd6"/>';
+    const path0 = center(2.1, 2.1), path1 = center(2.7, 2.7);
+    s += '<path d="M' + (path0[0] - 18) + ' ' + (path0[1] + 60) + ' L' + (path1[0] - 18) + ' ' + (path1[1] + 60) + ' L' + (path1[0] + 18) + ' ' + (path1[1] + 60) + ' L' + (path0[0] + 18) + ' ' + (path0[1] + 60) + ' Z" fill="#e3d6bd"/>';
+    [[-0.55, 1], [-0.55, 2.2], [2.55, 0.1], [2.55, 1.4], [0.8, 2.6], [-2.0, -0.4], [-0.4, -2.0], [1.0, -1.4], [-1.4, 1.0]].forEach((t, i) => { const c = center(t[0], t[1]); s += '<g class="tree" style="animation-delay:' + i * 0.6 + 's"><ellipse cx="' + c[0] + '" cy="' + (c[1] + 4) + '" rx="14" ry="5" fill="#00000022"/><rect x="' + (c[0] - 3) + '" y="' + (c[1] - 18) + '" width="6" height="20" fill="#7a5a3a"/><circle cx="' + c[0] + '" cy="' + (c[1] - 30) + '" r="17" fill="#5a9e5e"/><circle cx="' + (c[0] - 8) + '" cy="' + (c[1] - 24) + '" r="11" fill="#4f8f53"/></g>'; });
+    return s;
+  }
+  const sigOf = () => { const f = E.flow(st); return st.univ + JSON.stringify(st.rooms) + JSON.stringify(st.equip) + JSON.stringify(st.cards.assign) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join() + st.builds.map((b) => b.room + Math.ceil(b.endAt - st.time)).join(); };
+  let mapSig = '';
   function drawMap() {
     const seat = E.seating(st), f = E.flow(st);
-    let s = '', signs = '';
+    let s = ground(), signs = '';
+    // 대학 본관
+    const U = univBuilding(), ub = E.building(st, 'univ');
+    s += '<g class="plot' + (sel === 'univ' ? ' sel' : '') + '" data-id="univ" tabindex="0" role="button" aria-label="대학 본관, ' + E.UNIVS[st.univ].name + '">' + U.s + (ub ? scaffold(U.cx, U.cy, ub, 1.5) : '') + '</g>';
+    { const label = E.UNIVS[st.univ].name + ' 본관', lw2 = label.length * 13 + 20, sy = U.top - 30;
+      signs += '<g class="sign big"><rect class="bg" x="' + (U.cx - lw2 / 2) + '" y="' + sy + '" width="' + lw2 + '" height="24" rx="3"/><text x="' + U.cx + '" y="' + (sy + 17) + '" text-anchor="middle">' + label + '</text>' + (ub ? '<text class="timer" x="' + U.cx + '" y="' + (sy + 40) + '" text-anchor="middle" style="fill:#a86a00">승격 공사 ' + fmtTime(ub.endAt - st.time) + '</text>' : '') + '</g>';
+      if (E.canUpgradeUniv(st) === true) signs += '<g class="tag boost"><rect x="' + (U.cx + lw2 / 2 - 6) + '" y="' + (sy - 10) + '" width="40" height="17" rx="3"/><text x="' + (U.cx + lw2 / 2 + 14) + '" y="' + (sy + 3) + '" text-anchor="middle">승격!</text></g>'; }
     const order = E.ROOMS.slice().sort((a, b) => (a.plot[0] + a.plot[1]) - (b.plot[0] + b.plot[1]));
+    const topProd = E.ROOMS.filter((x) => x.role === 'A' && E.built(st, x.id)).pop();
     order.forEach((r) => {
       const [cx, cy] = center(r.plot[0], r.plot[1]);
-      const k = 0.94;
+      const k = 0.94, L = E.lv(st, r.id);
       const top = [cx, cy - H * k], right = [cx + W * k, cy], bottom = [cx, cy + H * k], left = [cx - W * k, cy];
-      const built = E.built(st, r.id), open = E.unlocked(st, r.id);
-      const col = built ? ROOM_COLOR[r.id] : open ? '#eef2f6' : '#c9d1db';
-      s += '<g class="plot' + (sel === r.id ? ' sel' : '') + '" data-id="' + r.id + '" tabindex="0" role="button" aria-label="' + r.name + (built ? ' 레벨 ' + E.lv(st, r.id) : open ? ' 공사 가능' : ' 잠김') + '">';
-      // 뒤쪽 두 벽
-      s += '<polygon points="' + pts([left, top, [top[0], top[1] - WALL], [left[0], left[1] - WALL]]) + '" fill="' + (built ? '#b8c4d3' : '#d6dde6') + '"/>';
-      s += '<polygon points="' + pts([top, right, [right[0], right[1] - WALL], [top[0], top[1] - WALL]]) + '" fill="' + (built ? '#a5b3c4' : '#cbd3dd') + '"/>';
-      s += '<polygon class="floor" points="' + pts([top, right, bottom, left]) + '" fill="' + col + '" stroke="' + (built ? '#8a96a5' : '#9aa9bb') + '" stroke-width="1.5"' + (built ? '' : ' stroke-dasharray="6 5"') + '/>';
+      const built = E.built(st, r.id), open = E.unlocked(st, r.id), b = E.building(st, r.id);
+      const col = built ? ROOM_COLOR[r.id] : open ? ['#eef2f6', '#e3e9f0'] : ['#c9d1db', '#bcc5d0'];
+      s += '<g class="plot' + (sel === r.id ? ' sel' : '') + '" data-id="' + r.id + '" tabindex="0" role="button" aria-label="' + r.name + (built ? ' 레벨 ' + L : open ? ' 공사 가능' : ' 잠김') + '">';
+      // 뒤쪽 벽 두 면(창문과 위쪽 몰딩)
+      const lw = [left, top, [top[0], top[1] - WALL], [left[0], left[1] - WALL]], rw = [top, right, [right[0], right[1] - WALL], [top[0], top[1] - WALL]];
+      s += '<polygon points="' + pts(lw) + '" fill="' + (built ? '#c4cedb' : '#d9dfe6') + '"/><polygon points="' + pts(rw) + '" fill="' + (built ? '#afbccc' : '#ced5de') + '"/>';
+      s += '<polyline points="' + pts([[left[0], left[1] - WALL], [top[0], top[1] - WALL], [right[0], right[1] - WALL]]) + '" fill="none" stroke="#8a96a5" stroke-width="4"/>';
       if (built) {
-        s += furniture(r.id, cx, cy);
-        if (r.role === 'A') { const n = Math.min(6, seat[r.id] || 0); for (let i = 0; i < n; i++) { const q = P(cx, cy, SEATS[i][0], SEATS[i][1]); s += person(q[0], q[1] + 4, SHIRTS[i % SHIRTS.length], 'bob b' + ((i % 4) + 1)); } }
-      } else {
-        s += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="15" font-weight="600" fill="#5a6879" font-family="IBM Plex Sans KR, sans-serif">' + (open ? '공사하기 · ' + fmt(E.upCost(st, r.id)) : '🔒 ' + E.TIERS[r.tier].name + '부터') + '</text>';
+        const wl = (a, b2, t0, t1, z0, z1) => { const p = (t, z) => [a[0] + (b2[0] - a[0]) * t, a[1] + (b2[1] - a[1]) * t - z]; return '<polygon points="' + pts([p(t0, z0), p(t1, z0), p(t1, z1), p(t0, z1)]) + '" fill="#d9ecfb" stroke="#8a96a5" stroke-width="1.5"/><line x1="' + p((t0 + t1) / 2, z0)[0] + '" y1="' + p((t0 + t1) / 2, z0)[1] + '" x2="' + p((t0 + t1) / 2, z1)[0] + '" y2="' + p((t0 + t1) / 2, z1)[1] + '" stroke="#8a96a5"/>'; };
+        if (r.id !== 'meeting') s += wl(left, top, 0.3, 0.62, 14, 34);
+        if (r.id !== 'server' && r.id !== 'library') s += wl(top, right, 0.38, 0.7, 14, 34);
       }
-      // 이름표
-      const label = r.name + (built ? ' Lv ' + E.lv(st, r.id) : '');
-      const lw = label.length * 12 + 14;
-      signs += '<g class="sign"><rect x="' + (cx - lw / 2) + '" y="' + (cy - H - 48) + '" width="' + lw + '" height="22" rx="3"/><text x="' + cx + '" y="' + (cy - H - 32) + '" text-anchor="middle">' + label + '</text></g>';
-      const isBott = built && ((f.bott === 'B' && r.id === 'meeting') || (f.bott === 'C' && r.id === 'office') || (f.bott === 'A' && r.role === 'A' && r.id === E.ROOMS.filter((x) => x.role === 'A' && E.built(st, x.id)).pop().id));
-      if (isBott) signs += '<g class="tag"><rect x="' + (cx + lw / 2 - 6) + '" y="' + (cy - H - 56) + '" width="36" height="17" rx="3"/><text x="' + (cx + lw / 2 + 12) + '" y="' + (cy - H - 43) + '" text-anchor="middle">병목</text></g>';
-      if (E.buffMult(st, r.id) > 1) signs += '<g class="tag boost"><rect x="' + (cx - lw / 2 - 30) + '" y="' + (cy - H - 56) + '" width="36" height="17" rx="3"/><text x="' + (cx - lw / 2 - 12) + '" y="' + (cy - H - 43) + '" text-anchor="middle">×' + E.buffMult(st, r.id) + '</text></g>';
+      s += '<polygon class="floor" points="' + pts([top, right, bottom, left]) + '" fill="' + col[0] + '" stroke="' + (built ? '#8a96a5' : '#9aa9bb') + '" stroke-width="1.5"' + (built ? '' : ' stroke-dasharray="6 5"') + '/>';
+      // 바닥 타일 줄
+      for (let i = -0.75; i < 0.8; i += 0.25) { const a1 = P(cx, cy, i, -0.94), a2 = P(cx, cy, i, 0.94), b1 = P(cx, cy, -0.94, i), b2 = P(cx, cy, 0.94, i); s += '<path d="M' + a1 + ' L' + a2 + ' M' + b1 + ' L' + b2 + '" stroke="' + col[1] + '" stroke-width="1"/>'; }
+      if (built) {
+        s += furniture(r.id, cx, cy, L);
+        if (r.role === 'A') { const n = Math.min(6, seat[r.id] || 0), cg = Math.max(0, E.eqGrade(E.eqLv(st, r.id, 1))); for (let i = 0; i < n; i++) { const q = P(cx, cy, SEATS[i][0], SEATS[i][1]); s += chair(q[0] + 6, q[1] + 4, cg) + person(q[0], q[1] + 4, SHIRTS[i % SHIRTS.length], 'bob b' + ((i % 4) + 1), null, null, true) + '<rect x="' + (q[0] - 5) + '" y="' + (q[1] - 12) + '" width="10" height="6" fill="#1d2735"/><rect class="glow" x="' + (q[0] - 4) + '" y="' + (q[1] - 11) + '" width="8" height="4" fill="#7fb2f0"/>'; } }
+      } else if (!b) {
+        s += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="15" font-weight="600" fill="#5a6879" font-family="IBM Plex Sans KR, sans-serif">' + (open ? '공사하기 · ' + fmt(E.upCost(st, r.id)) : '🔒 대학 ' + r.tier + '단계부터') + '</text>';
+      }
+      if (b) s += scaffold(cx, cy, b);
       s += '</g>';
+      // 이름표 (맨 위 층)
+      const label = r.name + (built ? ' Lv ' + L : '');
+      const lw2 = label.length * 12 + 16, sx = cx - lw2 / 2, sy = cy - H - 56;
+      signs += '<g class="sign"><rect class="bg" x="' + sx + '" y="' + sy + '" width="' + lw2 + '" height="22" rx="3"/><text x="' + cx + '" y="' + (sy + 16) + '" text-anchor="middle">' + label + '</text>' + (b ? '<text class="timer" x="' + cx + '" y="' + (sy + 36) + '" text-anchor="middle">공사 중 ' + fmtTime(b.endAt - st.time) + '</text>' : '') + '</g>';
+      const cid = st.cards.assign[r.id];
+      if (cid) { const c = E.CARDS.find((x) => x.id === cid); signs += '<g><circle cx="' + (sx - 4) + '" cy="' + (sy + 11) + '" r="11" fill="' + RAR_COL[c.rar] + '" stroke="#fff" stroke-width="2"/><text x="' + (sx - 4) + '" y="' + (sy + 15) + '" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">★</text></g>'; }
+      const isBott = built && ((f.bott === 'B' && r.id === 'meeting') || (f.bott === 'C' && r.id === 'office') || (f.bott === 'A' && topProd && r.id === topProd.id));
+      if (isBott) signs += '<g class="tag"><rect x="' + (sx + lw2 - 6) + '" y="' + (sy - 10) + '" width="36" height="17" rx="3"/><text x="' + (sx + lw2 + 12) + '" y="' + (sy + 3) + '" text-anchor="middle">병목</text></g>';
+      const bm = E.buffMult(st, r.id);
+      if (bm > 1) signs += '<g class="tag boost"><rect x="' + (sx + lw2 - 6) + '" y="' + (sy + 10) + '" width="36" height="17" rx="3"/><text x="' + (sx + lw2 + 12) + '" y="' + (sy + 23) + '" text-anchor="middle">×' + bm + '</text></g>';
     });
-    // 걸어 다니는 학생 위에 이름표를 그려 가리지 않게 한다
     s += '<g id="walkers"></g><g id="coins"></g><g pointer-events="none">' + signs + '</g>';
     $('map').innerHTML = s;
-    $('map').querySelectorAll('.plot').forEach((g) => {
-      const pick = () => { sel = g.dataset.id; drawMap(); renderRoom(); };
-      g.addEventListener('click', pick);
-      g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    $('map').querySelectorAll('.plot').forEach((gEl) => {
+      const pick = () => { sel = gEl.dataset.id; switchTab('room'); drawMap(); renderRoom(); };
+      gEl.addEventListener('click', pick);
+      gEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
     });
     mapSig = sigOf();
   }
-  let mapSig = '';
-  const sigOf = () => { const f = E.flow(st); return JSON.stringify(st.rooms) + st.students.length + st.tier + f.bott + sel + st.buffs.map((b) => b.target + b.mult).join(); };
 
-  // ---------- 걸어 다니는 학생: 데이터는 회의실로, 논문은 교수실로 ----------
+  // ---------- 걸어 다니는 학생 ----------
   const walkers = [];
   let spawnAcc = 0;
-  function spawnWalkers(dt) {
-    const f = E.flow(st);
-    if (f.t <= 0) return;
-    spawnAcc += dt * Math.min(2.2, 0.4 + Math.log10(1 + f.t) * 0.35);
-    while (spawnAcc >= 1 && walkers.length < 14) {
-      spawnAcc -= 1;
-      const prods = E.ROOMS.filter((r) => r.role === 'A' && E.built(st, r.id));
-      const from = prods[Math.floor(Math.random() * prods.length)];
-      walkers.push({ a: center(...from.plot), b: center(...E.room('meeting').plot), t: 0, kind: 'data', shirt: SHIRTS[Math.floor(Math.random() * SHIRTS.length)] });
-    }
-  }
   function stepWalkers(dt) {
+    const f = E.flow(st);
+    if (f.t > 0) {
+      spawnAcc += dt * Math.min(2.4, 0.4 + Math.log10(1 + f.t) * 0.35);
+      while (spawnAcc >= 1 && walkers.length < 16) {
+        spawnAcc -= 1;
+        const prods = E.ROOMS.filter((r) => r.role === 'A' && E.built(st, r.id));
+        const from = prods[Math.floor(Math.random() * prods.length)];
+        walkers.push({ a: center(...from.plot), b: center(...E.room('meeting').plot), t: 0, kind: 'data', shirt: SHIRTS[Math.floor(Math.random() * SHIRTS.length)] });
+      }
+    }
+    walkClock += dt * 9;
     for (let i = walkers.length - 1; i >= 0; i--) {
       const w = walkers[i];
       w.t += dt / 3.2;
-      if (w.t >= 1) {
-        walkers.splice(i, 1);
-        if (w.kind === 'data') walkers.push({ a: center(...E.room('meeting').plot), b: center(...E.room('office').plot), t: 0, kind: 'paper', shirt: w.shirt });
-        else coinPop();
-      }
+      if (w.t >= 1) { walkers.splice(i, 1); if (w.kind === 'data') walkers.push({ a: center(...E.room('meeting').plot), b: center(...E.room('office').plot), t: 0, kind: 'paper', shirt: w.shirt }); else coinPop(); }
     }
     const g = $('walkers'); if (!g) return;
-    g.innerHTML = walkers.map((w) => {
-      const x = w.a[0] + (w.b[0] - w.a[0]) * w.t, y = w.a[1] + (w.b[1] - w.a[1]) * w.t + 30;
-      const icon = w.kind === 'data' ? '<rect x="' + (x + 4) + '" y="' + (y - 22) + '" width="9" height="9" fill="#5b8def" stroke="#2346a3"/>' : '<rect x="' + (x + 4) + '" y="' + (y - 24) + '" width="9" height="11" fill="#fff" stroke="#8a96a5"/>';
-      return person(x, y, w.shirt) + icon;
+    g.innerHTML = walkers.map((w, i) => {
+      const x = w.a[0] + (w.b[0] - w.a[0]) * w.t, y = w.a[1] + (w.b[1] - w.a[1]) * w.t + 34;
+      const icon = w.kind === 'data' ? '<rect x="' + (x + 4) + '" y="' + (y - 26) + '" width="9" height="9" fill="#5b8def" stroke="#2346a3"/>' : '<rect x="' + (x + 4) + '" y="' + (y - 28) + '" width="9" height="11" fill="#fff" stroke="#8a96a5"/><path d="M' + (x + 6) + ' ' + (y - 24) + ' h5 M' + (x + 6) + ' ' + (y - 21) + ' h5" stroke="#8a96a5"/>';
+      return person(x, y, w.shirt, '', null, walkClock + i) + icon;
     }).join('');
   }
   function coinPop() {
@@ -299,32 +488,292 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     g.appendChild(el); setTimeout(() => el.remove(), 1200);
   }
 
-  // ---------- 패널 ----------
+  // ---------- 패널: 방 ----------
   function say(t) { $('ticker').textContent = t; }
+  const RAR_NAME = (r) => E.RARITY[r].name;
   function roomEffect(id) {
-    const r = E.room(id), L = E.lv(st, id);
-    if (r.role === 'A') return ['학생 1명당 초당 데이터', fmt(E.perStudent(st, id)), '좌석', E.seats(st, id) + '석 (앉은 학생 ' + (E.seating(st)[id] || 0) + '명)'];
-    if (r.role === 'B') return ['논문화 용량', '초당 ' + fmt(E.capOf(st, 'meeting')), '', ''];
-    if (r.role === 'C') return ['투고 용량', '초당 ' + fmt(E.capOf(st, 'office')), '', ''];
-    if (r.role === 'M') return ['편하게 지낼 수 있는 학생', E.comfort(st) + '명', '', ''];
-    return ['연구비 배율', '+' + Math.round(E.CFG.libraryBonus * L * 100) + '%', '', ''];
+    const r = E.room(id);
+    if (r.role === 'A') return [['학생 1명당 초당 데이터', fmt(E.perStudent(st, id))], ['좌석', E.seats(st, id) + '석 (앉은 학생 ' + (E.seating(st)[id] || 0) + '명)']];
+    if (r.role === 'B') return [['논문화 용량', '초당 ' + fmt(E.flow(st).b)]];
+    if (r.role === 'C') return [['투고 용량', '초당 ' + fmt(E.flow(st).c)], ['다른 방 최대 레벨', 'Lv ' + E.maxLevel(st, 'wetlab')], ['교수실 최대 레벨', 'Lv ' + E.maxLevel(st, 'office') + ' (대학 본관이 정함)']];
+    if (r.role === 'M') return [['편하게 지낼 수 있는 학생', E.comfort(st) + '명']];
+    return [['연구비 배율', '×' + E.valueMult(st).toFixed(1)]];
+  }
+  const EQ_DESC = { mult: (a) => '산출 +' + Math.round(a * 100) + '%', seat: (a) => '좌석 +' + a + '석', comfort: (a) => '휴게 정원 +' + a + '명', value: (a) => '연구비 +' + (a * 100).toFixed(1).replace(/\.0$/, '') + '%', fame: (a) => '명성 +' + Math.round(a * 100) + '%' };
+  const nextLookLv = (l) => (l < 1 ? 1 : l < 4 ? 4 : l < 7 ? 7 : l < 10 ? 10 : null);
+  function renderUniv() {
+    const box = $('roomCard'), u = E.UNIVS[st.univ], b = E.building(st, 'univ'), c = E.canUpgradeUniv(st), nx = E.UNIVS[st.univ + 1];
+    let h = '<h2>대학 본관 <small class="num">' + st.univ + '/' + E.UNIV_MAX + '단계</small></h2><p class="note">' + u.name + ' · ' + u.desc + '</p>' +
+      '<dl class="kv num"><dt>교수실 최대 레벨</dt><dd>Lv ' + u.cap + '</dd><dt>명성 보너스</dt><dd>+' + (st.univ - 1) * 15 + '%</dd></dl>';
+    if (b) h += '<div class="bar"><i style="width:' + Math.min(100, (1 - (b.endAt - st.time) / b.total) * 100) + '%"></i></div><p class="meta num">' + E.UNIVS[b.toLv].name + ' 승격 공사 중 · 남은 시간 ' + fmtTime(b.endAt - st.time) + '. 컨소시엄 동료가 도와주면 빨라진다.</p>';
+    if (nx) h += '<button class="btn primary" id="univBtn"' + (c === true ? '' : ' disabled') + '><span class="t">' + nx.name + '(으)로 승격</span><span class="s num">' + (c === true || c === '연구비 부족' ? '연구비 ' + fmt(nx.cost) + ' · ' + fmtTime(nx.sec) + (c === true ? '' : ' (연구비 부족)') : c) + '</span></button>';
+    else h += '<p class="meta">최고 단계에 올랐다. ' + (st.tier === E.LAST ? '세계적 명문대의 대가 랩실이 되었다.' : '살아있는 교과서로 승진하면 최종 목표를 이룬다.') + '</p>';
+    h += '<h3>대학 단계 <small>모든 방의 한계를 정한다</small></h3><ul class="ulist">';
+    for (let i = 1; i <= E.UNIV_MAX; i++) { const x = E.UNIVS[i]; h += '<li class="' + (i === st.univ ? 'cur' : i < st.univ ? 'done' : '') + '"><span class="n">' + i + '</span><div><b>' + x.name + '</b><div class="meta">' + (i > 1 ? E.TIERS[x.needTier].name + ' 이상 · ' : '') + '교수실 Lv ' + x.cap + '까지' + (E.ROOMS.some((r) => r.tier === i && i > 1) ? ' · ' + E.ROOMS.filter((r) => r.tier === i).map((r) => r.name).join('·') + ' 부지' : '') + '</div></div><span>' + (i < st.univ ? '✓' : i === st.univ ? '지금' : '') + '</span></li>'; }
+    h += '</ul>';
+    box.innerHTML = h;
+    if ($('univBtn')) $('univBtn').addEventListener('click', () => { if (E.upgradeUniv(st)) { save(); refresh(true); pushMe(true); } });
   }
   function renderRoom() {
-    const r = E.room(sel), built = E.built(st, sel), open = E.unlocked(st, sel);
+    if (sel === 'univ') return renderUniv();
+    const r = E.room(sel), built = E.built(st, sel), open = E.unlocked(st, sel), b = E.building(st, sel);
     const box = $('roomCard');
-    if (!open) { box.innerHTML = '<h2>' + r.name + ' <small>잠김</small></h2><p class="note">' + r.note + '</p><p class="s">' + E.TIERS[r.tier].name + '로 승진하면 공사할 수 있다.</p>'; return; }
-    const eff = built ? roomEffect(sel) : null;
+    if (!open) { box.innerHTML = '<h2>' + r.name + ' <small>잠김</small></h2><p class="note">' + r.note + '</p><p class="meta">대학 본관을 ' + E.UNIVS[r.tier].name + '(으)로 승격하면 공사할 수 있다.</p>'; return; }
     const can = E.canUpgrade(st, sel), cd = Math.max(0, Math.ceil((st.cooldown[sel] || 0) - st.time));
-    box.innerHTML = '<h2>' + r.name + ' <small class="num">' + (built ? 'Lv ' + E.lv(st, sel) : '미공사') + '</small></h2><p class="note">' + r.note + '</p>' +
-      (built ? '<dl class="kv num"><dt>' + eff[0] + '</dt><dd>' + eff[1] + '</dd>' + (eff[2] ? '<dt>' + eff[2] + '</dt><dd>' + eff[3] + '</dd>' : '') + '</dl>' : '') +
-      '<div class="btns"><button class="btn primary" id="upBtn"' + (can === true ? '' : ' disabled') + '><span class="t">' + (built ? '업그레이드' : '공사하기') + '</span><span class="s num">' + (can === true || can === '연구비 부족' ? fmt(E.upCost(st, sel)) : can) + '</span></button>' +
-      '<button class="btn" id="up10Btn"' + (built && can === true ? '' : ' disabled') + '><span class="t">×10 올리기</span><span class="s">살 수 있는 만큼</span></button>' +
+    const big = !b && E.bigWorkSec(st, sel) > 0;
+    let h = '<h2>' + r.name + ' <small class="num">' + (built ? 'Lv ' + E.lv(st, sel) + ' / 최대 ' + E.maxLevel(st, sel) : '미공사') + '</small></h2><p class="note">' + r.note + '</p>';
+    if (built) h += '<dl class="kv num">' + roomEffect(sel).map((e) => '<dt>' + e[0] + '</dt><dd>' + e[1] + '</dd>').join('') + '</dl>';
+    if (b) h += '<p class="meta num">' + (b.toLv === 1 ? '공사' : 'Lv ' + b.toLv + ' 대공사') + ' 중 · 남은 시간 ' + fmtTime(b.endAt - st.time) + '. 컨소시엄 동료가 도와주면 빨라진다.</p>';
+    h += '<div class="btns"><button class="btn primary" id="upBtn"' + (can === true ? '' : ' disabled') + '><span class="t">' + (built ? (big ? '대공사 시작' : '업그레이드') : '공사하기') + '</span><span class="s num">' + (can === true || can === '연구비 부족' ? fmt(E.upCost(st, sel)) + (big ? ' · ' + fmtTime(E.bigWorkSec(st, sel)) : '') : can) + '</span></button>' +
+      '<button class="btn" id="up10Btn"' + (built && can === true && !big ? '' : ' disabled') + '><span class="t">×10 올리기</span><span class="s">대공사 전까지</span></button>' +
       '<button class="btn wide" id="cheerBtn"' + (built && !cd ? '' : ' disabled') + '><span class="t">독려하기</span><span class="s num">' + (cd ? '다시 독려까지 ' + cd + '초' : '15초 동안 이 방 2배') + '</span></button></div>';
-    $('upBtn').addEventListener('click', () => { if (E.upgrade(st, sel)) { save(); refresh(true); } });
-    $('up10Btn').addEventListener('click', () => { let n = 0; while (n < 10 && E.upgrade(st, sel)) n++; if (n) { say(r.name + ' 레벨을 ' + n + ' 올렸다.'); save(); refresh(true); } });
+    if (built) {
+      h += '<h3>가구·장비 <small>하나씩 따로 올린다</small></h3>';
+      E.EQUIP[sel].forEach((e, i) => {
+        const l = E.eqLv(st, sel, i), c = E.canEquip(st, sel, i), look = E.eqLook(st, sel, i), nl = nextLookLv(l);
+        h += '<div class="rowi"><div><div class="nm">' + e[0] + ' <span class="look">' + (look || '없음') + '</span></div><div class="pips num" aria-label="레벨 ' + l + '/' + E.EQUIP_MAX + '">' + '●'.repeat(l) + '○'.repeat(E.EQUIP_MAX - l) + '</div><div class="meta">레벨마다 ' + EQ_DESC[e[1]](e[2]) + (nl ? ' · Lv ' + nl + '에 「' + e[3][E.eqGrade(nl)] + '」' : '') + '</div></div><button class="btn" data-eq="' + i + '"' + (c === true ? '' : ' disabled') + '><span class="t num">' + (c === true || c === '연구비 부족' ? fmt(E.eqCost(st, sel, i)) : c) + '</span><span class="s">' + (l >= E.EQUIP_MAX ? '' : l ? '강화' : '들이기') + '</span></button></div>';
+      });
+      const cid = st.cards.assign[sel];
+      h += '<h3>스타 연구원 <small>방 하나에 한 명</small></h3>';
+      if (cid) {
+        const c = E.CARDS.find((x) => x.id === cid), sk = E.RARITY[c.rar].skill, scd = Math.max(0, Math.ceil((st.cards.skillCd[cid] || 0) - st.time));
+        h += '<div class="rowi"><div><div class="nm"><span class="rar ' + c.rar + '">' + RAR_NAME(c.rar) + '</span> ' + c.name + ' ' + '★'.repeat(st.cards.owned[cid]) + '</div><div class="meta">상시 ×' + E.cardMult(st, sel).toFixed(2) + ' · 스킬 「' + c.skill + '」 ' + sk[1] + '초 ×' + sk[0] + '</div></div><button class="btn primary" id="skillBtn"' + (scd ? ' disabled' : '') + '><span class="t">스킬</span><span class="s num">' + (scd ? fmtTime(scd) : '사용') + '</span></button></div>';
+      } else h += '<p class="meta">배치된 연구원이 없다. 연구원 탭에서 이 방에 맞는 연구원을 배치하세요.</p>';
+    }
+    box.innerHTML = h;
+    $('upBtn').addEventListener('click', () => { if (E.upgrade(st, sel)) { save(); refresh(true); if (st.builds.length) pushMe(true); } });
+    $('up10Btn').addEventListener('click', () => { let n = 0; while (n < 10 && E.bigWorkSec(st, sel) === 0 && E.upgrade(st, sel)) n++; if (n) { say(r.name + ' 레벨을 ' + n + ' 올렸다.'); save(); refresh(true); } });
     $('cheerBtn').addEventListener('click', () => { if (E.encourage(st, sel)) { say(r.name + '을(를) 독려했다. "다들 조금만 더 힘내자!"'); refresh(true); } });
+    box.querySelectorAll('[data-eq]').forEach((bt) => bt.addEventListener('click', () => { const i = +bt.dataset.eq, before = E.eqLook(st, sel, i); if (E.upgradeEquip(st, sel, i)) { const after = E.eqLook(st, sel, i); if (after !== before) say(r.name + '에 「' + after + '」을(를) 들였다.'); save(); refresh(true); } }));
+    if ($('skillBtn')) $('skillBtn').addEventListener('click', () => { if (E.useSkill(st, sel)) refresh(true); });
   }
-  let roomSig = '';
+  function renderHire() {
+    const hc = E.canHire(st);
+    $('hireCard').innerHTML = '<h2>학생 모집 <small class="num">' + st.students.length + '/' + E.maxStudents(st) + '명</small></h2><p class="note">학생은 생산 공간의 빈자리에 앉아 데이터를 만든다. 휴게실 정원을 넘기면 분위기가 떨어진다.</p>' +
+      '<button class="btn primary" id="hireBtn"' + (hc === true ? '' : ' disabled') + '><span class="t">학생 뽑기</span><span class="s num">' + (hc === '자리 부족' ? '빈자리가 없다 (생산 공간 레벨·실험대·랙으로 좌석이 는다)' : '연구비 ' + fmt(E.hireCost(st))) + '</span></button><ul class="students" id="studentList"></ul>';
+    $('hireBtn').addEventListener('click', () => { if (E.hire(st)) { save(); refresh(true); } });
+    st.students.slice().reverse().slice(0, 40).forEach((s) => { const li = document.createElement('li'); li.textContent = s.name; const sp = document.createElement('span'); sp.textContent = E.GRADES[s.grade]; li.appendChild(sp); $('studentList').appendChild(li); });
+  }
+
+  // ---------- 패널: 학과 연구 ----------
+  function renderLab() {
+    const a = st.research.active;
+    let h = '<h2>학과 연구 <small>한 번에 하나</small></h2><p class="note">연구비와 시간을 들여 연구실 전체를 영구히 강화한다.</p>';
+    if (a) h += '<div class="rowi"><div><div class="nm">' + E.RESEARCH[a.id].name + ' Lv ' + a.toLv + ' 연구 중</div><div class="bar"><i style="width:' + Math.min(100, (1 - (a.endAt - st.time) / a.total) * 100) + '%"></i></div><div class="meta num">남은 시간 ' + fmtTime(a.endAt - st.time) + ' · 컨소시엄 동료가 도와주면 빨라진다</div></div><span></span></div>';
+    Object.keys(E.RESEARCH).forEach((id) => {
+      const R = E.RESEARCH[id], l = E.rlv(st, id), c = E.canResearch(st, id);
+      h += '<div class="rowi"><div><div class="nm">' + R.name + ' <span class="pips num">Lv ' + l + '/' + R.max + '</span></div><div class="meta">레벨마다 ' + R.desc + (l < R.max ? ' · 다음 연구 ' + fmtTime(E.researchSec(st, id)) : '') + '</div></div><button class="btn" data-rs="' + id + '"' + (c === true ? '' : ' disabled') + '><span class="t num">' + (l >= R.max ? '최대' : fmt(E.researchCost(st, id))) + '</span><span class="s">' + (c === true ? '연구 시작' : l >= R.max ? '' : c) + '</span></button></div>';
+    });
+    $('panel-lab').innerHTML = h;
+    $('panel-lab').querySelectorAll('[data-rs]').forEach((b) => b.addEventListener('click', () => { if (E.startResearch(st, b.dataset.rs)) { say(E.RESEARCH[b.dataset.rs].name + ' 연구를 시작했다.'); save(); pushMe(true); refresh(true); renderLab(); } }));
+  }
+
+  // ---------- 패널: 스타 연구원 ----------
+  function renderCards() {
+    let h = '<h2>스타 연구원 <small class="num">모집권 ' + st.tickets + '장</small></h2><p class="note">모집권으로 뽑아 방에 배치한다. 같은 연구원이 또 나오면 별이 오르고 배율이 25%씩 는다.</p>' +
+      '<div class="btns"><button class="btn primary" id="drawBtn"' + (st.tickets > 0 ? '' : ' disabled') + '><span class="t">1번 뽑기</span><span class="s">모집권 1장</span></button><button class="btn" id="draw10Btn"' + (st.tickets >= 10 ? '' : ' disabled') + '><span class="t">10번 뽑기</span><span class="s">모집권 10장</span></button></div>' +
+      '<p class="meta">모집권은 일일 미션, 승진, 과제 선정 이벤트, 컨소시엄 주간 목표에서 무료로 얻는다. 결제로 파는 상품은 없다. 등급 확률: 일반 60% · 희귀 28% · 영웅 9% · 전설 3%. 영웅 이상 없이 ' + E.CARD_PITY + '번 뽑으면 다음은 영웅 이상 확정 (지금 ' + st.cards.pity + '/' + E.CARD_PITY + ').</p><div class="cards">';
+    E.CARDS.forEach((c) => {
+      const own = st.cards.owned[c.id], where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === c.id);
+      const roleName = { A: '생산 공간', B: '회의실', C: '교수실', M: '휴게실', any: '어느 방이든' }[c.role];
+      h += '<div class="cardi ' + c.rar + (own ? '' : ' missing') + '"><span class="rar ' + c.rar + '">' + RAR_NAME(c.rar) + ' · ' + E.cardRate(c.id).toFixed(1) + '%</span><b>' + (own ? c.name + ' ' + '★'.repeat(own) : '???') + '</b><span class="meta">' + roleName + ' · 상시 ×' + E.RARITY[c.rar].mult + (own ? ' · 스킬 「' + c.skill + '」' : '') + '</span>' +
+        (own ? '<select data-card="' + c.id + '" aria-label="' + c.name + ' 배치할 방"><option value="">' + (where ? E.room(where).name + '에 배치됨' : '배치할 방 고르기') + '</option>' + E.ROOMS.filter((r) => E.built(st, r.id) && E.roleFits(c, r.id)).map((r) => '<option value="' + r.id + '">' + r.name + '</option>').join('') + (where ? '<option value="-">배치 해제</option>' : '') + '</select>' : '') + '</div>';
+    });
+    h += '</div>';
+    $('panel-cards').innerHTML = h;
+    const drawN = (n) => { const got = []; for (let i = 0; i < n; i++) { const r = E.drawCard(st); if (r) got.push(r); } if (got.length) { save(); renderCards(); refresh(true); openModal('<h2>연구원 모집</h2>' + got.map((x) => '<p><span class="rar ' + x.card.rar + '">' + RAR_NAME(x.card.rar) + '</span> ' + x.card.name + (x.isNew ? ' <b>NEW</b>' : ' ★+1') + '</p>').join(''), [{ label: '좋아', primary: true }]); } };
+    $('drawBtn').addEventListener('click', () => drawN(1));
+    $('draw10Btn').addEventListener('click', () => drawN(10));
+    $('panel-cards').querySelectorAll('select[data-card]').forEach((s2) => s2.addEventListener('change', () => {
+      const v = s2.value, cid = s2.dataset.card;
+      if (v === '-') { const where = Object.keys(st.cards.assign).find((k) => st.cards.assign[k] === cid); if (where) E.unassignCard(st, where); }
+      else if (v && E.assignCard(st, cid, v)) say(E.CARDS.find((x) => x.id === cid).name + '을(를) ' + E.room(v).name + '에 배치했다.');
+      save(); renderCards(); refresh(true);
+    }));
+  }
+
+  // ---------- 패널: 일일 미션 ----------
+  function renderMission() {
+    let h = '<h2>일일 미션 <small class="num">' + st.missions.day + '</small></h2><p class="note">매일 자정에 새로 열린다. 하나 끝낼 때마다 모집권 1장과 연구비 5분 치.</p>';
+    Object.keys(E.MISSIONS).forEach((id) => {
+      const m = E.MISSIONS[id], p = Math.min(m.goal, st.missions.prog[id] || 0), done = E.missionDone(st, id), got = st.missions.claimed[id];
+      h += '<div class="rowi"><div><div class="nm">' + m.name + '</div><div class="bar"><i style="width:' + (p / m.goal) * 100 + '%"></i></div><div class="meta num">' + p + '/' + m.goal + '</div></div><button class="btn gold" data-ms="' + id + '"' + (done && !got ? '' : ' disabled') + '><span class="t">' + (got ? '받음' : '보상 받기') + '</span><span class="s">모집권 1</span></button></div>';
+    });
+    h += '<button class="btn primary" id="msBonus"' + (E.allMissionsClaimed(st) && !st.missions.bonus ? '' : ' disabled') + '><span class="t">' + (st.missions.bonus ? '오늘 보너스 받음' : '모두 끝내면 보너스') + '</span><span class="s">모집권 2장</span></button>';
+    $('panel-mission').innerHTML = h;
+    $('panel-mission').querySelectorAll('[data-ms]').forEach((b) => b.addEventListener('click', () => { if (E.claimMission(st, b.dataset.ms)) { save(); renderMission(); refresh(true); } }));
+    $('msBonus').addEventListener('click', () => { if (E.claimMissionBonus(st)) { save(); renderMission(); refresh(true); } });
+  }
+
+  // ---------- 패널: 컨소시엄 (claude.ai에서 열었을 때만) ----------
+  // 각자 members/<내 id> 문서에만 쓰고, 컨소시엄은 alliances/<만든 사람 id>. 기술 레벨·도움·주간 목표는 멤버 문서를 읽어 합산한다.
+  let db = null, userApi = null, myId = null, canWrite = null, members = {}, alliances = {}, pushing = false, lastPushSig = '', lastPushAt = 0, writeErr = '';
+  const num = (v, d) => (typeof v === 'number' && isFinite(v) ? v : d);
+  const str = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
+  function cleanMember(id, d) {
+    const donated = {}; Object.keys(E.ALLY_TECH).forEach((k) => { donated[k] = Math.max(0, Math.min(1e6, num((d.donated || {})[k], 0))); });
+    const helps = {}; if (d.helps && typeof d.helps === 'object') Object.keys(d.helps).slice(0, 50).forEach((k) => { if (typeof d.helps[k] === 'string') helps[k] = d.helps[k].slice(0, 40); });
+    const reqs = Array.isArray(d.reqs) ? d.reqs.slice(0, 4).map((r) => ({ reqId: str(r && r.reqId, 20), label: str(r && r.label, 40), left: num(r && r.left, 0), at: num(r && r.at, 0) })) : [];
+    return { id, nick: str(d.nick, 12), ally: str(d.ally, 80) || null, tier: Math.min(5, Math.max(1, num(d.tier, 1) | 0)), univ: Math.min(5, Math.max(1, num(d.univ, 1) | 0)), power: Math.max(0, num(d.power, 0)), donated, weekKey: str(d.weekKey, 10), weekPapers: Math.max(0, num(d.weekPapers, 0)), helpGiven: num(d.helpGiven, 0), helps, reqs, at: num(d.updatedAt, 0) };
+  }
+  const team = () => (st.ally.id ? Object.values(members).filter((m) => m.ally === st.ally.id) : []);
+  function syncAlly() {
+    if (!st.ally.id) { st.allyTech = {}; return; }
+    // 기술 점수: 다른 멤버 문서의 기부 점수 + 내 점수
+    const sums = {}; Object.keys(E.ALLY_TECH).forEach((k) => { sums[k] = st.ally.donated[k] || 0; });
+    team().forEach((m) => { if (m.id !== myId) Object.keys(sums).forEach((k) => { sums[k] += m.donated[k]; }); });
+    st.allyTech = sums;
+    // 나에게 온 도움 반영
+    const counts = {};
+    team().forEach((m) => { if (m.id === myId) return; const h = m.helps[myId]; if (!h) return; const [rid, n] = h.split(':'); counts[rid] = (counts[rid] || 0) + (Number(n) || 0); });
+    Object.keys(counts).forEach((rid) => { const cut = E.applyHelps(st, rid, counts[rid]); if (cut > 0) say('컨소시엄 동료들이 도와줘서 ' + fmtTime(cut) + ' 빨라졌다.'); });
+  }
+  async function initCloud() {
+    const C = window.claude;
+    if (!C || typeof C.use !== 'function') return;
+    try { [db, userApi] = await Promise.all([C.use('db'), C.use('user')]); } catch (e) { db = null; }
+    if (!db) { if (tab === 'ally') renderAlly(); return; }
+    myId = userApi ? await userApi.id() : null;
+    canWrite = userApi ? await userApi.can('data.write') : null;
+    db.collection('members').onSnapshot((snap) => { members = {}; snap.docs.forEach((d) => { if (d.exists) members[d.id] = cleanMember(d.id, d.data() || {}); }); syncAlly(); if (tab === 'ally') renderAlly(); }, () => { if (tab === 'ally') renderAlly(); });
+    db.collection('alliances').onSnapshot((snap) => { alliances = {}; snap.docs.forEach((d) => { if (d.exists) { const x = d.data() || {}; alliances[d.id] = { id: d.id, name: str(x.name, 20) || '이름 없는 컨소시엄' }; } }); if (tab === 'ally') renderAlly(); }, () => {});
+    if (tab === 'ally') renderAlly();
+  }
+  function myDoc() {
+    return { nick: st.ally.nick || '', ally: st.ally.id || null, tier: st.tier, univ: st.univ, power: E.power(st), donated: st.ally.donated, weekKey: st.week.key, weekPapers: Math.floor(st.week.papers), helpGiven: st.ally.helpGiven, helps: st.ally.helps,
+      reqs: E.helpRequests(st).map((r) => ({ reqId: r.reqId, label: r.label, left: Math.max(0, Math.round(r.endAt - st.time)), at: Date.now() })), updatedAt: Date.now() };
+  }
+  // 바뀐 게 있을 때만, 많아야 30초에 한 번 내 문서를 쓴다 (force는 버튼을 누른 직후)
+  function pushMe(force) {
+    if (!db || !myId || !st.ally.id || pushing || canWrite === false) return;
+    const d = myDoc(), sig = JSON.stringify(Object.assign({}, d, { updatedAt: 0, reqs: d.reqs.map((r) => r.reqId), power: 0, weekPapers: Math.floor(d.weekPapers / 10) }));
+    if (!force && (sig === lastPushSig || Date.now() - lastPushAt < 30000)) return;
+    pushing = true;
+    db.doc('members/' + myId).set(d).then(() => { lastPushSig = sig; lastPushAt = Date.now(); writeErr = ''; }).catch((e) => { writeErr = (e && e.code) || 'unavailable'; }).finally(() => { pushing = false; if (tab === 'ally') renderAlly(); });
+  }
+  setInterval(() => pushMe(false), 10000);
+  function li2(main, sub, right, cls) {
+    const li = document.createElement('li'); if (cls) li.className = cls;
+    const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = main; d.appendChild(b);
+    if (sub) { const s = document.createElement('div'); s.className = 'sub'; s.textContent = sub; d.appendChild(s); }
+    li.appendChild(d); li.appendChild(right || document.createElement('span'));
+    return li;
+  }
+  function renderAlly() {
+    const box = $('panel-ally');
+    const intro = '<p class="note">다른 교수들과 컨소시엄(연합)을 맺으면 공사·연구를 서로 도와 시간을 줄이고, 기부로 공동 기술을 올리고, 주간 공동 목표를 함께 채운다.</p>';
+    if (!db) { box.innerHTML = '<div class="card"><h2>연구 컨소시엄</h2>' + intro + '<p class="meta">컨소시엄은 claude.ai에서 공유된 이 게임을 열었을 때 켜집니다. 파일로 직접 열면 혼자 플레이만 됩니다.</p></div>'; return; }
+    if (!myId) { box.innerHTML = '<div class="card"><h2>연구 컨소시엄</h2><p class="meta">로그인한 claude.ai 계정으로 열어야 컨소시엄에 참여할 수 있습니다.</p></div>'; return; }
+    const me = st.ally.id;
+    let h = '';
+    if (canWrite === false) h += '<div class="card"><p class="meta">컨소시엄에 가입하고 기부·도움을 하려면 이 게임을 공유한 사람에게 기여자(Contributor) 이상 권한을 받아야 합니다. 지금은 목록만 볼 수 있습니다.</p></div>';
+    if (!me) {
+      h += '<div class="card"><h2>연구 컨소시엄 <small>연합</small></h2>' + intro +
+        '<div class="join"><input id="allyNick" maxlength="12" placeholder="내 닉네임 (12자)" aria-label="내 닉네임"><input id="allyName" maxlength="20" placeholder="새 컨소시엄 이름 (20자)" aria-label="새 컨소시엄 이름"></div>' +
+        '<button class="btn primary center" id="allyCreate"><span class="t">컨소시엄 만들기</span><span class="s">내가 대표가 된다</span></button>' + (writeErr ? '<p class="meta">저장하지 못했다 (' + writeErr + ').</p>' : '') + '</div>';
+      h += '<div class="card"><h3>가입할 수 있는 컨소시엄</h3><ul class="list" id="allyList"></ul></div>';
+      box.innerHTML = h;
+      const counts = {}, pw = {}; Object.values(members).forEach((m) => { if (m.ally) { counts[m.ally] = (counts[m.ally] || 0) + 1; pw[m.ally] = (pw[m.ally] || 0) + m.power; } });
+      const list = Object.values(alliances).filter((a) => counts[a.id]).sort((x, y) => pw[y.id] - pw[x.id]);
+      const ul = $('allyList');
+      if (!list.length) ul.appendChild(li2('아직 컨소시엄이 없다', '처음으로 만들어 보세요.'));
+      list.forEach((a) => { const bt = document.createElement('button'); bt.className = 'btn'; bt.innerHTML = '<span class="t">가입</span>'; bt.disabled = counts[a.id] >= 20 || canWrite === false; bt.addEventListener('click', () => joinAlly(a.id)); ul.appendChild(li2(a.name, '멤버 ' + counts[a.id] + '/20 · 연구력 ' + pw[a.id].toLocaleString('ko-KR'), bt)); });
+      $('allyNick').value = st.ally.nick || '';
+      $('allyCreate').disabled = canWrite === false;
+      $('allyCreate').addEventListener('click', () => {
+        const name = $('allyName').value.trim().slice(0, 20);
+        if (!name) { $('allyName').focus(); return; }
+        db.doc('alliances/' + myId).set({ name, createdAt: Date.now() }).then(() => joinAlly(myId)).catch((e) => { writeErr = (e && e.code) || 'unavailable'; renderAlly(); });
+      });
+      return;
+    }
+    const A = alliances[me] || { name: '컨소시엄' }, T = team().filter((m) => m.id !== myId);
+    const teamPapers = Math.floor(st.week.papers) + T.reduce((s, m) => s + (m.weekKey === st.week.key ? m.weekPapers : 0), 0);
+    h += '<div class="card"><h2 id="allyTitle"></h2><p class="meta num">멤버 ' + (T.length + 1) + '/20 · 이번 주 ' + st.week.key + (me === myId ? ' · 내가 대표' : '') + '</p>' +
+      '<div class="join"><input id="allyNick" maxlength="12" placeholder="내 닉네임" aria-label="내 닉네임"><button class="btn" id="allyNickSave"><span class="t">닉네임 저장</span></button><button class="btn" id="allyLeave"><span class="t">탈퇴</span></button></div>' + (writeErr ? '<p class="meta">저장하지 못했다 (' + writeErr + ').</p>' : '') + '</div>';
+    h += '<div class="card"><h3>도움 요청 <small>도와주면 동료의 남은 시간이 줄고, 나는 연구비 1분 치를 받는다</small></h3><ul class="list" id="helpList"></ul>' +
+      '<p class="meta">내 공사·연구·대학 승격은 동료에게 자동으로 도움 요청이 간다. 도움 1번에 남은 시간이 30초 또는 전체의 4% 중 큰 만큼 줄어든다(요청당 최대 ' + E.HELP_MAX + '번).</p></div>';
+    h += '<div class="card"><h3>공동 기술 <small>기부 1번 = 연구비 10분 치 = 10점</small></h3>';
+    Object.keys(E.ALLY_TECH).forEach((k) => { const t = E.ALLY_TECH[k], p = st.allyTech[k] || 0, lvl = E.allyTechLevel(p), next = Math.pow(lvl + 1, 2) * 20; h += '<div class="rowi"><div><div class="nm">' + t.name + ' <span class="pips num">Lv ' + lvl + '</span></div><div class="meta num">레벨마다 ' + t.desc + ' · ' + p + '/' + next + '점 · 내 기부 ' + (st.ally.donated[k] || 0) + '점</div></div><button class="btn gold" data-don="' + k + '"' + (canWrite === false ? ' disabled' : '') + '><span class="t num">' + fmt(E.donateCost(st)) + '</span><span class="s">기부</span></button></div>'; });
+    h += '</div>';
+    h += '<div class="card"><h3>주간 공동 목표 <small class="num">멤버 논문 합계 ' + teamPapers.toLocaleString('ko-KR') + '편</small></h3>';
+    E.WEEK_GOALS.forEach((g, i) => { h += '<div class="rowi"><div><div class="nm">' + (i + 1) + '단계 · 논문 ' + g.papers.toLocaleString('ko-KR') + '편</div><div class="bar"><i style="width:' + Math.min(100, (teamPapers / g.papers) * 100) + '%"></i></div><div class="meta">모집권 ' + g.tickets + '장 + 연구비 ' + g.minutes + '분 치</div></div><button class="btn gold" data-wk="' + i + '"' + (teamPapers >= g.papers && !st.week.claimed[i] ? '' : ' disabled') + '><span class="t">' + (st.week.claimed[i] ? '받음' : '상자 열기') + '</span></button></div>'; });
+    h += '</div>';
+    h += '<div class="card"><h3>멤버 <small>연구력 순</small></h3><ul class="list" id="memberList"></ul></div>';
+    h += '<div class="card"><h3>컨소시엄 순위 <small>멤버 연구력 합</small></h3><ul class="list" id="allyRank"></ul></div>';
+    box.innerHTML = h;
+    $('allyTitle').textContent = A.name;
+    $('allyNick').value = st.ally.nick || '';
+    $('allyNickSave').addEventListener('click', () => { st.ally.nick = $('allyNick').value.trim().slice(0, 12); save(); pushMe(true); say('닉네임을 저장했다.'); });
+    $('allyLeave').addEventListener('click', () => { openModal('<h2>컨소시엄 탈퇴</h2><p>탈퇴하면 공동 기술 보너스가 사라지고, 내가 기부한 점수도 0이 된다.</p>', [{ label: '탈퇴한다', fn: () => { st.ally.id = null; st.ally.donated = {}; st.allyTech = {}; save(); db.doc('members/' + myId).set(myDoc()).catch(() => {}); renderAlly(); refresh(true); } }, { label: '취소', primary: true }]); });
+    // 도움 요청 목록
+    const now = Date.now(), hl = $('helpList');
+    const reqs = []; T.forEach((m) => m.reqs.forEach((r) => { const left = r.left - (now - r.at) / 1000; if (left > 0 && r.reqId) reqs.push({ m, r, left }); }));
+    if (!reqs.length) hl.appendChild(li2('지금 도움이 필요한 동료가 없다'));
+    reqs.forEach((x) => { const bt = document.createElement('button'); bt.className = 'btn primary'; const given = (st.ally.helps[x.m.id] || '').startsWith(x.r.reqId + ':'); bt.innerHTML = '<span class="t">' + (given ? '도움 완료' : '도와주기') + '</span>'; bt.disabled = given || canWrite === false; bt.addEventListener('click', () => { if (E.giveHelp(st, x.m.id, x.r.reqId)) { say((x.m.nick || '동료') + '의 ' + x.r.label + '을(를) 도왔다. 연구비를 받았다.'); save(); pushMe(true); renderAlly(); } }); hl.appendChild(li2((x.m.nick || '익명 교수') + ' · ' + x.r.label, '남은 시간 약 ' + fmtTime(x.left), bt)); });
+    box.querySelectorAll('[data-don]').forEach((b) => b.addEventListener('click', () => { if (E.donate(st, b.dataset.don)) { syncAlly(); save(); pushMe(true); renderAlly(); refresh(true); } else say('기부할 연구비가 부족하다.'); }));
+    box.querySelectorAll('[data-wk]').forEach((b) => b.addEventListener('click', () => { if (E.claimWeek(st, +b.dataset.wk, teamPapers)) { say('주간 공동 목표 상자를 열었다!'); save(); renderAlly(); refresh(true); } }));
+    // 멤버 목록: 닉네임이 없으면 claude.ai 이름으로
+    const ml = $('memberList');
+    const rows = T.map((m) => ({ id: m.id, nick: m.nick, tier: m.tier, univ: m.univ, power: m.power, helpGiven: m.helpGiven, week: m.weekKey === st.week.key ? m.weekPapers : 0 }));
+    rows.push({ id: myId, nick: st.ally.nick, tier: st.tier, univ: st.univ, power: E.power(st), helpGiven: st.ally.helpGiven, week: Math.floor(st.week.papers) });
+    rows.sort((a, b) => b.power - a.power).forEach((m) => {
+      const v = document.createElement('span'); v.className = 'num'; v.textContent = m.power.toLocaleString('ko-KR');
+      const el = li2((m.nick || '익명 교수') + (m.id === me ? ' (대표)' : '') + (m.id === myId ? ' (나)' : ''), E.UNIVS[m.univ].name + ' ' + E.TIERS[m.tier].name + ' · 도움 ' + m.helpGiven + '번 · 이번 주 논문 ' + m.week + '편', v, m.id === myId ? 'me' : '');
+      if (!m.nick) el.querySelector('b').dataset.uid = m.id;
+      ml.appendChild(el);
+    });
+    if (userApi && userApi.profiles) userApi.profiles(rows.filter((m) => !m.nick).map((m) => m.id)).then((ps) => { ml.querySelectorAll('b[data-uid]').forEach((el) => { const p = ps && ps[el.dataset.uid]; if (p && p.name) el.textContent = p.name + (el.dataset.uid === myId ? ' (나)' : ''); }); }).catch(() => {});
+    const counts = {}, pw = {}; Object.values(members).forEach((m) => { if (m.ally) { counts[m.ally] = (counts[m.ally] || 0) + 1; pw[m.ally] = (pw[m.ally] || 0) + (m.id === myId ? E.power(st) : m.power); } });
+    if (!counts[me]) { counts[me] = 1; pw[me] = E.power(st); }
+    const ar = $('allyRank');
+    Object.keys(pw).filter((id) => alliances[id]).sort((a, b) => pw[b] - pw[a]).slice(0, 20).forEach((id, i) => { const v = document.createElement('span'); v.className = 'num'; v.textContent = pw[id].toLocaleString('ko-KR'); ar.appendChild(li2((i + 1) + '. ' + alliances[id].name, '멤버 ' + counts[id] + '명', v, id === me ? 'me' : '')); });
+  }
+  function joinAlly(id) {
+    st.ally.id = id;
+    const n = $('allyNick'); if (n) st.ally.nick = n.value.trim().slice(0, 12);
+    syncAlly(); save(); pushMe(true); renderAlly(); refresh(true);
+    say('컨소시엄에 가입했다. 공사·연구를 시작하면 동료에게 도움 요청이 간다.');
+  }
+
+  // ---------- 패널: 기록 ----------
+  function renderRec() {
+    $('panel-rec').innerHTML = '<h2>기록</h2><dl class="kv num"><dt>플레이 시간</dt><dd>' + fmtTime(st.time) + '</dd><dt>대학</dt><dd>' + E.UNIVS[st.univ].name + '</dd><dt>누적 연구비</dt><dd>' + fmt(st.totalMoney) + '</dd><dt>정년 퇴임</dt><dd>' + st.runs + '번</dd><dt>월계관</dt><dd>' + st.laurels + '개</dd><dt>연구력</dt><dd>' + E.power(st).toLocaleString('ko-KR') + '</dd><dt>공사 대기열</dt><dd>' + st.builds.length + '/' + E.buildSlots(st) + '</dd></dl>' +
+      '<button class="btn" id="resetBtn"><span class="t">처음부터 다시 하기</span><span class="s">이 기기의 진행이 지워집니다</span></button><div id="resetConfirm" hidden class="btns"><button class="btn" id="resetYes"><span class="t">정말 지우기</span></button><button class="btn" id="resetNo"><span class="t">취소</span></button></div>';
+    $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
+    $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
+    $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); save(); refresh(true); renderRec(); say('작은 나라 지방 사립대에 조교수로 부임했다.'); });
+  }
+
+  // ---------- 화면 갱신 ----------
+  function switchTab(t) {
+    tab = t;
+    document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'));
+    ['room', 'lab', 'cards', 'mission', 'ally', 'rec'].forEach((k) => { $('panel-' + k).hidden = k !== t; });
+    tabSig = ''; roomSig = '';
+    renderTab(true);
+  }
+  let tabSig = '', roomSig = '';
+  function renderTab(force) {
+    if (tab === 'room') {
+      const rs = sel === 'univ' ? 'u' + st.univ + E.canUpgradeUniv(st) + (E.building(st, 'univ') ? Math.ceil(E.building(st, 'univ').endAt - st.time) : '') + st.tier :
+        sel + E.lv(st, sel) + E.canUpgrade(st, sel) + Math.ceil((st.cooldown[sel] || 0) - st.time) + st.univ + JSON.stringify(st.equip[sel]) + E.EQUIP[sel].map((_, i) => E.canEquip(st, sel, i)).join() + (E.building(st, sel) ? Math.ceil(E.building(st, sel).endAt - st.time) : '') + st.cards.assign[sel] + Math.ceil((st.cards.skillCd[st.cards.assign[sel]] || 0) - st.time);
+      const hs = E.canHire(st) + st.students.length;
+      if (force || rs + hs !== roomSig) { roomSig = rs + hs; renderRoom(); renderHire(); }
+      return;
+    }
+    const sig = tab + '|' + (tab === 'lab' ? (st.research.active ? Math.ceil(st.research.active.endAt - st.time) : '') + JSON.stringify(st.research.lv) + Object.keys(E.RESEARCH).map((id) => E.canResearch(st, id)).join() : tab === 'cards' ? st.tickets + JSON.stringify(st.cards) : tab === 'mission' ? JSON.stringify(st.missions) : tab === 'rec' ? Math.floor(st.time / 10) : 'ally');
+    if (!force && sig === tabSig) return;
+    tabSig = sig;
+    if (tab === 'lab') renderLab();
+    if (tab === 'cards') renderCards();
+    if (tab === 'mission') renderMission();
+    if (tab === 'ally') renderAlly();
+    if (tab === 'rec') renderRec();
+  }
+  document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  $('ticketBtn').addEventListener('click', () => switchTab('cards'));
+  const stepsHtml = (n, max, cls) => '<span class="steps ' + (cls || '') + '" aria-hidden="true">' + Array.from({ length: max }, (_, i) => '<i class="' + (i < n ? 'on' : '') + '"></i>').join('') + '</span>';
   function refresh(force) {
     const f = E.flow(st);
     $('money').textContent = fmt(st.money);
@@ -336,29 +785,26 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     $('studentsN').textContent = st.students.length;
     $('seatsN').textContent = '자리 ' + E.maxStudents(st) + '석';
     $('mood').textContent = Math.round(f.mood * 100) + '%';
-    $('moodNote').textContent = st.students.length > E.comfort(st) ? '휴게실 정원 ' + E.comfort(st) + '명 초과' : '휴게실 정원 ' + E.comfort(st) + '명';
+    $('moodNote').textContent = '휴게실 정원 ' + E.comfort(st) + '명' + (st.students.length > E.comfort(st) ? ' 초과' : '');
     $('papers').textContent = Math.floor(st.papers).toLocaleString('ko-KR') + '편';
     $('laurelNote').textContent = st.laurels ? '월계관 ' + st.laurels + '개 (+' + Math.round(st.laurels * E.CFG.laurelBonus * 100) + '%)' : '';
-    $('tierName').textContent = E.TIERS[st.tier].name; $('tierTitle').textContent = E.TIERS[st.tier].title;
+    $('tickets').textContent = st.tickets;
+    $('univName').textContent = E.UNIVS[st.univ].name; $('tierName').textContent = E.TIERS[st.tier].name;
+    const gs = st.univ + '/' + st.tier + '/' + st.ended;
+    if ($('goal').dataset.s !== gs) { $('goal').dataset.s = gs; $('goal').innerHTML = '<b>최종 목표</b><span>세계적 명문대의 대가 랩실</span><span>대학 ' + stepsHtml(st.univ, E.UNIV_MAX, 'u') + ' ' + E.UNIVS[st.univ].name + '</span><span>직급 ' + stepsHtml(st.tier, E.LAST) + ' ' + E.TIERS[st.tier].name + '</span>' + (st.ended ? '<b style="color:var(--stamp)">달성!</b>' : ''); }
     $('flow').innerHTML = '<div class="st' + (f.bott === 'A' ? ' bott' : '') + '">데이터 생산<b>' + fmt(f.a) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'B' ? ' bott' : '') + '">회의실 논문화<b>' + fmt(f.b) + '/s</b></div><span class="arrow">→</span><div class="st' + (f.bott === 'C' ? ' bott' : '') + '">교수실 투고<b>' + fmt(f.c) + '/s</b></div>';
-    const hc = E.canHire(st);
-    $('hireBtn').disabled = hc !== true;
-    $('hireCost').textContent = hc === '자리 부족' ? '빈자리가 없다 (생산 공간을 업그레이드하면 좌석이 는다)' : '연구비 ' + fmt(E.hireCost(st));
-    $('hireInfo').textContent = st.students.length + '/' + E.maxStudents(st) + '명';
-    $('promoteBtn').hidden = !E.canPromote(st);
-    if (E.canPromote(st)) $('promoteBtn').textContent = E.TIERS[st.tier + 1].name + '(으)로 승진하기';
-    $('record').innerHTML = '<dt>플레이 시간</dt><dd>' + hm(st.time) + '</dd><dt>누적 연구비</dt><dd>' + fmt(st.totalMoney) + '</dd><dt>정년 퇴임</dt><dd>' + st.runs + '번</dd><dt>월계관</dt><dd>' + st.laurels + '개</dd>';
-    const rs = sel + E.lv(st, sel) + E.canUpgrade(st, sel) + Math.ceil((st.cooldown[sel] || 0) - st.time) + st.tier;
-    if (force || rs !== roomSig) { roomSig = rs; renderRoom(); }
+    const pb = $('promoteBtn');
+    if (st.ended) { pb.hidden = false; pb.textContent = '정년 퇴임하고 새 연구실로'; }
+    else { pb.hidden = !E.canPromote(st); if (E.canPromote(st)) pb.textContent = E.TIERS[st.tier + 1].name + '(으)로 승진하기'; }
+    const dot = (id, on) => { const b = $(id); const has = b.querySelector('.dot'); if (on && !has) b.insertAdjacentHTML('beforeend', '<span class="dot" aria-label="새 소식"></span>'); if (!on && has) has.remove(); };
+    dot('tab-mission', Object.keys(E.MISSIONS).some((k) => E.missionDone(st, k) && !st.missions.claimed[k]));
+    dot('tab-cards', st.tickets > 0);
+    renderTab(force);
     if (force || sigOf() !== mapSig) drawMap();
     drainNotes();
-  }
-  function renderStudents() {
-    $('studentList').innerHTML = '';
-    st.students.slice().reverse().forEach((s) => { const li = document.createElement('li'); li.textContent = s.name; const sp = document.createElement('span'); sp.textContent = E.GRADES[s.grade]; li.appendChild(sp); $('studentList').appendChild(li); });
+    if (st.ended && !endShown) { endShown = true; showEnding(); }
   }
   function drainNotes() { if (!st.notes.length) return; const n = st.notes.splice(0); say(n[n.length - 1].text); }
-  const hm = (sec) => { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '시간 ' + (m % 60) + '분' : m + '분'; };
 
   // ---------- 모달 ----------
   const queue = [];
@@ -366,25 +812,24 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   function showNext() {
     const m = queue.shift(); if (!m) { $('modal').hidden = true; return; }
     $('dialog').innerHTML = m.html;
-    m.buttons.forEach((b) => { const el = document.createElement('button'); el.className = 'btn ' + (b.primary ? 'primary' : ''); el.style.textAlign = 'center'; el.innerHTML = '<span class="t">' + b.label + '</span>'; el.addEventListener('click', () => { showNext(); if (b.fn) b.fn(); }); $('dialog').appendChild(el); });
+    m.buttons.forEach((b) => { const el = document.createElement('button'); el.className = 'btn center ' + (b.primary ? 'primary' : ''); el.innerHTML = '<span class="t">' + b.label + '</span>'; el.addEventListener('click', () => { showNext(); if (b.fn) b.fn(); }); $('dialog').appendChild(el); });
     $('modal').hidden = false; const f = $('dialog').querySelector('button'); if (f) f.focus();
   }
-  const UNLOCK_LINE = { 2: '서버실과 자료실을 지을 수 있다.', 3: '클린룸을 지을 수 있다.', 4: '대형 장비실과 국제 공동연구센터를 지을 수 있다.' };
+  function showEnding() {
+    const lr = E.laurelReward(st);
+    openModal('<span class="bigstamp">전설</span><h2>세계적 명문대의 대가 랩실</h2><p class="hand">작은 나라 지방 사립대에서 여기까지</p><p>' + fmtTime(st.time) + ' 만에 살아있는 교과서가 되었고, 대학은 세계적 명문대가 되었다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 지방 사립대에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%. 스타 연구원·모집권·컨소시엄은 그대로 남습니다.</p>',
+      [{ label: '정년 퇴임하고 새 연구실로', primary: true, fn: doRetire }, { label: '이대로 감상하기' }]);
+  }
+  function doRetire() { const n = E.retire(st); if (!n) return; st = n; sel = 'wetlab'; endShown = false; E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); save(); refresh(true); pushMe(true); say('새 지방 사립대에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); }
   $('promoteBtn').addEventListener('click', () => {
+    if (st.ended) { showEnding(); return; }
     if (!E.promote(st)) return;
-    save(); refresh(true);
-    if (st.tier === E.LAST) {
-      const lr = E.laurelReward(st);
-      openModal('<span class="bigstamp">전설</span><h2>살아있는 교과서</h2><p class="hand">인류의 지성</p><p>연구실을 ' + hm(st.time) + ' 만에 세계 최고의 연구실로 키웠다. 졸업생들이 전 세계 연구실을 이끈다.</p><p>정년 퇴임하면 황금 월계관 <b>' + lr + '개</b>를 받고 새 연구실에서 다시 시작합니다. 월계관 1개마다 연구비 +' + Math.round(E.CFG.laurelBonus * 100) + '%.</p>',
-        [{ label: '정년 퇴임하고 새 연구실로', primary: true, fn: () => { st = E.retire(st); sel = 'wetlab'; save(); renderStudents(); refresh(true); say('새 학교에 조교수로 부임했다. 월계관이 책상 위에서 빛난다.'); } }, { label: '이대로 감상하기' }]);
-    } else {
-      openModal('<span class="bigstamp">승진</span><h2>' + E.TIERS[st.tier].name + '</h2><p class="hand">' + E.TIERS[st.tier].title + '</p><p>' + (UNLOCK_LINE[st.tier] || '') + ' 회의실·교수실 용량 ×1.6, 데이터 1당 연구비 ×' + E.CFG.tierValue + '.</p>', [{ label: '계속 운영한다', primary: true }]);
-    }
+    save(); refresh(true); pushMe(true);
+    if (st.ended) return; // 대학이 이미 세계적 명문대면 바로 엔딩
+    const nx = E.UNIVS[st.univ + 1];
+    const line = nx && st.tier >= nx.needTier ? '대학 본관을 ' + nx.name + '(으)로 승격할 수 있다.' : st.tier === E.LAST ? '대학 본관을 세계적 명문대로 승격하면 최종 목표를 이룬다.' : '';
+    openModal('<span class="bigstamp">승진</span><h2>' + E.TIERS[st.tier].name + '</h2><p class="hand">' + E.TIERS[st.tier].title + '</p><p>' + line + ' 회의실·교수실 용량 ×1.6, 데이터 1당 연구비 ×' + E.CFG.tierValue + ', 연구원 모집권 2장.' + (st.tier === 3 ? ' 공사 대기열이 2칸이 된다.' : '') + '</p>', [{ label: '본관으로 가기', primary: true, fn: () => { sel = 'univ'; switchTab('room'); drawMap(); } }, { label: '계속 운영한다' }]);
   });
-  $('hireBtn').addEventListener('click', () => { if (E.hire(st)) { save(); renderStudents(); refresh(true); } });
-  $('resetBtn').addEventListener('click', () => { $('resetConfirm').hidden = false; });
-  $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; });
-  $('resetYes').addEventListener('click', () => { st = E.newGame(); sel = 'wetlab'; save(); renderStudents(); refresh(true); $('resetConfirm').hidden = true; say('새 학교에 조교수로 부임했다.'); });
 
   // ---------- 돌발 이벤트 ----------
   function showEvent() {
@@ -392,7 +837,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const id = E.pickEvent(st), ev = E.EVENTS[id];
     const b = document.createElement('button');
     b.className = 'event'; b.textContent = '! ' + ev.name + ' — 눌러서 처리';
-    b.addEventListener('click', () => { const v = E.applyEvent(st, id); if (id === 'grant') say('과제 선정! 연구비 +' + fmt(v)); b.remove(); event = null; refresh(true); });
+    b.addEventListener('click', () => { const v = E.applyEvent(st, id); refresh(true); if (id === 'grant') say('과제 선정! 연구비 +' + fmt(v) + ', 모집권 +1'); b.remove(); event = null; });
     $('mapbox').appendChild(b);
     event = { id, el: b, until: st.time + 20 };
   }
@@ -408,21 +853,21 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     if (!(sec > 30)) return;
     const r = E.offline(st, sec);
     if (r.money <= 0) return;
-    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + hm(r.seconds) + ' 동안 (효율 50%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다.</p>' + (r.capped ? '<p class="s">최대 8시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
+    openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + fmtTime(r.seconds) + ' 동안 (효율 50%)</p><p>학생들이 연구비 <b class="num">+' + fmt(r.money) + '</b>, 명성 <b class="num">+' + fmt(r.fame) + '</b>을 모았다. 공사·연구 타이머도 그만큼 흘렀다.</p>' + (r.capped ? '<p class="meta">연구비·명성은 최대 8시간까지만 쌓인다.</p>' : ''), [{ label: '좋아', primary: true }]);
     save();
   }
 
   // ---------- 루프 ----------
   function frame(now) {
     const dt = Math.min(1, Math.max(0, (now - lastFrame) / 1000)); lastFrame = now;
-    if (!document.hidden && $('modal').hidden) { E.tick(st, dt); spawnWalkers(dt); stepWalkers(dt); checkEvent(); }
+    if (!document.hidden && $('modal').hidden) { E.tick(st, dt); stepWalkers(dt); checkEvent(); }
     requestAnimationFrame(frame);
   }
-  setInterval(() => refresh(false), 200);
+  setInterval(() => { E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey()); refresh(false); }, 250);
   setInterval(save, 5000);
   window.addEventListener('pagehide', save);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { hiddenAt = Date.now(); save(); return; }
+    if (document.hidden) { hiddenAt = Date.now(); save(); pushMe(true); return; }
     if (hiddenAt) grantOffline((Date.now() - hiddenAt) / 1000);
     lastFrame = performance.now();
   });
@@ -430,11 +875,14 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const saved = data && data.st ? data : load();
     const restored = saved && E.migrate(saved.st);
     st = restored || E.newGame();
+    E.refreshDay(st, dayKey()); E.refreshWeek(st, weekKey());
     if (restored) grantOffline((Date.now() - (saved.at || Date.now())) / 1000);
+    endShown = !!st.ended; // 이미 끝난 저장은 버튼으로만 엔딩을 다시 연다
     nextEventAt = st.time + 60;
-    renderStudents(); refresh(true);
-    const sc = $('mapscroll'); sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2; // 폰에서는 지도 가운데부터 보여 준다
+    refresh(true);
+    const sc = $('mapscroll'); sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2;
     requestAnimationFrame(frame);
+    initCloud();
   }
   window.claude?.hot?.snapshot?.(() => ({ st, at: Date.now() }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
