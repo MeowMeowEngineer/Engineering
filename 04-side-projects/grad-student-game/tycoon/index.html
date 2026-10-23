@@ -74,10 +74,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .mapbox { position: relative; background: linear-gradient(var(--sky), var(--paper)); border: 1px solid var(--line); overflow: hidden; }
 .mapscroll { overflow-x: auto; overscroll-behavior-x: contain; }
 .map { display: block; width: 100%; height: auto; touch-action: pan-x pan-y; }
-@media (max-width: 680px) { .map { width: 680px; max-width: none; } .maptip { display: none; } .guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 8px 6px 12px; font-size: 0.9rem; }
-.guidebar span { flex: 1; min-width: 0; }
-.gdo { flex: none; border: 2px solid #a86a00; background: #e0b030; color: #2a1d00; font: inherit; font-weight: 700; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
-.gdo:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 680px) { .map { width: 680px; max-width: none; } .maptip { display: none; } .guidebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 14; border-width: 2px 0 0; } body { padding-bottom: 64px; } }
 @media (max-width: 480px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; } .stat { padding: 5px 7px; } .stat .v { font-size: 1.02rem; } .stat .s { display: none; } .goal { font-size: 0.78rem; padding: 5px 8px; } }
 .plot { cursor: pointer; }
 .plot:focus-visible { outline: none; }
@@ -176,8 +173,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .dialog p { margin: 0; }
 .dialog .hand { font-family: var(--font-hand); font-size: 1.4rem; color: var(--muted); }
 .bigstamp { justify-self: center; border: 4px double var(--stamp); color: var(--stamp); font-family: var(--font-display); font-size: 1.6rem; padding: 2px 16px; transform: rotate(-8deg); }
-.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; text-align: left; width: 100%; }
+.guidebar { display: flex; gap: 8px; align-items: center; background: #fff8e1; color: #5a4300; border: 2px solid #e0b030; padding: 6px 8px 6px 12px; font-size: 0.9rem; }
+.guidebar span { flex: 1; min-width: 0; }
+.gdo { flex: none; border: 2px solid #a86a00; background: #e0b030; color: #2a1d00; font: inherit; font-weight: 700; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.gdo:disabled { opacity: 0.5; cursor: not-allowed; }
 .guidebar b { white-space: nowrap; }
+@media (max-width: 680px) { .guidebar { border-width: 2px 0 0; } }
 .bubble { position: absolute; z-index: 15; max-width: 240px; background: #fff8e1; color: #3a2c00; border: 2px solid #e0b030; padding: 6px 26px 6px 10px; font-size: 0.86rem; font-weight: 600; box-shadow: 0 4px 12px #0003; pointer-events: none; }
 .bubble::after { content: ""; position: absolute; left: var(--ax, 18px); bottom: -9px; border: 8px solid transparent; border-bottom: 0; border-top-color: #e0b030; }
 .bubble.below::after { bottom: auto; top: -9px; border-top: 0; border-bottom: 8px solid #e0b030; }

@@ -87,7 +87,7 @@ if (require.main !== module) return;
 
 const t = (sec) => (sec == null ? '-' : sec >= 86400 ? (sec / 86400).toFixed(1) + '일' : sec >= 3600 ? (sec / 3600).toFixed(1) + '시간' : Math.round(sec / 60) + '분');
 const PROFILES = [
-  { label: '적극 (방 독려, 이벤트 2분마다)', encourage: true, eventEvery: 120 },
+  { label: '적극 (방 야식, 이벤트 2분마다)', encourage: true, eventEvery: 120 },
   { label: '가벼움 (구매만)', encourage: false },
   { label: '방치 (4시간마다 2분 접속)', encourage: true, checkInH: 4, sessionSec: 120, limitH: 24 * 10 },
 ];

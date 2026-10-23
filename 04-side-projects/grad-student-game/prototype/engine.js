@@ -10,7 +10,7 @@
   // 밸런스 조정값. sim.js가 이 값을 바꿔 가며 전직 속도를 맞춘다.
   const CFG = {
     needs: [0, 0, 3, 7, 11, 16, 22, 29, 37, 45], // 직급별 전직에 필요한 누적 논문 편수
-    paperBase: 36000, paperGrowth: 1.48, paperBonus: 0.03, tapShare: 0.05, tierProd: 1.5, tierTap: 1.5, century: 1e10,
+    paperBase: 36000, paperGrowth: 1.47, paperBonus: 0.03, tapShare: 0.05, tierProd: 1.5, tierTap: 1.5, century: 1e10,
     levelBonus: 0.03, expBase: 60, expGrowth: 1.2, tapExp: 0.5,
     offlineCapH: 8, offlineEff: 0.5, subCapH: 12, subEff: 1, petTps: 3, laurelBonus: 0.2, laurelBase: 3,
   };
