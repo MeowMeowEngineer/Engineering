@@ -36,7 +36,7 @@ const ok = (name, pass, detail) => { results.push((pass ? 'PASS ' : 'FAIL ') + n
   ok('박사과정 전에는 국가과제를 낼 수 없다', E.projState(pj, 'n1') === '박사과정부터' && E.startProject(pj, 'n1') === null);
   E.tick(pj, 901);
   ok('과제가 끝나면 보상·협약서·실적이 남는다', pj.projects.length === 0 && pj.life.projects === 1 && pj.col.projects.i1 === true);
-  const lr = E.newGame(); lr.tier = 8; lr.papers = 50; lr.data = 1e12; E.buyCentury(lr); E.promote(lr);
+  const lr = E.newGame(); lr.tier = 8; lr.papers = E.CFG.needs[E.LAST] + 5; lr.data = 1e12; E.buyCentury(lr); E.promote(lr);
   const rw = E.laurelReward(lr).total, nx = E.retire(lr);
   ok('재입학하면 월계관(기본 3 + 추가 논문 1)을 받는다', rw === 4 && nx.laurels === 4 && nx.life.runs === 1);
   ok('월계관 강화를 사면 보유 월계관이 줄고 레벨이 오른다', E.buyUpgrade(nx, 'know') && nx.laurels === 3 && E.upLv(nx, 'know') === 1);
