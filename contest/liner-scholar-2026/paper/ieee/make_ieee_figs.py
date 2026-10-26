@@ -24,6 +24,25 @@ plt.rcParams.update({
     "mathtext.fontset": "stix",
 })
 OUT = os.path.dirname(os.path.abspath(__file__))
+
+# 라이너 공모전판(LINER=1): 일반 독자용 용어, 모델 상품명 없음, 출력은 ../liner/*_liner.png
+LINER = os.environ.get("LINER") == "1"
+L = {
+    "xlabel": "문까지 거리 (cm): 근역장은 안면, 그 외는 몸통 앞면",
+    "adult": "성인 (Gustav)", "child": "아동 (Child)", "near": "아동 근역장 해석",
+    "bmr": "안정 시 대사열 (성인 1.1 W/kg)", "lo_sar": "v2 문, 몸 앞 평균 조사", "hi_sar": "v1 문, 몸 앞 최댓값 조사",
+    "near_row": "아동 머리 1 g, 안면 {d} cm", "therm": "0.1 °C (체온계 분해능)",
+    "lo_t": "하한 추정", "hi_t": "상한 추정",
+}
+if LINER:
+    OUT = os.path.join(OUT, "..", "liner")
+    L.update({
+        "xlabel": "문까지 거리 (cm): 5, 10은 아동 얼굴, 30–100은 몸통 앞면",
+        "adult": "성인 (38세 남성)", "child": "아동 (7세 여아)", "near": "아동 근접 해석",
+        "bmr": "기초대사량 (성인 1.1 W/kg)", "lo_sar": "실제 문, 몸 앞 평균 세기", "hi_sar": "단순 문, 몸 앞 최대 세기",
+        "near_row": "아동 머리 1 g, 얼굴 {d} cm", "therm": "0.1 °C (체온계 눈금)",
+        "lo_t": "비례 추정", "hi_t": "단열 상한",
+    })
 A_COL, B_COL, REF = "#1f5fbf", "#d1495b", "#333333"
 W2 = 7.16  # IEEE 두 단 폭 (in)
 
@@ -85,7 +104,7 @@ def setup_dist_axis(ax):
     ax.set_xticklabels([f"{d}" for d in NEAR + DIST])
     ax.set_xlim(-0.6, len(ticks) - 0.4)
     ax.axvline(len(NEAR) - 0.5, color="#999999", lw=0.5)
-    ax.set_xlabel("문까지 거리 (cm): 근역장은 안면, 그 외는 몸통 앞면")
+    ax.set_xlabel(L["xlabel"])
 
 
 def plot_ranges(ax, value):
@@ -108,11 +127,11 @@ def plot_near(ax, val_b):
 def legend(fig, lo_lab, hi_lab):
     handles = [Line2D([], [], color=A_COL, lw=2.0, label="시나리오 A (정상 제품)"),
                Line2D([], [], color=B_COL, lw=2.0, label="시나리오 B (방출 상한)"),
-               Line2D([], [], color="#555555", lw=2.0, label="성인 (Gustav)"),
-               Line2D([], [], color="#555555", lw=2.0, ls=SUBJ_LS["child"], label="아동 (Child)"),
+               Line2D([], [], color="#555555", lw=2.0, label=L["adult"]),
+               Line2D([], [], color="#555555", lw=2.0, ls=SUBJ_LS["child"], label=L["child"]),
                Line2D([], [], ls="", marker="o", mfc="white", mec="k", ms=4.0, label=lo_lab),
                Line2D([], [], ls="", marker="s", mfc="k", mec="k", ms=3.6, label=hi_lab),
-               Line2D([], [], ls="", marker="D", mfc="k", mec="k", ms=4.0, label="아동 근역장 해석")]
+               Line2D([], [], ls="", marker="D", mfc="k", mec="k", ms=4.0, label=L["near"])]
     fig.legend(handles=handles, loc="upper center", ncol=4, fontsize=7, handlelength=2.0, columnspacing=1.4,
                bbox_to_anchor=(0.5, 1.0))
 
@@ -140,9 +159,9 @@ def fig_sar_margin():
     a.set_ylabel("전신 평균 SAR (W/kg)")
     a.yaxis.set_major_locator(LogLocator(base=10, numticks=10))
     ref_lines(a, ((THRESH, "열적 영향 문턱 (4 W/kg)", "--", "r"),
-                  (BMR_W / MASS["adult"], "안정 시 대사열 (성인 1.1 W/kg)", ":", "r"),
+                  (BMR_W / MASS["adult"], L["bmr"], ":", "r"),
                   (LIMIT, "일반인 기본 제한\n(0.08 W/kg)", "-", "lu")))
-    legend(fig, "v2 문, 몸 앞 평균 조사", "v1 문, 몸 앞 최댓값 조사")
+    legend(fig, L["lo_sar"], L["hi_sar"])
     panel(a, "(a)", -0.17)
 
     # (b) 기준 도달 배수 = 기준 / 시나리오 A 값
@@ -157,7 +176,7 @@ def fig_sar_margin():
                      LIMIT_LOC / (PER_LOC["child"] * lo), "child"))
     for d in NEAR:
         m = LIMIT_LOC / (NF_LOC_B[d] / 100)
-        rows.append((f"아동 머리 1 g, 안면 {d} cm", m, m, "near"))
+        rows.append((L["near_row"].format(d=d), m, m, "near"))
     n = len(rows)
     for i, (lab, lo, hi, s) in enumerate(rows):
         y = n - 1 - i
@@ -184,7 +203,7 @@ def fig_sar_margin():
     fig.tight_layout(w_pad=1.5)
     fig.subplots_adjust(bottom=0.2, top=0.85)
     for ext in ("pdf", "png"):
-        fig.savefig(os.path.join(OUT, f"fig_sar_margin.{ext}"), dpi=300)
+        fig.savefig(os.path.join(OUT, f"fig_sar_margin{'_liner' if LINER else ''}.{ext}"), dpi=300)
     plt.close(fig)
 
 
@@ -212,17 +231,17 @@ def fig_temperature():
         ax.set_ylim(1e-6, 5)
         setup_dist_axis(ax)
         ref_lines(ax, ((1.0, "1 °C", "--", "r"),
-                       (0.1, "0.1 °C (체온계 분해능)" if ax is a else "0.1 °C\n(체온계 분해능)", ":",
+                       (0.1, L["therm"] if ax is a else L["therm"].replace(" (", "\n("), ":",
                         "lu" if ax is a else "ld")))
     a.set_ylabel("심부 체온 상승 (°C)")
     b.set_ylabel("국부 최대 온도 상승 (°C)")
-    legend(fig, "하한 추정", "상한 추정")
+    legend(fig, L["lo_t"], L["hi_t"])
     panel(a, "(a)")
     panel(b, "(b)")
     fig.tight_layout(w_pad=2.0)
     fig.subplots_adjust(bottom=0.25, top=0.80)
     for ext in ("pdf", "png"):
-        fig.savefig(os.path.join(OUT, f"fig_temperature.{ext}"), dpi=300)
+        fig.savefig(os.path.join(OUT, f"fig_temperature{'_liner' if LINER else ''}.{ext}"), dpi=300)
     plt.close(fig)
 
 

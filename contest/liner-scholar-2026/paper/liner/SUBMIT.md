@@ -2,8 +2,9 @@
 
 공식 가이드: 원고는 **라이너 스콜라에서 작성**하고 **[내보내기] → PDF**로 제출한다. 권장 분량은 참고문헌 제외 공백 포함 약 10,000자(PDF 약 5쪽).
 
-- 원고: `paper_liner.md` (본문 약 9,000자, 그림 6, 표 3). 미리보기: `paper_liner_preview.pdf` (이 파일은 제출용이 아님)
-- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_leakage.png`(2), `../ieee/fig_sar_maps.png`(3), `../ieee/fig_sar_margin.png`(4), `../ieee/fig_temperature.png`(5), `fig_nf_maps_combined.png`(6)
+- 원고: `paper_liner.md` (본문 약 9,900자, 캡션·표 제외; 그림 6, 표 3). 미리보기: `paper_liner_preview.pdf` (제출용 아님)
+- 원고를 고칠 때는 `paper_liner_src.md`(인용을 [@키]로 적은 원본)를 고친 뒤 `python3 cite_numbers.py paper_liner_src.md paper_liner.md`로 번호를 다시 매긴다.
+- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_leakage.png`(2), `../ieee/fig_sar_maps.png`(3), `fig_sar_margin_liner.png`(4), `fig_temperature_liner.png`(5), `fig_nf_maps_combined.png`(6)
 - 표 이미지: `tables/table1.png`–`table3.png`(표 1–3, 300 dpi). 캡션은 이미지에 없으므로 표 위에 텍스트로 붙인다. 원고 표를 고치면 `python3 make_table_images.py`로 다시 만든다.
 - 파일 이름: `제1회 라이너 스콜라 연구공모전_작동 중인 전자레인지 앞에 서 있으면 해로운가_장은성.pdf`
 
@@ -29,37 +30,41 @@
 
 | 번호 | 문헌 | 상태 | 확인할 것 |
 |---|---|---|---|
-| [1] | 21 CFR 1030.10 | ✅ URL | |
+| [1] | 21 CFR 1030.10 | ✅ URL | 접속일 갱신 |
 | [2] | IEC 60335-2-25:2024 | ✅ URL | |
 | [3] | ICNIRP 2020 | ✅ DOI | |
 | [4] | 전자파인체보호기준 2019-4 | ⚠ | 2024년 이후 개정 여부, URL |
-| [5] | Karipidis 2024 | ⚠ DOI | DOI, 저자 표기 |
-| [6] | Bosch-Capblanch 2024 | ⚠ DOI | DOI, 저자 표기 |
-| [7] | 시뮬레이터 설명서(제품명 비공개) | ✅ (설치본 도움말) | 본인 결정으로 제품명 생략 |
-| [8] | Coolblue 사양 | ✅ URL | 가능하면 삼성 공식 자료로 교체 |
-| [9] | Pennes 1948 | ⚠ DOI | DOI |
-| [10] | ICNIRP 1998 | ⚠ URL | URL, 4 W/kg·1 °C 서술 |
-| [11] | Guy 1975 | ⚠ DOI | DOI, 41 °C·138 W/kg 수치 |
-| [12] | FAO/WHO/UNU 2004 | ⚠ URL | URL, 식(11.472W+873.1) |
-| [13] | Oates 1973 | ✅ DOI | 기준 초과 비율 |
-| [14] | Health Canada 2000 | ✅ URL | 60대/약 100대/1대 |
-| [15] | BfS | ✅ URL | 1%, 5–10% 문장 |
-| [16] | Lopez-Iturri 2015 | ✅ DOI | |
-| [17] | Tian 2025 | ✅ DOI | 저자명 |
-| [18] | Hirata 2000 | ⚠ URL | DOI |
-| [19] | Wang 2006 | ✅ DOI | |
-| [20] | Bakker 2010 | ✅ DOI | 공저자 |
-| [21] | Uusitupa 2010 | ✅ DOI | |
-| [22] | Piuzzi 2011 | ✅ DOI(1회 확인) | DOI |
-| [23] | Hirata 2007 | ✅ DOI | |
-| [24] | Flintoft 2014 | ✅ DOI | |
-| [25] | Oleson 1994 | ✅ DOI | 5초 통증 서술 |
+| [5] | Karipidis 2024 | ⚠ DOI | DOI, 저자 전체 표기(APA는 20명까지) |
+| [6] | Bosch-Capblanch 2024 | ⚠ DOI | DOI, 저자 전체 표기 |
+| [7] | Baan 2011 (IARC 2B) | ✅ DOI | |
+| [8] | 시뮬레이터 설명서(제품명 비공개) | ✅ (설치본 도움말) | 본인 결정으로 제품명 생략(리뷰어는 공개 권고) |
+| [9] | Coolblue 사양 | ✅ URL | 가능하면 삼성 국내 사양 자료로 교체 |
+| [10] | Pennes 1948 | ⚠ DOI | DOI |
+| [11] | ICNIRP 1998 | ⚠ URL | URL, 4 W/kg·1 °C 서술 |
+| [12] | Guy 1975 | ⚠ DOI | DOI, 41 °C 수치 |
+| [13] | Hirata 2000 | ⚠ URL | DOI, 0.26 °C·3 °C 서술 |
+| [14] | FAO/WHO/UNU 2004 | ⚠ URL | URL, 식(11.472W+873.1) |
+| [15] | Oates 1973 | ✅ DOI | 업계 자율 기준 100 W/m² |
+| [16] | Health Canada 2000 | ✅ URL | 60대/약 100대/1대, 접속일 |
+| [17] | BfS | ✅ URL | 1%(기준점), 5–10% 문장, 접속일 |
+| [18] | 국립전파연구원 FAQ | ⚠ 검색 요약 | 7.2% 문장과 측정량(전계/전력밀도), 검색일 |
+| [19] | Lopez-Iturri 2015 | ✅ DOI | |
+| [20] | Tian 2025 | ✅ DOI | 저자명, 심박조율기 5.3 mV > 2 mV |
+| [21] | Wang 2006 | ✅ DOI | 약 30% 초과 |
+| [22] | Bakker 2010 | ✅ DOI | 공저자, 45% 초과 |
+| [23] | Uusitupa 2010 | ✅ DOI | |
+| [24] | Piuzzi 2011 | ✅ DOI(1회 확인) | DOI |
+| [25] | Hirata 2007 | ✅ DOI | |
+| [26] | Flintoft 2014 | ✅ DOI | |
+| [27] | Oleson 1994 | ✅ DOI | 5초 통증 서술 |
+| [28] | BAG 팩트시트 | ⚠ 2차 인용 | 문 실 손상 시 누설 증가 문장, 접속일 |
+| [29] | Kientega 2011 | ✅ DOI | 저자 전체, ±25% 서술 |
 
 ## 3. 라이너 스콜라에 옮기는 순서
 
 1. 새 문서에 제목, 이름, 작성일을 넣는다.
 2. 초록부터 제4장까지 `paper_liner.md`의 문단을 그대로 붙여 넣는다. 장·절 제목은 가이드 형식(제1장, 제1절)을 유지한다.
 3. 표 1–3은 `tables/table1.png`–`table3.png`를 이미지로 넣고, 그 위에 캡션("표 1. ...")을 텍스트로 붙인다.
-4. 그림 1–3을 넣고 캡션을 붙인다. 내보낸 PDF에서 글자와 수치가 읽히는지 확인한다(가이드 요구).
+4. 그림 1–6을 넣고 캡션을 붙인다. 내보낸 PDF에서 글자와 수치가 읽히는지 확인한다(가이드 요구).
 5. 참고문헌을 붙여 넣는다.
 6. [내보내기] → PDF, 위 파일 이름으로 저장 후 제출.
