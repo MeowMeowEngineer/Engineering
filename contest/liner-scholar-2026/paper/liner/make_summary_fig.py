@@ -18,20 +18,22 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 A_COL, B_COL, INK, MUTED = "#1f5fbf", "#d1495b", "#222222", "#666666"
 
 # (상황, SAR 기준 대비 % (정상 제품), 국부 최대 온도 상승 °C (정상 제품))
-ROWS = [
+# 검출기 면적(25 cm²) 평균으로 보정: 단순 문(v1) 결과 × 1/0.814 (mw detector_avg.json)
+K_V1 = 1 / 0.814
+ROWS = [(name, sar * K_V1, dt * K_V1) for name, sar, dt in [
     ("아동, 얼굴–문 5 cm", 0.54, 0.0014),
     ("아동, 얼굴–문 10 cm", 0.84, 0.0020),
     ("아동, 몸–문 30 cm", 1.39, 0.0013),
     ("성인, 몸–문 30 cm", 1.62, 0.0024),
     ("성인, 몸–문 1 m", 0.23, 0.00034),
-]
+]]
 FACTOR_B = 100.0
 
 
 def fmt(v, unit):
     if unit == "%":
-        return f"{v:.2g}%" if v < 10 else f"{v:.0f}%"
-    return f"{v:.2g} °C"
+        return f"{v:#.2g}%" if v < 10 else f"{v:.0f}%"
+    return f"{v:#.2g} °C"
 
 
 def panel(ax, col, unit, xmin, xmax, lines, xlabel):
