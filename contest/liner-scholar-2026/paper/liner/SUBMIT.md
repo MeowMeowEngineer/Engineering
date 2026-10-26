@@ -2,10 +2,10 @@
 
 공식 가이드: 원고는 **라이너 스콜라에서 작성**하고 **[내보내기] → PDF**로 제출한다. 권장 분량은 참고문헌 제외 공백 포함 약 10,000자(PDF 약 5쪽).
 
-- 원고: `paper_liner.md` (본문 약 9,900자, 캡션·표 제외; 그림 6, 표 3). 미리보기: `paper_liner_preview.pdf` (제출용 아님)
+- 원고: `paper_liner.md` (본문 약 9,900자, 캡션·표 제외; 그림 4, 표 2). 미리보기: `paper_liner_preview.pdf` (제출용 아님)
 - 원고를 고칠 때는 `paper_liner_src.md`(인용을 [@키]로 적은 원본)를 고친 뒤 `python3 cite_numbers.py paper_liner_src.md paper_liner.md`로 번호를 다시 매긴다.
-- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_leakage.png`(2), `../ieee/fig_sar_maps.png`(3), `fig_sar_margin_liner.png`(4), `fig_temperature_liner.png`(5), `fig_nf_maps_combined.png`(6)
-- 표 이미지: `tables/table1.png`–`table3.png`(표 1–3, 300 dpi). 캡션은 이미지에 없으므로 표 위에 텍스트로 붙인다. 원고 표를 고치면 `python3 make_table_images.py`로 다시 만든다.
+- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_leakage.png`(2, 교체 예정), `fig_nf_simple.png`(3), `fig_summary_liner.png`(4)
+- 표 이미지: `tables/table1.png`–`table2.png`(표 1–2, 300 dpi). 캡션은 이미지에 없으므로 표 위에 텍스트로 붙인다. 원고 표를 고치면 `python3 make_table_images.py`로 다시 만든다.
 - 파일 이름: `제1회 라이너 스콜라 연구공모전_작동 중인 전자레인지 앞에 서 있으면 해로운가_장은성.pdf`
 
 ## 1. 라이너 스콜라에서 먼저 할 일 (제1장 제2절의 활용 기록을 사실로 만들기)
@@ -64,7 +64,7 @@
 
 1. 새 문서에 제목, 이름, 작성일을 넣는다.
 2. 초록부터 제4장까지 `paper_liner.md`의 문단을 그대로 붙여 넣는다. 장·절 제목은 가이드 형식(제1장, 제1절)을 유지한다.
-3. 표 1–3은 `tables/table1.png`–`table3.png`를 이미지로 넣고, 그 위에 캡션("표 1. ...")을 텍스트로 붙인다.
-4. 그림 1–6을 넣고 캡션을 붙인다. 내보낸 PDF에서 글자와 수치가 읽히는지 확인한다(가이드 요구).
+3. 표 1–2는 `tables/table1.png`–`table2.png`를 이미지로 넣고, 그 위에 캡션("표 1. ...")을 텍스트로 붙인다.
+4. 그림 1–4를 넣고 캡션을 붙인다. 내보낸 PDF에서 글자와 수치가 읽히는지 확인한다(가이드 요구).
 5. 참고문헌을 붙여 넣는다.
 6. [내보내기] → PDF, 위 파일 이름으로 저장 후 제출.
