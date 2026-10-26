@@ -2,8 +2,8 @@
 
 공식 가이드: 원고는 **라이너 스콜라에서 작성**하고 **[내보내기] → PDF**로 제출한다. 권장 분량은 참고문헌 제외 공백 포함 약 10,000자(PDF 약 5쪽).
 
-- 원고: `paper_liner.md` (본문 약 9,000자, 그림 7, 표 3). 미리보기: `paper_liner_preview.pdf` (이 파일은 제출용이 아님)
-- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_voxel_models_cst.png`(2), `../ieee/fig_leakage.png`(3), `../ieee/fig_sar_maps.png`(4), `../ieee/fig_sar_margin.png`(5), `../ieee/fig_temperature.png`(6), `fig_nf_maps_combined.png`(7)
+- 원고: `paper_liner.md` (본문 약 9,000자, 그림 6, 표 3). 미리보기: `paper_liner_preview.pdf` (이 파일은 제출용이 아님)
+- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `../ieee/fig_leakage.png`(2), `../ieee/fig_sar_maps.png`(3), `../ieee/fig_sar_margin.png`(4), `../ieee/fig_temperature.png`(5), `fig_nf_maps_combined.png`(6)
 - 표 이미지: `tables/table1.png`–`table3.png`(표 1–3, 300 dpi). 캡션은 이미지에 없으므로 표 위에 텍스트로 붙인다. 원고 표를 고치면 `python3 make_table_images.py`로 다시 만든다.
 - 파일 이름: `제1회 라이너 스콜라 연구공모전_작동 중인 전자레인지 앞에 서 있으면 해로운가_장은성.pdf`
 
@@ -35,7 +35,7 @@
 | [4] | 전자파인체보호기준 2019-4 | ⚠ | 2024년 이후 개정 여부, URL |
 | [5] | Karipidis 2024 | ⚠ DOI | DOI, 저자 표기 |
 | [6] | Bosch-Capblanch 2024 | ⚠ DOI | DOI, 저자 표기 |
-| [7] | CST 2019 | ✅ (설치본 도움말) | |
+| [7] | 시뮬레이터 설명서(제품명 비공개) | ✅ (설치본 도움말) | 본인 결정으로 제품명 생략 |
 | [8] | Coolblue 사양 | ✅ URL | 가능하면 삼성 공식 자료로 교체 |
 | [9] | Pennes 1948 | ⚠ DOI | DOI |
 | [10] | ICNIRP 1998 | ⚠ URL | URL, 4 W/kg·1 °C 서술 |
