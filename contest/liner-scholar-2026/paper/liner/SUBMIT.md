@@ -4,7 +4,7 @@
 
 - 원고: `paper_liner.md` (본문 약 9,900자, 캡션·표 제외; 그림 4, 표 2). 미리보기: `paper_liner_preview.pdf` (제출용 아님)
 - 원고를 고칠 때는 `paper_liner_src.md`(인용을 [@키]로 적은 원본)를 고친 뒤 `python3 cite_numbers.py paper_liner_src.md paper_liner.md`로 번호를 다시 매긴다.
-- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `fig_leak_liner.png`(2), `../ieee/fig_nf_simple.png`(3), `fig_summary_liner.png`(4)
+- 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `fig_leak_liner.png`(2), `../ieee/fig_nf_simple_3d.png`(3), `fig_summary_liner.png`(4)
 - 표 이미지: `tables/table1.png`–`table2.png`(표 1–2, 300 dpi). 캡션은 이미지에 없으므로 표 위에 텍스트로 붙인다. 원고 표를 고치면 `python3 make_table_images.py`로 다시 만든다.
 - 파일 이름: `제1회 라이너 스콜라 연구공모전_작동 중인 전자레인지 앞에 서 있으면 해로운가_장은성.pdf`
 
