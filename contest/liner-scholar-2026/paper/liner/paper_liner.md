@@ -16,7 +16,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 ### 제1절 연구의 배경과 목적
 
-전자레인지는 2.45 GHz 마이크로파로 음식 속 물을 데운다. 같은 전자파가 문틈으로 새어 사람도 데우거나 해칠 수 있다는 걱정은 오래되었고, "돌아가는 동안 앞에 서 있지 말라"는 조언이 지금도 흔하다. 반면 2.45 GHz 광자의 에너지는 약 10⁻⁵ eV로 분자 결합을 끊기에 턱없이 작아, 확인된 위해는 열적 작용으로 좁혀진다. 이 글에서 "해롭다"는 인체보호기준이 막으려는 열적 영향, 즉 몸이 흡수하는 전력이나 그로 인한 온도 상승이 기준 또는 생리적 문턱을 넘는 것으로 정의한다. 즉 이 통념의 검증은 "누설된 에너지가 몸을 의미 있게 데울 만큼인가"라는 양의 문제이다.
+전자레인지는 2.45 GHz 마이크로파로 음식 속 물을 데운다. 같은 전자파가 문틈으로 새어 사람도 데우거나 해칠 수 있다는 걱정은 오래되었고, "돌아가는 동안 앞에 서 있지 말라"는 조언이 지금도 흔하다. 2.45 GHz 광자의 에너지는 약 10⁻⁵ eV로 분자 결합을 직접 끊지 못하므로, 지금까지 확인된 위해 기전은 열적 작용이다. 비열적 영향에 대한 주장은 제2장 제1절에서 따로 검토한다. 이 글에서 "해롭다"는 인체보호기준이 막으려는 열적 영향, 즉 몸이 흡수하는 전력이나 그로 인한 온도 상승이 기준 또는 생리적 문턱을 넘는 것으로 정의한다. 즉 이 통념의 검증은 "누설된 에너지가 몸을 의미 있게 데울 만큼인가"라는 양의 문제이다.
 
 이 문제가 쉽게 풀리지 않는 이유는 두 계통의 기준이 서로 다른 양을 규정하기 때문이다. 제품 방출 기준은 오븐 외면 5 cm에서 전력밀도(단위 면적을 지나는 전자파 전력, W/m²)를 판매 전 10 W/m², 사용 중 50 W/m² 이하로 제한한다 [1], [2]. 인체보호기준은 몸 1 kg이 흡수하는 전력인 비흡수율(SAR, W/kg)을 제한한다 [3], [4]. 5 cm의 측정값은 사람이 서는 위치의 노출도, 몸이 흡수하는 양도 직접 알려 주지 않는다.
 
@@ -30,7 +30,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 2.  연구의 방법
 
-> **문헌 검토.** 2026년 10월 19–22일에 웹 검색엔진과 학술 데이터베이스 서지 레코드(PubMed, IEEE Xplore, IOP, 출판사 페이지)를 통해 "microwave oven leakage survey", "microwave oven leakage SAR", "2.45 GHz whole-body SAR child plane wave", "lens temperature 2.45 GHz", "ICNIRP basic restriction rationale", "전자레인지 전자파 누설" 등의 검색어로 1970–2025년 문헌(방법론 고전 문헌 제외)을 찾았다. 포함 기준은 (1) 가정용 전자레인지 누설의 측정·해석, (2) 2.45 GHz 부근 인체 흡수 또는 온도 계산, (3) 기준 문서와 그 근거 문헌이다. 상당수 문헌은 원문 전문이 아니라 초록, 서지 레코드, 기관 안내문 발췌 수준에서 확인하였고, 그 범위에서만 인용하였다. KCI, RISS, DBpia는 검색하지 못하였다. [라이너 스콜라 활용: 실제로 사용한 단계(예: 문헌 탐색 검색어와 검색일, 서지·인용 대조, 연구 결과 비교)와 용도를 기입] 문헌 탐색, 서지 확인과 초안 작성에는 AI 도구(Anthropic Claude)도 사용하였으며, 모든 수치와 결론은 저자가 원자료와 대조하여 검토하였다.
+> **문헌 검토.** 2026년 10월 19–22일에 웹 검색엔진과 학술 데이터베이스 서지 레코드(PubMed, IEEE Xplore, IOP, 출판사 페이지)를 통해 "microwave oven leakage survey", "microwave oven leakage SAR", "2.45 GHz whole-body SAR child plane wave", "lens temperature 2.45 GHz", "ICNIRP basic restriction rationale", "전자레인지 전자파 누설" 등의 검색어로 1970–2025년 문헌(방법론 고전 문헌 제외)을 찾았다. 포함 기준은 (1) 가정용 전자레인지 누설의 측정·해석, (2) 2.45 GHz 부근 인체 흡수 또는 온도 계산, (3) 기준 문서와 그 근거 문헌이다. 상당수 문헌은 원문 전문이 아니라 초록, 서지 레코드, 기관 안내문 발췌 수준에서 확인하였고, 그 범위에서만 인용하였다. KCI, RISS, DBpia는 검색하지 못하였다. 초안은 라이너 스콜라의 심사 기능으로 연구 질문, 근거의 신뢰성, 인용의 적절성을 점검하였고(2026년 10월 27일), 그 지적에 따라 2000년 이후 측정 조사와 독립 근거를 추가 탐색하여 보완하였다. 문헌 탐색, 서지 확인과 초안 작성에는 AI 도구(Anthropic Claude)도 사용하였으며, 모든 수치와 결론은 저자가 원자료와 대조하여 검토하였다.
 >
 > **수치 해석.** 문헌에는 "실제 사용 거리에서 사람이 흡수하는 양"을 직접 다룬 연구가 드물어, 상용 전자기장 시뮬레이터(시간영역 유한적분법) [8]로 이를 계산하였다. 국내에서도 판매되는 23 L 단독형 제품 계열의 공개 사양 [9]에 맞추어 오븐을 두 가지로 만들었다. 하나는 문 둘레 전체가 새는 단순 문(누설을 크게 잡는 모델)이고, 다른 하나는 유리, 타공판(작은 구멍이 뚫린 금속판), λ/4 초크(문 둘레로 새는 전자파를 상쇄하는 홈)를 넣은 실제 문이다(그림 1). 누설 크기는 방출 기준의 시험 조건(물 275 mL 부하, 외면 5 cm)에서 전계로 환산한 전력밀도를 누설 측정기의 검출 면적(약 25 cm²)으로 평균한 최댓값이 정상 제품 수준 0.5 W/m²(시나리오 A, 허용 상한의 1%)와 허용 상한 50 W/m²(시나리오 B)가 되도록 맞추었다. 이렇게 맞추면 한 점의 최댓값으로 맞출 때보다 누설이 1.18–1.23배 커진다. 모든 결과는 누설 크기에 비례하므로 다른 누설 수준으로 바로 환산할 수 있다.
 >
@@ -59,7 +59,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 ### 제2절 전자레인지는 얼마나 새는가: 측정 자료와 해석
 
-초기 측정 조사는 통념이 생긴 배경을 보여 준다. 연방 방출 기준이 시행되기 전인 1970년 미국 아칸소주 조사에서는 일부 제품이 당시 업계 자율 기준(100 W/m²)을 넘었다 [15]. 기준 시행 후 캐나다 보건부의 2000년 조사에서는 판매 전 제품 60대가 모두 기준을 지켰고, 사용 중 제품 약 100대 중 1대만 사용 중 허용 상한을 넘었다 [16]. 독일 연방방사선방호청(BfS)은 1997년 측정에서 가정용 제품의 누설이 평균적으로 허용 상한의 약 1%였고, 30 cm에서는 표면 값의 5–10%로 줄어든다고 안내한다 [17]. 국내에서는 국립전파연구원이 전자레인지 표본을 30 cm에서 측정해 2.4 GHz 대역 노출이 인체보호기준의 약 7.2%라고 안내하였다 [18]. 누설의 공간 분포를 계산·측정한 연구도 있으나 인체 흡수는 산출하지 않았다 [19].
+초기 측정 조사는 통념이 생긴 배경을 보여 준다. 연방 방출 기준이 시행되기 전인 1970년 미국 아칸소주 조사에서는 일부 제품이 당시 업계 자율 기준(100 W/m²)을 넘었다 [15]. 기준 시행 후 캐나다 보건부의 2000년 조사에서는 판매 전 제품 60대가 모두 기준을 지켰고, 사용 중 제품 약 100대 중 1대만 사용 중 허용 상한을 넘었다 [16]. 2000년 이후 자료로는 팔레스타인 가정의 오븐 115대를 5 cm와 20 cm에서 측정한 조사가 있으며, 모든 제품의 누설과 이로부터 추정한 SAR이 일반인 기준보다 훨씬 낮았다 [17]. 독일 연방방사선방호청(BfS)은 1997년 측정에서 가정용 제품의 누설이 평균적으로 허용 상한의 약 1%였고, 30 cm에서는 표면 값의 5–10%로 줄어든다고 안내한다 [18]. 국내에서는 국립전파연구원이 전자레인지 표본을 30 cm에서 측정해 2.4 GHz 대역 노출이 인체보호기준의 약 7.2%라고 안내하였다 [19]. 누설의 공간 분포를 계산·측정한 연구도 있으나 인체 흡수는 산출하지 않았다 [20].
 
 이 자료들은 시대, 표본 수, 측정 위치(표면, 5 cm, 30 cm)와 측정량이 달라 수치를 그대로 합칠 수 없다. BfS의 1%는 기준점(표면 또는 5 cm)이 자료마다 다르고, 국내 7.2%는 전계의 비인지 전력밀도의 비인지 밝혀져 있지 않다. 공통점은 기준 시행 이후 제품의 누설이 허용 상한보다 훨씬 낮고 거리에 따라 빠르게 준다는 것이다. 측정 자료와 뒤에서 다룰 계산 연구의 핵심 결과를 표 2에 정리하였다.
 
@@ -69,11 +69,12 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 |---|---|---|
 | 누설 측정 | 미국 1970년 조사 [15] | 기준 시행 전, 일부 제품이 당시 업계 기준 초과 |
 | 누설 측정 | 캐나다 2000년 조사 [16] | 사용 중 약 100대 중 1대만 허용 상한 초과 |
-| 누설 측정 | 독일 BfS 안내 [17] | 평균 누설은 허용 상한의 약 1%, 30 cm에서 5–10%로 감소 |
-| 누설 측정 | 국내 국립전파연구원 안내 [18] | 30 cm에서 인체보호기준의 약 7.2% |
-| 흡수·온도 계산 | 접촉형 문, 흉부 [20] | 10 cm 이내에서도 기준보다 매우 낮음(심박조율기 간섭은 가능) |
+| 누설 측정 | 팔레스타인 2014년 조사 [17] | 가정용 115대 모두 일반인 기준보다 훨씬 낮음 |
+| 누설 측정 | 독일 BfS 안내 [18] | 평균 누설은 허용 상한의 약 1%, 30 cm에서 5–10%로 감소 |
+| 누설 측정 | 국내 국립전파연구원 안내 [19] | 30 cm에서 인체보호기준의 약 7.2% |
+| 흡수·온도 계산 | 접촉형 문, 흉부 [21] | 10 cm 이내에서도 기준보다 매우 낮음(심박조율기 간섭은 가능) |
 | 흡수·온도 계산 | 눈, 50 W/m² [13] | 최대 온도 상승 0.26 °C, 백내장 문턱(약 3 °C)보다 훨씬 낮음 |
-| 흡수·온도 계산 | 아동 전신, 평면파 [21], [22] | 참고 수준에서 아동은 기준을 약 30–45% 넘을 수 있음 |
+| 흡수·온도 계산 | 아동 전신, 평면파 [22], [23] | 참고 수준에서 아동은 기준을 약 30–45% 넘을 수 있음 |
 
 그림 2는 오븐 앞으로 새어 나오는 전자파를 보여 준다. 누설이 허용 상한인 경우에도 참고 수준을 넘는 영역은 단순 문에서 문 앞 약 36 cm, 실제 문에서는 약 5–13 cm 안에 머물렀다(검출기 보정 전 값). 실제 문의 누설은 문과 조작부 사이의 틈 한 곳에 몰렸다. 실제 문의 최대 세기는 30, 50, 100 cm에서 5 cm 값의 6.5%, 2.9%, 1.1%로 줄어 BfS 안내의 5–10%와 부합하였다. 다만 BfS의 기준점(표면)과 해석의 기준점(5 cm)이 달라 엄밀한 검증은 아니다. 단순 문은 26%, 13%, 3.9%로, 남은 비율이 실제 문의 3.5–4.5배였다. 30 cm에서 정상 제품의 최대 전력밀도는 실제 문 0.038 W/m², 단순 문 0.16 W/m²였다. 국내 7.2%를 전계의 비로 읽으면 0.052 W/m²로 이 범위 안에 들고, 전력밀도의 비로 읽으면 0.72 W/m²로 그 5–19배이다. 해석은 측정값을 읽는 데 두 가지 주의점도 보여 준다. 첫째, 5 cm는 전계와 자계의 비가 자유공간 값(377 Ω)과 다른 근역장이어서, 전계로 환산한 전력밀도가 실제 전력 흐름보다 최대 1.9배 컸다. 둘째, 누설은 거리 제곱보다 완만하게 줄어, 5 cm 값에 역제곱 법칙을 적용하면 단순 문에서 30 cm–1 m 노출을 10–15배 과소평가한다. 즉 5 cm 측정값은 그대로 인체 노출로 읽을 수 없다.
 
@@ -82,7 +83,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 ### 제3절 몸은 얼마나 흡수하고 얼마나 데워지는가
 
-선행 계산 연구는 특정 상황의 흡수와 온도를 다루었다(표 2 아래쪽). 접촉형 문 앞 10 cm 이내의 흉부 모델에서 국부 SAR(10 g)과 온도 상승은 기준보다 매우 낮았으나, 같은 연구에서 심박조율기 전극의 유도 전압은 기기의 감도 설정을 넘었다 [20]. 눈 모델에 50 W/m²를 쬔 계산에서 ISM 대역의 최대 온도 상승은 0.26 °C(5.8 GHz)로 백내장 문턱(약 3 °C)보다 훨씬 낮았다 [13]. 아동에 대해서는 같은 전력밀도에서 아동의 전신 SAR이 성인보다 크고, 참고 수준에서 기본 제한을 약 30% [21]에서 최대 45% [22]까지 넘을 수 있다는 보고가 있으며, 그 폭은 인체 모델과 자세에 따라 달라진다 [23], [24]. GHz 대역 흡수는 체표면적에 지배되고 아동은 체중당 체표면적이 크기 때문이다 [25], [26]. 이 연구들은 대상(흉부, 눈, 전신), 지표(10 g, 1 g, 전신 평균, 온도), 노출 조건이 서로 달라 수치를 그대로 비교할 수 없고, 실제 전자레인지 앞 거리에서의 흡수량은 제시하지 않았다.
+선행 계산 연구는 특정 상황의 흡수와 온도를 다루었다(표 2 아래쪽). 접촉형 문 앞 10 cm 이내의 흉부 모델에서 국부 SAR(10 g)과 온도 상승은 기준보다 매우 낮았으나, 같은 연구에서 심박조율기 전극의 유도 전압은 기기의 감도 설정을 넘었다 [21]. 눈 모델에 50 W/m²를 쬔 계산에서 ISM 대역의 최대 온도 상승은 0.26 °C(5.8 GHz)로 백내장 문턱(약 3 °C)보다 훨씬 낮았다 [13]. 아동에 대해서는 같은 전력밀도에서 아동의 전신 SAR이 성인보다 크고, 참고 수준에서 기본 제한을 약 30% [22]에서 최대 45% [23]까지 넘을 수 있다는 보고가 있으며, 그 폭은 인체 모델과 자세에 따라 달라진다 [24], [25]. GHz 대역 흡수는 체표면적에 지배되고 아동은 체중당 체표면적이 크기 때문이다 [26], [27]. 이 연구들은 대상(흉부, 눈, 전신), 지표(10 g, 1 g, 전신 평균, 온도), 노출 조건이 서로 달라 수치를 그대로 비교할 수 없고, 실제 전자레인지 앞 거리에서의 흡수량은 제시하지 않았다.
 
 
 해석에서도 입사 1 W/m²당 전신 SAR은 아동이 성인의 1.6–1.7배였고, 참고 수준에서 아동은 기본 제한의 109%로 선행 연구와 방향은 같으나 초과 폭은 작았다. 입사 방향을 정면에서 ±30° 기울이면 전신 SAR은 정면보다 4–11% 작았으나, 얼굴의 국부 SAR은 아래나 위에서 비스듬히 들어올 때 성인 최대 1.34배, 아동 최대 1.65배 커졌다. 아래의 30 cm–1 m 국부 값은 이 가운데 가장 불리한 방향의 값이다. 흡수는 오븐 쪽 피부 1–2 cm에 몰렸고, 국부 최댓값은 코 등 얼굴 돌출부에 나타났다. 그러나 전자레인지 누설은 참고 수준보다 훨씬 낮다. 정상 제품 앞 30 cm–1 m에서 성인의 전신 SAR은 기본 제한의 0.017–1.1%, 머리·몸통 1 g SAR은 0.031–2.7%였고, 아동은 각각 1.7%, 1.4% 이하였다. 상황별 결과를 그림 4에 한눈에 정리하였다. 가장 보수적인 가정에서 기본 제한에 닿으려면 누설이 정상 제품보다 전신 SAR은 59배(아동), 머리·몸통 1 g SAR은 38배(성인) 이상 늘어야 한다. 다른 인체 모델에서 머리 1 g SAR이 15% 큰 차이는 입사 방향 효과(1.34배)보다 작아 이 배수를 바꾸지 않는다. 국내 측정값을 전력밀도의 비(0.72 W/m²)로 읽어 몸 전체에 고르게 쬔다고 가정해도 SAR은 기본 제한의 9% 이하였다. 국부 온도 상승은 가장 불리한 입사 방향에서도 성인 0.0032 °C, 아동 0.0025 °C로 체온계 눈금(0.1 °C)의 약 1/30 이하였고, 심부 체온 상승은 30분 단열 가정에서도 0.0007 °C 이하였다(그림 4(b)).
@@ -101,17 +102,17 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 ## 제3장 논의
 
-세 주제의 근거는 정상 제품에 대해 한 방향을 가리킨다. 기준 문헌은 확인된 위해가 가열이며 그 문턱이 약 4 W/kg라고 하고, 측정 자료는 기준 시행 이후 제품의 누설이 허용 상한보다 훨씬 낮다고 하며, 해석은 그 수준의 누설이 사람에게 기본 제한의 약 3% 이하, 0.004 °C 이하의 온도 상승을 준다고 보였다. 접촉형 문과 눈을 다룬 선행 계산 [20], [13]도 같은 방향이었다(표 2). 다만 해석의 누설 크기를 측정 평균(1%)에 맞추었으므로 측정과 해석의 일치는 독립된 검증이 아니며, 독립적으로 비교된 것은 거리 감쇠의 경향뿐이다. 그럼에도 국내 측정값을 가장 불리하게 읽어도 기본 제한의 10% 미만이어서 결론의 여유는 크다.
+세 주제의 근거는 정상 제품에 대해 한 방향을 가리킨다. 기준 문헌은 확인된 위해가 가열이며 그 문턱이 약 4 W/kg라고 하고, 측정 자료는 기준 시행 이후 제품의 누설이 허용 상한보다 훨씬 낮다고 하며, 해석은 그 수준의 누설이 사람에게 기본 제한의 약 3% 이하, 0.004 °C 이하의 온도 상승을 준다고 보였다. 접촉형 문과 눈을 다룬 선행 계산 [21], [13]도 같은 방향이었다(표 2). 다만 해석의 누설 크기를 측정 평균(1%)에 맞추었으므로 측정과 해석의 일치는 독립된 검증이 아니며, 독립적으로 비교된 것은 거리 감쇠의 경향뿐이다. 그럼에도 국내 측정값을 가장 불리하게 읽어도 기본 제한의 10% 미만이어서 결론의 여유는 크다.
 
-그럼에도 통념이 남은 이유는 세 가지로 보인다. 연방 기준 시행 전에는 실제로 기준을 넘는 제품이 있었고 [15], 5 cm 방출 기준값을 사람이 받는 노출로 오해하기 쉬우며, 실제 위해 사례도 있다. 인터록이 고장 난 오븐에 손을 넣으면 5초 만에 통증이 생겼다 [27]. 그러나 이는 문이 열린 채 동작한 고장 상황으로, 문이 닫힌 제품 앞에 서 있는 것과는 노출 조건이 근본적으로 다르다.
+그럼에도 통념이 남은 이유는 세 가지로 보인다. 연방 기준 시행 전에는 실제로 기준을 넘는 제품이 있었고 [15], 5 cm 방출 기준값을 사람이 받는 노출로 오해하기 쉬우며, 실제 위해 사례도 있다. 인터록이 고장 난 오븐에 손을 넣으면 5초 만에 통증이 생겼다 [28]. 그러나 이는 문이 열린 채 동작한 고장 상황으로, 문이 닫힌 제품 앞에 서 있는 것과는 노출 조건이 근본적으로 다르다.
 
-통념이 성립할 수 있는 조건은 누설이 사용 중 허용 상한 부근인 제품이다. 이 수준은 법적으로 허용되지만 실제 제품에서는 드물고 [16], 문 실이나 이음새가 손상되거나 더러워지면 누설이 커질 수 있다 [28]. 이런 제품에 가장 보수적인 가정을 겹치면 국부·전신 기본 제한에 근접하거나 넘을 수 있다. 아동 연구 [21]–[24]가 보인 "참고 수준이 아동에게 덜 보수적"이라는 결과는 본 해석에서도 같은 방향이었으나, 정상 제품의 누설은 30 cm에서도 참고 수준보다 약 60배 이상 낮아 정상 제품에 대한 결론을 바꾸지 않는다. 한편 심박조율기 사용자에서는 기준 이하의 노출에서도 기기 간섭 가능성이 보고되어 [20], 열적 기준과는 다른 관점의 평가가 필요하다.
+통념이 성립할 수 있는 조건은 누설이 사용 중 허용 상한 부근인 제품이다. 이 수준은 법적으로 허용되지만 실제 제품에서는 드물고 [16], 문 실이나 이음새가 손상되거나 더러워지면 누설이 커질 수 있다 [29]. 호주 방사선방호청(ARPANSA)의 예비 측정도 겉보기에 손상이 없는 제품 일부에서 큰 누설을 보고하고, 경우에 따라 방출 기준을 지켜도 SAR 기준을 넘을 수 있다고 보았다 [30]. 이는 본 해석과 독립된 측정 근거로서 같은 방향의 결론이다. 이런 제품에 가장 보수적인 가정을 겹치면 국부·전신 기본 제한에 근접하거나 넘을 수 있다. 아동 연구 [22]–[25]가 보인 "참고 수준이 아동에게 덜 보수적"이라는 결과는 본 해석에서도 같은 방향이었으나, 정상 제품의 누설은 30 cm에서도 참고 수준보다 약 60배 이상 낮아 정상 제품에 대한 결론을 바꾸지 않는다. 한편 심박조율기 사용자에서는 기준 이하의 노출에서도 기기 간섭 가능성이 보고되어 [21], 열적 기준과는 다른 관점의 평가가 필요하다.
 
-검토한 근거에는 한계가 있다. 측정 자료는 대부분 1970–2000년대 북미·유럽 자료이고, 상당수 문헌은 초록과 기관 안내문 수준에서 확인하였으며, 국내 학술 데이터베이스는 검색하지 못하였다. 해석의 한계는 다음과 같다. (1) 보정에 쓴 검출 면적은 일반적인 측정기 값으로, 규격 원문으로 확인하지 못하였다. (2) 30 cm–1 m에서 평면파 등가는 근사이다. 입사각은 ±30°까지만 확인하였고, 여러 방향에서 동시에 들어오는 경우(벽·조리대 반사)에는 전신 SAR이 약 ±25% 달라질 수 있다 [29]. (3) 오븐 형상은 하나이고, 아동 근접 해석은 단순 문과 한 배치(얼굴이 문 중심에서 옆으로 14 mm)만 다루었다. (4) 아동 모델의 주 연조직에는 시뮬레이터 기본 설정에 따라 지방 물성이 지정되었고, 전신 SAR을 원래 체중으로 나누면 7–10% 커진다. (5) 격자 수렴, 불확도 분석, 실측 검증을 하지 않았다. (6) 온도 해석의 조직 분포는 흡수 분포에서 복원한 것이며, 혈류를 ±30% 바꾸면 최고 온도가 약 0.8–1.25배 달라진다. 땀이나 혈관 확장 같은 체온 조절은 넣지 않았다(보수적). 정상 제품의 여유(최소 약 38배)는 이 불확도들보다 훨씬 크지만, 허용 상한 제품의 수치(66–103%, 171–266%)는 불확도 범위 안에 있으므로 "기준에 근접하거나 넘을 수 있다"는 정성적 판단으로만 읽어야 한다. 업소용 고출력 기기나 임신부 등에는 따로 확인이 필요하다.
+검토한 근거에는 한계가 있다. 측정 자료는 대부분 2000년대 이전 북미·유럽 자료이며 2000년 이후 조사는 학술대회 발표 수준이고, 상당수 문헌은 초록과 기관 안내문 수준에서 확인하였으며, 국내 학술 데이터베이스는 검색하지 못하였다. 해석의 한계는 다음과 같다. (1) 보정에 쓴 검출 면적은 일반적인 측정기 값으로, 규격 원문으로 확인하지 못하였다. (2) 30 cm–1 m에서 평면파 등가는 근사이다. 입사각은 ±30°까지만 확인하였고, 여러 방향에서 동시에 들어오는 경우(벽·조리대 반사)에는 전신 SAR이 약 ±25% 달라질 수 있다 [31]. (3) 오븐 형상은 하나이고, 아동 근접 해석은 단순 문과 한 배치(얼굴이 문 중심에서 옆으로 14 mm)만 다루었다. (4) 아동 모델의 주 연조직에는 시뮬레이터 기본 설정에 따라 지방 물성이 지정되었고, 전신 SAR을 원래 체중으로 나누면 7–10% 커진다. (5) 격자 수렴, 불확도 분석, 실측 검증을 하지 않았다. (6) 온도 해석의 조직 분포는 흡수 분포에서 복원한 것이며, 혈류를 ±30% 바꾸면 최고 온도가 약 0.8–1.25배 달라진다. 땀이나 혈관 확장 같은 체온 조절은 넣지 않았다(보수적). 정상 제품의 여유(최소 약 38배)는 이 불확도들보다 훨씬 크지만, 허용 상한 제품의 수치(66–103%, 171–266%)는 불확도 범위 안에 있으므로 "기준에 근접하거나 넘을 수 있다"는 정성적 판단으로만 읽어야 한다. 업소용 고출력 기기나 임신부 등에는 따로 확인이 필요하다.
 
 ## 제4장 결론
 
-연구 질문에 대한 답은 다음과 같다. 정상 동작하는 가정용 전자레인지 앞 30 cm–1 m에 선 성인과 아동의 SAR은 가장 보수적인 가정에서도 기본 제한의 약 3% 이하, 문에 얼굴을 5–10 cm까지 댄 아동도 약 1%였고, 온도 상승은 열적 영향 문턱(1 °C)의 수백분의 일 이하였다. 국내 측정값을 가장 불리하게 읽어도 기준의 10% 미만이었고, 기준에 닿으려면 누설이 정상 제품의 35배 이상이 되어야 한다. 따라서 **"작동 중인 전자레인지 앞에 서 있으면 해롭다"는 통념은 정상 제품에 대해 지지되지 않는다.** 이 통념은 **문이 손상되어 누설이 사용 중 허용 상한 부근까지 커진 제품에서만 조건부로 성립할 수 있다.** 인터록 고장으로 문이 열린 채 동작하는 경우는 이와 별개의 실제 위험이며, 비열적 영향은 현재 근거로 판단을 유보한다. 실용적인 조언은 "앞에 서 있지 말라"가 아니라 "문이 손상되었거나 문을 연 채 작동하는 전자레인지는 쓰지 말라"이다.
+연구 질문에 대한 답은 다음과 같다. 정상 동작하는 가정용 전자레인지 앞 30 cm–1 m에 선 성인과 아동의 SAR은 가장 보수적인 가정에서도 기본 제한의 약 3% 이하, 문에 얼굴을 5–10 cm까지 댄 아동도 약 1%였고, 온도 상승은 열적 영향 문턱(1 °C)의 수백분의 일 이하였다. 국내 측정값을 가장 불리하게 읽어도 기준의 10% 미만이었고, 기준에 닿으려면 누설이 정상 제품의 약 38배 이상이 되어야 한다. 따라서 **"작동 중인 전자레인지 앞에 서 있으면 해롭다"는 통념은 정상 제품에 대해 지지되지 않는다.** 이 통념은 **문이 손상되어 누설이 사용 중 허용 상한 부근까지 커진 제품에서만 조건부로 성립할 수 있다.** 인터록 고장으로 문이 열린 채 동작하는 경우는 이와 별개의 실제 위험이며, 비열적 영향은 현재 근거로 판단을 유보한다. 실용적인 조언은 "앞에 서 있지 말라"가 아니라 "문이 손상되었거나 문을 연 채 작동하는 전자레인지는 쓰지 말라"이다.
 
 ## 참고문헌
 
@@ -147,28 +148,32 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 [16] Health Canada. (2000). *Radiation leakage of before-sale and used microwave ovens*. Retrieved October 20, 2026, from https://www.canada.ca/en/health-canada/services/environmental-workplace-health/reports-publications/radiation/radiation-leakage-before-sale-used-microwave-ovens-health-canada-2000.html
 
-[17] Bundesamt für Strahlenschutz. (n.d.). *Mikrowellenkochgeräte*. Retrieved October 20, 2026, from https://www.bfs.de/DE/themen/emf/hff/quellen/mikrowelle/mikrowelle_node.html
+[17] Darawshe, M. F., Abu Jafar, M., & Abdelraziq, I. R. (2014). Electric and magnetic field radiation leakage from microwave ovens at homes in Palestine. *Fourth Palestinian Conference on Modern Trends in Mathematics and Physics (PCMTMP-IV)*, Al-Quds University. https://repository.najah.edu/handle/20.500.11888/8617
 
-[18] 국립전파연구원. (n.d.). *생활 속의 전자파 FAQ*. 2026년 10월 20일 검색, https://www.rra.go.kr/ko/license/D_e_faq.do?fa_type=a&fa_category=electronic
+[18] Bundesamt für Strahlenschutz. (n.d.). *Mikrowellenkochgeräte*. Retrieved October 20, 2026, from https://www.bfs.de/DE/themen/emf/hff/quellen/mikrowelle/mikrowelle_node.html
 
-[19] Lopez-Iturri, P., de Miguel-Bilbao, S., Aguirre, E., Azpilicueta, L., Falcone, F., & Ramos, V. (2015). Estimation of radiofrequency power leakage from microwave ovens for dosimetric assessment at nonionizing radiation exposure levels. *BioMed Research International, 2015*, 603260. https://doi.org/10.1155/2015/603260
+[19] 국립전파연구원. (n.d.). *생활 속의 전자파 FAQ*. 2026년 10월 20일 검색, https://www.rra.go.kr/ko/license/D_e_faq.do?fa_type=a&fa_category=electronic
 
-[20] Tian, R., Wei, J.-C., & Lu, M. (2025). The numerical assessment of RF human exposure to microwave ovens with contact-type doors. *Electronics, 14*(5), 873. https://doi.org/10.3390/electronics14050873
+[20] Lopez-Iturri, P., de Miguel-Bilbao, S., Aguirre, E., Azpilicueta, L., Falcone, F., & Ramos, V. (2015). Estimation of radiofrequency power leakage from microwave ovens for dosimetric assessment at nonionizing radiation exposure levels. *BioMed Research International, 2015*, 603260. https://doi.org/10.1155/2015/603260
 
-[21] Wang, J., Fujiwara, O., Kodera, S., & Watanabe, S. (2006). FDTD calculation of whole-body average SAR in adult and child models for frequencies from 30 MHz to 3 GHz. *Physics in Medicine and Biology, 51*(17), 4119–4127. https://doi.org/10.1088/0031-9155/51/17/001
+[21] Tian, R., Wei, J.-C., & Lu, M. (2025). The numerical assessment of RF human exposure to microwave ovens with contact-type doors. *Electronics, 14*(5), 873. https://doi.org/10.3390/electronics14050873
 
-[22] Bakker, J. F., Paulides, M. M., Christ, A., Kuster, N., & van Rhoon, G. C. (2010). Assessment of induced SAR in children exposed to electromagnetic plane waves between 10 MHz and 5.6 GHz. *Physics in Medicine and Biology, 55*(11), 3115–3130. https://doi.org/10.1088/0031-9155/55/11/009
+[22] Wang, J., Fujiwara, O., Kodera, S., & Watanabe, S. (2006). FDTD calculation of whole-body average SAR in adult and child models for frequencies from 30 MHz to 3 GHz. *Physics in Medicine and Biology, 51*(17), 4119–4127. https://doi.org/10.1088/0031-9155/51/17/001
 
-[23] Uusitupa, T., Laakso, I., Ilvonen, S., & Nikoskinen, K. (2010). SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures. *Physics in Medicine and Biology, 55*(4), 1157–1176. https://doi.org/10.1088/0031-9155/55/4/017
+[23] Bakker, J. F., Paulides, M. M., Christ, A., Kuster, N., & van Rhoon, G. C. (2010). Assessment of induced SAR in children exposed to electromagnetic plane waves between 10 MHz and 5.6 GHz. *Physics in Medicine and Biology, 55*(11), 3115–3130. https://doi.org/10.1088/0031-9155/55/11/009
 
-[24] Piuzzi, E., Bernardi, P., Cavagnaro, M., Pisa, S., & Lin, J. C. (2011). Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz). *IEEE Transactions on Electromagnetic Compatibility, 53*(1), 38–47. https://doi.org/10.1109/TEMC.2010.2053376
+[24] Uusitupa, T., Laakso, I., Ilvonen, S., & Nikoskinen, K. (2010). SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures. *Physics in Medicine and Biology, 55*(4), 1157–1176. https://doi.org/10.1088/0031-9155/55/4/017
 
-[25] Hirata, A., Kodera, S., Wang, J., & Fujiwara, O. (2007). Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions. *Bioelectromagnetics, 28*(6), 484–487. https://doi.org/10.1002/bem.20335
+[25] Piuzzi, E., Bernardi, P., Cavagnaro, M., Pisa, S., & Lin, J. C. (2011). Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz). *IEEE Transactions on Electromagnetic Compatibility, 53*(1), 38–47. https://doi.org/10.1109/TEMC.2010.2053376
 
-[26] Flintoft, I. D., Robinson, M. P., Melia, G. C. R., Dawson, J. F., & Marvin, A. C. (2014). Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study. *Physics in Medicine and Biology, 59*(13), 3297–3317. https://doi.org/10.1088/0031-9155/59/13/3297
+[26] Hirata, A., Kodera, S., Wang, J., & Fujiwara, O. (2007). Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions. *Bioelectromagnetics, 28*(6), 484–487. https://doi.org/10.1002/bem.20335
 
-[27] Oleson, J., Samulski, T., Clegg, S., Das, S., & Grant, W. (1994). Heating rate modeling and measurements in phantom and in vivo of the human upper extremity in a defective 2450 MHz microwave oven. *Journal of Microwave Power and Electromagnetic Energy, 29*(2), 101–108. https://doi.org/10.1080/08327823.1994.11688237
+[27] Flintoft, I. D., Robinson, M. P., Melia, G. C. R., Dawson, J. F., & Marvin, A. C. (2014). Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study. *Physics in Medicine and Biology, 59*(13), 3297–3317. https://doi.org/10.1088/0031-9155/59/13/3297
 
-[28] Bundesamt für Gesundheit. (n.d.). *Faktenblatt Mikrowellenofen*. Retrieved October 20, 2026, from https://www.bag.admin.ch/dam/en/sd-web/JbnegZr3mAZv/faktenblatt-mikrowellenofen.pdf
+[28] Oleson, J., Samulski, T., Clegg, S., Das, S., & Grant, W. (1994). Heating rate modeling and measurements in phantom and in vivo of the human upper extremity in a defective 2450 MHz microwave oven. *Journal of Microwave Power and Electromagnetic Energy, 29*(2), 101–108. https://doi.org/10.1080/08327823.1994.11688237
 
-[29] Kientega, T., et al. (2011). A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz. *Annals of Telecommunications, 66*, 419–428. https://doi.org/10.1007/s12243-011-0261-z
+[29] Bundesamt für Gesundheit. (n.d.). *Faktenblatt Mikrowellenofen*. Retrieved October 20, 2026, from https://www.bag.admin.ch/dam/en/sd-web/JbnegZr3mAZv/faktenblatt-mikrowellenofen.pdf
+
+[30] Bangay, M., & Zombolas, C. (2003). Advanced measurements of microwave oven leakage. *Radiation Protection in Australasia, 20*(2), 47–51. https://inis.iaea.org/records/t4ej4-h3210
+
+[31] Kientega, T., et al. (2011). A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz. *Annals of Telecommunications, 66*, 419–428. https://doi.org/10.1007/s12243-011-0261-z
