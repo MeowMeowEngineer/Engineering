@@ -301,7 +301,7 @@ Child 모델에 일반인 참고 수준(10 W/m²)을 전신 조사하면 전신 
 
 [18] Dassault Systèmes, *CST Studio Suite 2019*, Version 2019.7, 2019; Online Help, "Biological Data: CST Voxel Family."
 
-[19] Samsung MS23K3513AW product specifications (housing and cavity dimensions, output power), retailer listings Coolblue (coolblue.be) and DCS (dcs.dk). Accessed: Oct. 22, 2026.
+[19] Samsung Electronics, "MS23K3513AW SOLO MWO with Quick Defrost, 23L," product specifications. [Online]. Available: https://www.samsung.com/ae/business/microwave-ovens/solo/microwave-oven-solo-ms23k3513aw-sg/ (accessed Oct. 27, 2026).
 
 [20] "Microwave oven door screen," U.S. Patent 4 051 341.
 

@@ -132,7 +132,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가: 노출 
 
 [@SIM] 전자기장 시뮬레이터 제조사. (2019). *전자기장 시뮬레이터 사용자 설명서: 인체 모델 자료(Biological Data)* (버전 2019.7).
 
-[@SPEC] Coolblue. (n.d.). *Samsung MS23K3513AW/EN* [Product specifications]. Retrieved October 22, 2026, from https://www.coolblue.be/en/product/945727/samsung-ms23k3513aw-en.html
+[@SPEC] Samsung Electronics. (n.d.). *MS23K3513AW SOLO MWO with Quick Defrost, 23L* [Product specifications]. Retrieved October 27, 2026, from https://www.samsung.com/ae/business/microwave-ovens/solo/microwave-oven-solo-ms23k3513aw-sg/
 
 [@PEN] Pennes, H. H. (1948). Analysis of tissue and arterial blood temperatures in the resting human forearm. *Journal of Applied Physiology, 1*(2), 93–122. https://doi.org/10.1152/jappl.1948.1.2.93
 
