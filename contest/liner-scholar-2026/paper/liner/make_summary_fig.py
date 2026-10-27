@@ -72,7 +72,7 @@ def panel(ax, col, unit, xmin, xmax, lines, xlabel):
 
 fig, (a, b) = plt.subplots(1, 2, figsize=(7.16, 3.4), sharey=True, gridspec_kw={"wspace": 0.08})
 panel(a, 1, "%", 0.05, 2000, [(100, "기준 (100%)", "-")], "SAR (기준 대비 %)")
-panel(b, 2, "°C", 1e-4, 8, [(1.0, "열적 영향 문턱 1 °C", "-"), (0.1, "체온계 눈금 0.1 °C", ":")], "국부 최대 온도 상승 (°C)")
+panel(b, 2, "°C", 1e-4, 8, [(1.0, "열적 영향 역치 1 °C", "-"), (0.1, "체온계 눈금 0.1 °C", ":")], "국부 최대 온도 상승 (°C)")
 b.tick_params(axis="y", labelleft=False)
 handles = [plt.Rectangle((0, 0), 1, 1, color=A_COL), plt.Rectangle((0, 0), 1, 1, color=B_COL)]
 fig.legend(handles, ["정상 제품 (누설 = 허용 상한의 1%)", "허용 상한 제품 (누설 = 허용 상한)"],
