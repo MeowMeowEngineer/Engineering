@@ -39,7 +39,8 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 /* 상단 */
 .top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; }
 .brand { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; letter-spacing: 0.02em; margin: 0; }
-.brand small { font-family: var(--font-hand); font-size: 1.25rem; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+.brand small { font-family: var(--font-hand); font-size: 1.25rem; color: var(--muted); margin-left: 8px; letter-spacing: 0; white-space: nowrap; }
+@media (max-width: 480px) { .brand small { display: block; margin-left: 0; } }
 .topright { display: flex; gap: 8px; flex-wrap: wrap; }
 .badge { display: inline-flex; align-items: baseline; gap: 8px; border: 2px solid var(--ink); padding: 2px 10px; background: var(--card); }
 .badge b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
@@ -323,6 +324,10 @@ button.item:disabled { cursor: not-allowed; }
   const $ = (id) => document.getElementById(id);
   const won = (n) => '₩' + n.toLocaleString('ko-KR');
   let st, lastFrame = performance.now(), nextProfAt = 0, hiddenAt = 0, tab = 'gens', petClock = 0;
+  // 출시 모드(앱 빌드): claude.ai 전용 기능(랭킹·클라우드 저장)과 가상 결제·광고를 빼고 혼자 하는 게임으로 띄운다.
+  // release/clicker/build.js가 window.__GRAD_RELEASE__를 켠다. 프로토타입 페이지는 그대로다.
+  const RELEASE = !!window.__GRAD_RELEASE__;
+  if (RELEASE) { const rt = document.getElementById('tab-rank'); if (rt) rt.remove(); }
   const tapTimes = [];
   const MAX_TPS = 15; // 오토클리커 방지: 1초에 15번까지만 인정
 
@@ -648,31 +653,33 @@ button.item:disabled { cursor: not-allowed; }
     const box = $('panel-shop');
     const P = E.PRODUCTS, C = E.COUPON_ITEMS;
     const adBtn = (kind) => (st.shop.noAds ? '바로 받기' : '광고 보기') + ' · ' + E.adLeft(st, kind) + '회 남음';
-    let h = '<div class="notice">프로토타입 BM 시뮬레이션입니다. 실제 결제와 실제 광고는 없습니다.</div>';
+    let h = RELEASE ? '' : '<div class="notice">프로토타입 BM 시뮬레이션입니다. 실제 결제와 실제 광고는 없습니다.</div>';
     h += '<p class="h3">출석</p><div class="row"><div><div class="name">' + (st.daily.streak || 1) + '일째 출석</div><div class="meta">7일 주기로 커피 쿠폰 5·5·10·10·15·15·30' + (st.subActive ? ', 구독 중이라 매일 +20' : '') + '</div></div><button class="buy gold" id="attendBtn"><b class="num">+' + E.attendReward(st) + '</b><small>' + (E.attendReady(st) ? '받기' : '받음') + '</small></button></div>';
-    h += '<p class="h3">광고 보상 <span class="meta num">(오늘 ' + (E.AD_LIMITS.total - st.daily.ads) + '/' + E.AD_LIMITS.total + '회 남음)</span></p>';
-    h += '<div class="row"><div><div class="name">연구 지원금</div><div class="meta">30분 동안 자동 생산 2배</div></div><button class="buy" id="adBuff"><b>2배</b><small>' + adBtn('buff') + '</small></button></div>';
-    h += '<div class="row"><div><div class="name">에너지 드링크 1개 받기</div><div class="meta">가방에 들어간다. 마시면 5분 동안 탭·자동 생산 2배</div></div><button class="buy" id="adSkill"><b>🥤 +1</b><small>' + adBtn('skill') + '</small></button></div>';
+    if (!RELEASE) h += '<p class="h3">광고 보상 <span class="meta num">(오늘 ' + (E.AD_LIMITS.total - st.daily.ads) + '/' + E.AD_LIMITS.total + '회 남음)</span></p>';
+    if (!RELEASE) h += '<div class="row"><div><div class="name">연구 지원금</div><div class="meta">30분 동안 자동 생산 2배</div></div><button class="buy" id="adBuff"><b>2배</b><small>' + adBtn('buff') + '</small></button></div>';
+    if (!RELEASE) h += '<div class="row"><div><div class="name">에너지 드링크 1개 받기</div><div class="meta">가방에 들어간다. 마시면 5분 동안 탭·자동 생산 2배</div></div><button class="buy" id="adSkill"><b>🥤 +1</b><small>' + adBtn('skill') + '</small></button></div>';
     h += '<p class="h3">커피 쿠폰 쓰기</p>';
     Object.keys(C).forEach((id) => {
       const it = C[id], owned = id === 'pet' && st.pet;
       h += '<div class="row"><div><div class="name">' + it.name + '</div><div class="meta">' + it.desc + '</div></div><button class="buy gold" data-coupon="' + id + '"' + (owned || st.coupons < it.cost ? ' disabled' : '') + '><b class="num">☕ ' + it.cost + '</b><small>' + (owned ? '입양 완료' : '쓰기') + '</small></button></div>';
     });
-    h += '<p class="h3">상품 (가상 결제)</p>';
-    Object.keys(P).forEach((sku) => {
+    if (!RELEASE) h += '<p class="h3">상품 (가상 결제)</p>';
+    if (!RELEASE) Object.keys(P).forEach((sku) => {
       const p = P[sku];
       const done = (sku === 'starter' && st.shop.starter) || (sku === 'noads' && st.shop.noAds);
       const sub = sku === 'sub' && st.subActive;
       h += '<div class="row"><div><div class="name">' + p.name + '</div><div class="meta">' + (p.desc || '커피 쿠폰') + (sub ? ' · ' + st.shop.subUntil + '까지 구독 중' : '') + '</div></div><button class="buy" data-sku="' + sku + '"' + (done ? ' disabled' : '') + '><b class="num">' + won(p.price) + '</b><small>' + (done ? '구매 완료' : sub ? '연장' : '가상 결제') + '</small></button></div>';
     });
-    h += '<div class="row"><div><div class="name">가상 결제 합계</div><div class="meta">' + (st.shop.purchases.length ? st.shop.purchases.map((p) => p.day + ' ' + E.PRODUCTS[p.sku].name).join(', ') : '아직 없음') + '</div></div><b class="num">' + won(E.spent(st)) + '</b></div>';
+    if (!RELEASE) h += '<div class="row"><div><div class="name">가상 결제 합계</div><div class="meta">' + (st.shop.purchases.length ? st.shop.purchases.map((p) => p.day + ' ' + E.PRODUCTS[p.sku].name).join(', ') : '아직 없음') + '</div></div><b class="num">' + won(E.spent(st)) + '</b></div>';
     box.innerHTML = h;
     $('attendBtn').disabled = !E.attendReady(st);
     $('attendBtn').addEventListener('click', () => { const v = E.claimAttend(st); if (v) { say('출석 보상: 커피 쿠폰 +' + v); save(); update(); buildShop(); } });
+    if (!RELEASE) {
     $('adBuff').disabled = E.adLeft(st, 'buff') <= 0;
     $('adSkill').disabled = E.adLeft(st, 'skill') <= 0;
     $('adBuff').addEventListener('click', () => watchAd('buff', 0, () => { say('연구 지원금! 30분 동안 자동 생산 2배'); buildShop(); }));
     $('adSkill').addEventListener('click', () => watchAd('skill', 0, () => { say('광고 보상으로 에너지 드링크를 받았다. 가방에 ' + st.drinks + '개.'); buildShop(); }));
+    }
     box.querySelectorAll('[data-coupon]').forEach((b) => b.addEventListener('click', () => {
       const id = b.dataset.coupon;
       if (E.spendCoupon(st, id)) { say(id === 'pet' ? '야옹을 입양했다. 앞발로 대신 탭해 준다.' : id === 'drink' ? '에너지 드링크를 샀다. 가방에 ' + st.drinks + '개.' : '시간 가속! 자동 생산 2시간 치를 받았다.'); save(); update(); buildShop(); }
@@ -1308,7 +1315,7 @@ button.item:disabled { cursor: not-allowed; }
     const capNote = r.capped ? '<p class="meta">' + r.capH + '시간까지만 쌓였다.' + (st.subActive ? '' : ' 정기구독이면 12시간, 효율 100%.') + '</p>' : '';
     const adOk = E.adLeft(st, 'offline') > 0;
     openModal('<h2>다녀오셨어요</h2><p class="hand">자리를 비운 ' + mmss(r.seconds) + ' 동안 (효율 ' + Math.round(r.eff * 100) + '%)</p><p>' + lines.join('<br>') + '</p>' + capNote,
-      [{ label: '받기', primary: true }].concat(r.gain <= 0 ? [] : [{ label: (st.shop.noAds ? '데이터 2배로 받기' : '광고 보고 데이터 2배') + (adOk ? '' : ' (오늘 광고 소진)'), disabled: !adOk, fn: () => watchAd('offline', r.gain, () => say('방치 보상을 2배로 받았다. 데이터 +' + fmt(r.gain))) }]));
+      [{ label: '받기', primary: true }].concat(r.gain <= 0 || RELEASE ? [] : [{ label: (st.shop.noAds ? '데이터 2배로 받기' : '광고 보고 데이터 2배') + (adOk ? '' : ' (오늘 광고 소진)'), disabled: !adOk, fn: () => watchAd('offline', r.gain, () => say('방치 보상을 2배로 받았다. 데이터 +' + fmt(r.gain))) }]));
     save();
   }
   function maybeAttend() {
@@ -1354,7 +1361,7 @@ button.item:disabled { cursor: not-allowed; }
     try { const t = localStorage.getItem(KEY + '.tab'); if (t) { const b = document.querySelector('.tabs button[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) {}
     update(true);
     requestAnimationFrame(frame);
-    initCloud();
+    if (!RELEASE) initCloud();
   }
   window.claude?.hot?.snapshot?.(() => ({ st, at: Date.now() }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

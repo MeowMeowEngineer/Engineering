@@ -1,0 +1,13 @@
+{
+  "appId": "io.github.meowmeowengineer.gradstudent",
+  "appName": "대학원생 키우기",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#f3f6f9",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css", "initialViewportFitValueHint": "contain" }
+  }
+}

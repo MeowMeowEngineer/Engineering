@@ -1,0 +1,10 @@
+{
+  "appId": "io.github.meowmeowengineer.gradstudent",
+  "name": "대학원생 키우기",
+  "shortName": "대학원생 키우기",
+  "description": "석사 1년차 막내가 살아있는 교과서가 되기까지. 탭하고, 논문 쓰고, 심사를 통과하는 대학원 방치형 게임.",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "themeColor": "#2346a3",
+  "backgroundColor": "#f3f6f9"
+}
