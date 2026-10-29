@@ -27,11 +27,11 @@ ANG_ADULT = 1.336
 #   (가장 불리한 방향: 성인 el+30 0.0200, 아동 el−30 0.0156 K per W/m²) × 단순 문 몸 앞 최대 전력밀도(A).
 PD_HI_A = {"adult30": 0.12987, "adult100": 0.018342, "child30": 0.128}
 ROWS = [(name, sar * K_V1, dt * K_V1) for name, sar, dt in [
-    ("아동, 얼굴–문 5 cm", 0.54, 0.125 / 100),
-    ("아동, 얼굴–문 10 cm", 0.84, 0.171 / 100),
-    ("아동, 몸–문 30 cm", 1.39, 0.0156 * PD_HI_A["child30"]),
-    ("성인, 몸–문 30 cm", 1.62 * ANG_ADULT, 0.0200 * PD_HI_A["adult30"]),
-    ("성인, 몸–문 1 m", 0.23 * ANG_ADULT, 0.0200 * PD_HI_A["adult100"]),
+    ("아동, 얼굴–문 5 cm\n(머리 1 g)", 0.54, 0.125 / 100),
+    ("아동, 얼굴–문 10 cm\n(머리 1 g)", 0.84, 0.171 / 100),
+    ("아동, 몸–문 30 cm\n(전신)", 1.39, 0.0156 * PD_HI_A["child30"]),
+    ("성인, 몸–문 30 cm\n(머리·몸통 1 g)", 1.62 * ANG_ADULT, 0.0200 * PD_HI_A["adult30"]),
+    ("성인, 몸–문 1 m\n(머리·몸통 1 g)", 0.23 * ANG_ADULT, 0.0200 * PD_HI_A["adult100"]),
 ]]
 FACTOR_B = 100.0
 
@@ -71,15 +71,15 @@ def panel(ax, col, unit, xmin, xmax, lines, xlabel):
 
 
 fig, (a, b) = plt.subplots(1, 2, figsize=(7.16, 3.4), sharey=True, gridspec_kw={"wspace": 0.08})
-panel(a, 1, "%", 0.05, 2000, [(100, "기준 (100%)", "-")], "SAR (기준 대비 %)")
-panel(b, 2, "°C", 1e-4, 8, [(1.0, "열적 영향 역치 1 °C", "-"), (0.1, "체온계 눈금 0.1 °C", ":")], "국부 최대 온도 상승 (°C)")
+panel(a, 1, "%", 0.05, 2000, [(100, "기준 (100%)", "-")], "SAR (기본 제한 대비 %)")
+panel(b, 2, "°C", 1e-4, 8, [(2.0, "국부 역치 2 °C\n(머리·몸통 조직)", "-")], "국부 최대 온도 상승 (°C)")
 b.tick_params(axis="y", labelleft=False)
 handles = [plt.Rectangle((0, 0), 1, 1, color=A_COL), plt.Rectangle((0, 0), 1, 1, color=B_COL)]
-fig.legend(handles, ["정상 제품 (누설 = 허용 상한의 1%)", "허용 상한 제품 (누설 = 허용 상한)"],
+fig.legend(handles, ["저누설 조건 (5 cm에서 0.5 W/m²)", "고누설 조건 (5 cm에서 50 W/m²)"],
            loc="upper center", ncol=2, frameon=False, fontsize=8, bbox_to_anchor=(0.55, 1.0))
 for ax, t in ((a, "(a)"), (b, "(b)")):
     ax.text(0.5, -0.2, t, transform=ax.transAxes, ha="center", va="top", fontsize=9)
-fig.subplots_adjust(left=0.17, right=0.98, top=0.88, bottom=0.2)
+fig.subplots_adjust(left=0.2, right=0.98, top=0.88, bottom=0.2)
 fig.savefig(os.path.join(HERE, "fig_summary_liner.png"), dpi=300)
 fig.savefig(os.path.join(HERE, "fig_summary_liner.pdf"))
 print("saved")

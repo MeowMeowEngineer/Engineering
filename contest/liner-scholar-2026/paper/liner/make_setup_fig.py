@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from PIL import Image
 
-plt.rcParams.update({"font.family": "Noto Serif CJK KR", "font.size": 7.5})
+plt.rcParams.update({"font.family": "Noto Serif CJK KR", "font.size": 8.5})
 HERE = os.path.dirname(os.path.abspath(__file__))
 IEEE = os.path.join(HERE, "..", "ieee")
 
