@@ -4,6 +4,7 @@ import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from PIL import Image
 
 plt.rcParams.update({"font.family": "Noto Serif CJK KR", "font.size": 9})
@@ -17,5 +18,8 @@ ax.set_axis_off()
 BOX = dict(boxstyle="round,pad=0.25", fc="white", ec="none", alpha=0.9)
 ax.text(880, 30, "단순 문 모델", ha="right", va="top", fontsize=8, bbox=BOX)
 ax.text(1915, 30, "상세 문 모델", ha="right", va="top", fontsize=8, bbox=BOX)
+# 컬러바 제목의 옛 용어(시나리오 B)를 라이너판 용어로 바꾼다(원본 픽셀 좌표)
+ax.add_patch(Rectangle((2058, 70), 40, 343, fc="white", ec="none"))
+ax.text(2078, 241, "전계 (V/m, 고누설 조건)", rotation=90, ha="center", va="center", fontsize=8.6)
 fig.savefig(os.path.join(HERE, "fig_leak_liner.png"), dpi=300)
 print("saved")
