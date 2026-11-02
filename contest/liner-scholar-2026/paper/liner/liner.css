@@ -23,3 +23,4 @@ h2 + h3 { break-before: avoid; }
 p.tcap { break-after: avoid; page-break-after: avoid; }
 p.fig { break-after: avoid; page-break-after: avoid; }
 p.fcap { break-inside: avoid; }
+p, td, th, li { word-break: keep-all; overflow-wrap: break-word; }
