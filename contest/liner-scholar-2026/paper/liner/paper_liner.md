@@ -18,7 +18,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가"
 
 전자레인지로 음식을 데우다가 문 안을 들여다보면, 작동 중에는 앞에 서 있지 말라는 조언이 떠오른다. 음식을 데우는 전자파가 문틈으로 새어 나와 사람의 몸에도 영향을 줄 수 있다는 걱정이다. 이 조언이 타당한지 판단하려면 전자파가 얼마나 새는지, 사람이 그중 얼마나 흡수하는지, 그 에너지가 몸을 얼마나 데우는지 차례로 확인해야 한다.
 
-전자레인지는 2.45 GHz 마이크로파로 음식을 가열한다. 제품 안전 규격은 외부로 새는 전자파의 양을 제한한다 [1], [2]. 인체보호기준은 몸 1 kg이 흡수하는 전력인 비흡수율(SAR, W/kg)을 제한한다 [3], [4]. 문 앞에서 측정한 누설값을 인체 흡수량으로 연결하는 과정이 이 질문의 핵심이다. 같은 제품도 사람이 서 있는 거리와 자세에 따라 노출이 달라지기 때문이다.
+전자레인지는 2.45 GHz 마이크로파로 음식을 가열한다. 제품 안전 규격은 외부로 새는 전자파의 양을 제한한다 [1], [2]. 인체보호기준은 몸 1 kg이 흡수하는 전력인 비흡수율(SAR, W/kg)을 제한한다 [3], [4]. 같은 제품도 사람이 서 있는 거리와 자세에 따라 노출이 달라지므로, 문 앞에서 측정한 누설값만으로는 몸이 흡수하는 양을 알 수 없다.
 
 이 글은 문을 닫고 작동하는 가정용 전자레인지를 대상으로 두 가지를 확인한다. 먼저 문 앞 30 cm–1 m에 선 성인·아동과 문에 얼굴을 5–10 cm까지 가까이 댄 아동의 SAR을 인체보호기준과 비교한다. 이어서 그 에너지가 일으키는 온도 상승을 열적 영향의 판단 근거와 비교한다. 두 질문을 나눈 이유는 기본 제한값이 위해 수준에 안전 여유를 두어 정한 값이기 때문이다. 기준 준수 여부와 실제 가열의 영향을 각각 검토해야 통념에 답할 수 있다.
 
@@ -68,7 +68,7 @@ title: "작동 중인 전자레인지 앞에 서 있으면 해로운가"
 <p class="fig"><img src="fig_leak_liner.png" alt="그림 2"></p>
 <p class="fcap">그림 2. 고누설 조건의 오븐 전면 전계 분포. (a) 단순 문과 (b) 상세 문 모델. 흰 실선은 전계로 환산한 전력밀도 10 W/m²의 경계이며, 점선은 문에서 5 cm, 30 cm, 50 cm, 1 m 위치다. 저누설 조건의 전력은 그림 값의 1/100이다. 검출 면적 보정을 적용하면 전계는 약 1.1배가 된다. (출처: 본 연구 해석)</p>
 
-5 cm의 측정값을 더 먼 거리로 환산할 때는 누설원의 분포를 고려해야 한다. 문틈 전체가 누설원인 단순 문 모델에 역제곱 법칙을 적용하면 30 cm–1 m의 노출을 10–15배 작게 추정했다. 또한 문 가까이에서는 전계와 자계의 비가 자유공간 값인 377 Ω과 달라, 전계로 환산한 전력밀도가 실제 전력 흐름보다 최대 1.9배 컸다. 이런 차이 때문에 누설 측정값과 인체 흡수량을 연결하는 계산이 필요하다.
+5 cm의 측정값을 더 먼 거리로 환산할 때는 누설원의 분포를 고려해야 한다. 문틈 전체가 누설원인 단순 문 모델에 역제곱 법칙을 적용하면 30 cm–1 m의 노출을 10–15배 작게 추정했다. 또한 문 가까이에서는 전계와 자계의 비가 자유공간 값인 377 Ω과 달라, 전계로 환산한 전력밀도가 실제 전력 흐름보다 최대 1.9배 컸다.
 
 ### 제2절 인체 흡수량과 열적 영향의 비교 기준
 
@@ -89,49 +89,49 @@ ICNIRP는 조직의 온도 특성에 따라 국부 온도 상승의 운영 역�
 | 국부 온도 [3] | 조직별 운영 역치 | 1형 조직 5°C, 2형 조직 2°C |
 | 수정체 온도 [15] | 눈 모델의 온도 상승 비교값 | 약 3°C |
 
-암이나 자각 증상에 관한 자료는 연구별 노출 조건을 함께 읽어야 한다. IARC는 2011년 휴대전화 사용자의 신경교종 보고 등을 근거로 무선주파수 전자기장을 2B군으로 분류했다 [20]. 2024년 WHO 의뢰 고찰은 인간 관찰연구의 주요 암 결과 [21]와 단시간 유발 실험의 자각 증상 [22]에서 관련성을 뒷받침하는 일관된 근거를 찾지 못했다. 2025년 동물 고찰은 장기 노출에 따른 신경교종·심장 신경초종 증가의 근거를 높게 평가했다 [23]. 이 자료들은 주로 휴대전화나 동물의 장기 노출을 다루므로, 가정용 전자레인지의 짧은 저누설 노출과 비교하려면 노출량·시간·대상의 차이를 검토해야 한다. 이 글의 정량 평가는 직접 비교할 수 있는 SAR과 온도 상승에 초점을 맞췄다.
-
 ### 제3절 거리와 인체 배치에 따른 흡수량
 
 앞의 측정 자료는 제품 밖으로 새는 전자파를 보여 준다. 인체 흡수 연구는 그 에너지가 몸에 들어온 뒤의 영향을 다룬다. 접촉형 문 연구에서는 10 cm 이내 흉부의 SAR과 온도 상승이 낮았고 [14], 눈 모델 연구에서는 50 W/m² 노출의 최대 온도 상승이 0.26°C였다 [15]. 후자의 최댓값은 5.8 GHz에서 나왔으며, 이번 연구의 2.45 GHz 계산과는 주파수가 다르다. 이를 바탕으로 이번 해석에서는 성인과 아동, 문 앞 거리와 얼굴 위치를 나누어 비교했다.
 
 저누설 조건의 SAR은 검토한 배치에서 모두 기본 제한의 약 3% 이하였다(그림 4). 가장 큰 값은 문에서 30 cm 떨어진 성인의 머리·몸통 1 g SAR로, 단순 문의 최대 누설을 몸 전체에 적용했을 때 기준의 2.7%였다. 같은 조건에서 아동의 전신 SAR은 1.7%였다. 상세 문의 공간 평균을 사용하면 SAR은 이보다 약 10–20배 작았다.
 
-같은 전력밀도에서도 성인과 아동은 에너지를 다르게 흡수했다. 이번 모델에서 아동의 전신 SAR은 성인의 1.6–1.7배였다. 아동의 체중당 체표면적이 큰 점은 GHz 대역의 흡수 차이를 설명하는 요인이다 [24], [25]. 기존 연구에서도 일부 아동 모델은 참고 수준의 평면파에서 전신 기본 제한을 약 30–45% 초과했고, 모델과 자세에 따라 초과 폭이 달랐다 [16], [17], [26], [27]. ICNIRP 2020은 최근 표준 모델의 초과 폭과 아동의 열 방출 특성을 함께 검토해 참고 수준을 유지했다 [3].
+같은 전력밀도에서도 성인과 아동은 에너지를 다르게 흡수했다. 이번 모델에서 아동의 전신 SAR은 성인의 1.6–1.7배였다. 아동의 체중당 체표면적이 큰 점은 GHz 대역의 흡수 차이를 설명하는 요인이다 [20], [21]. 기존 연구에서도 일부 아동 모델은 참고 수준의 평면파에서 전신 기본 제한을 약 30–45% 초과했고, 모델과 자세에 따라 초과 폭이 달랐다 [16], [17], [22], [23]. ICNIRP 2020은 최근 표준 모델의 초과 폭과 아동의 열 방출 특성을 함께 검토해 참고 수준을 유지했다 [3].
 
-문에 얼굴을 가까이 댄 경우에는 노출 분포가 달라졌다. 아동의 머리 1 g SAR은 문에서 5 cm일 때 기준의 0.66%, 10 cm일 때 1.0%였다. 10 cm에서 값이 커진 이유는 거리에 따라 누설 빔이 퍼지면서 턱 쪽 노출이 커졌기 때문이다. SAR과 온도 상승은 이마·코·입·턱의 피부와 바로 아래 조직에 집중했고, 뇌 내부에서는 낮았다(그림 3). 같은 5 cm 누설을 평면파로 대신 계산하면 머리 1 g SAR은 7.4배, 피부 온도 상승은 4.1배 커졌다. 문 가까이에서는 오븐과 인체를 함께 해석하는 방법이 노출 분포를 더 구체적으로 보여 준다.
+문에 얼굴을 가까이 댄 경우에는 노출 분포가 달라졌다. 아동의 머리 1 g SAR은 문에서 5 cm일 때 기준의 0.66%, 10 cm일 때 1.0%였다. 10 cm에서 값이 커진 이유는 거리에 따라 누설 빔이 퍼지면서 턱 쪽 노출이 커졌기 때문이다. SAR과 온도 상승은 이마·코·입·턱의 피부와 바로 아래 조직에 집중했고, 뇌 내부에서는 낮았다(그림 3). 같은 5 cm 누설을 평면파로 대신 계산하면 머리 1 g SAR은 7.4배, 피부 온도 상승은 4.1배 커졌다.
 
 <p class="fig"><img src="fig_nf_liner.png" alt="그림 3"></p>
-<p class="fcap">그림 3. 문 앞 5 cm에 얼굴을 둔 아동의 측면 단면. (a), (c) 점 SAR, (b), (d) 온도 상승이며, 위 줄은 저누설 조건, 아래 줄은 고누설 조건이다. 두 조건은 같은 모델에서 누설 전력만 100배 다르므로 분포는 같고 값만 1/100이다. 왼쪽 회색 띠가 문이다. 검출 면적 보정 전 결과로, 보정을 적용하면 약 1.23배가 된다. (출처: 본 연구 해석)</p>
+<p class="fcap">그림 3. 문 앞 5 cm에 얼굴을 둔 아동의 측면 단면에서 (a) 점 SAR과 (b) 온도 상승. 두 누설 조건은 같은 모델에서 누설 전력만 100배 다르므로 분포가 같아, 색 눈금에 고누설 조건의 값과 괄호 안에 저누설 조건의 값을 함께 적었다. 왼쪽 회색 띠가 문이다. 검출 면적 보정 전 결과로, 보정을 적용하면 약 1.23배가 된다. (출처: 본 연구 해석)</p>
 
 저누설 조건에서 국부 최대 온도 상승은 성인 0.0032°C, 아동 0.0025°C였다. 30분간 열이 빠져나가지 않는 조건의 심부 체온 상승은 0.0007°C 이하, 근접 아동의 수정체 온도 상승은 0.0008°C였다. 국내 안내의 7.2%를 전계비와 전력밀도비로 각각 해석하면 30 cm의 전력밀도는 0.052 W/m²와 0.72 W/m²가 된다. 더 큰 값인 0.72 W/m²를 몸 전체에 적용해도 SAR은 기본 제한의 9% 이하였다.
 
 누설을 사용 중 허용 상한까지 높이면 일부 조건의 SAR은 기본 제한에 근접하거나 이를 넘었다. 근접 아동의 머리 1 g SAR은 기준의 66–103%였다. 30 cm에서 단순 문의 최대 누설을 적용한 성인의 국부 SAR은 266%, 아동의 전신 SAR은 171%였고, 상세 문의 공간 평균을 적용하면 각각 15%, 7.7%였다. 같은 누설 상한에서도 문 구조와 인체가 받는 공간 분포에 따라 결과가 크게 달랐다.
 
-고누설 조건의 국부 온도 상승은 0.32°C 이하였다. 심부 체온 상승은 30분 단열 조건에서 0.07°C 이하였다. 기본 제한값에는 안전 여유가 있으므로 SAR이 기준을 넘는 조건에서도 온도 상승은 운영 역치보다 낮게 나올 수 있다. 그림 4는 이처럼 서로 다른 두 비교 결과를 함께 보여 준다.
+고누설 조건의 국부 온도 상승은 0.32°C 이하였다. 심부 체온 상승은 30분 단열 조건에서 0.07°C 이하였다. 기본 제한값에는 안전 여유가 있으므로 SAR이 기준을 넘는 조건에서도 온도 상승은 운영 역치보다 낮게 나올 수 있다.
 
 <p class="fig"><img src="fig_summary_liner.png" alt="그림 4"></p>
 <p class="fcap">그림 4. 거리와 인체 배치에 따른 (a) 기본 제한 대비 SAR과 (b) 국부 최대 온도 상승. 파란색은 저누설 조건, 빨간색은 고누설 조건이다. 30 cm와 1 m는 단순 문의 최대 누설과 검토한 입사각 중 큰 값을 적용한 결과다. 온도 패널의 2°C 선은 ICNIRP 2형 조직의 운영 역치를 공통 비교값으로 표시한다. 두 패널의 가로축은 로그 눈금이며, 검출 면적 보정 후 값이다. (출처: 본 연구 해석)</p>
 
 ## 제3장 논의
 
-문틈에서 전자파가 샌다는 사실만으로 문 앞에 선 사람의 위해를 판단하기는 어렵다. 문헌의 누설 측정은 제품 밖의 전자파를 보여 주고, 인체 해석은 그중 몸이 흡수하는 양과 온도 변화를 연결한다. 검토한 측정 자료에서 누설은 대체로 허용 상한보다 낮았고, 이 수준의 누설을 넣은 해석에서 SAR은 기본 제한의 3% 이하, 국부 온도 상승은 2°C 역치의 약 1/600이었다. 다른 인체 모델에서 머리 1 g SAR이 15% 컸던 차이를 더해도 기준과의 차이는 수십 배 이상 남는다. 따라서 누설이 측정 자료의 평균 수준인 제품 앞에 서 있는 것만으로 몸이 해를 입을 만큼 가열된다고 보기는 어렵다. 다만 이 판단은 실제 제품의 누설이 그 수준이라는 측정 자료에 기대므로, 누설이 큰 제품에는 그대로 적용되지 않는다.
+문틈에서 전자파가 샌다는 사실만으로 문 앞에 선 사람의 위해를 판단하기는 어렵다. 문헌의 누설 측정은 제품 밖의 전자파를 보여 주고, 인체 해석은 그중 몸이 흡수하는 양과 온도 변화를 연결한다. 검토한 측정 자료에서 누설은 대체로 허용 상한보다 낮았고, 이 수준의 누설을 넣은 해석에서 SAR은 기본 제한의 3% 이하, 국부 온도 상승은 2°C 역치의 약 1/600이었다. 따라서 누설이 측정 자료의 평균 수준인 제품 앞에 서 있는 것만으로 몸이 해를 입을 만큼 가열된다고 보기는 어렵다. 다만 이 판단은 실제 제품의 누설이 그 수준이라는 측정 자료에 기대므로, 누설이 큰 제품에는 그대로 적용되지 않는다.
 
-높은 누설을 보이는 제품에서는 조건별 차이가 더 중요했다. 캐나다 조사에서는 사용 중 제품 일부가 누설 상한을 넘었고 [9], 문 실이나 이음새의 손상·오염은 누설을 늘릴 수 있다 [28]. Silva 등은 높은 누설을 보인 제품의 수리 전후를 비교했다 [29]. ARPANSA의 예비 측정은 겉보기 손상이 없는 제품의 높은 누설과, 제품 방출 기준을 충족하는 조건에서도 SAR 기본 제한을 넘을 가능성을 제기했다 [13]. 이 자료들은 제품 상태와 누설 분포를 확인할 필요성을 보여 준다.
+높은 누설을 보이는 제품에서는 조건별 차이가 더 중요했다. 캐나다 조사에서는 사용 중 제품 일부가 누설 상한을 넘었고 [9], 문 실이나 이음새의 손상·오염은 누설을 늘릴 수 있다 [24]. Silva 등은 높은 누설을 보인 제품의 수리 전후를 비교했다 [25]. ARPANSA의 예비 측정은 겉보기 손상이 없는 제품의 높은 누설과, 제품 방출 기준을 충족하는 조건에서도 SAR 기본 제한을 넘을 가능성을 제기했다 [13].
 
 이번 고누설 해석도 일부 배치에서 SAR 기본 제한을 넘었지만, 온도 상승은 비교값보다 낮았다. 이를 실제 제품의 열적 위해 여부로 연결하려면 모델 검증이 필요하다. 문 구조는 거리별 누설을 바꾸고, 인체 위치와 입사 방향은 흡수 부위를 바꾼다. 따라서 높은 누설을 평가할 때는 측정 지점의 최댓값과 인체가 받는 노출 분포를 함께 확인해야 한다.
 
-이번 검토의 불확실성은 측정 자료와 인체 모델에서 나온다. 측정 자료는 특정 시기·지역의 제품을 다루며, BfS의 평균값은 현재 국내 제품의 누설 분포와 차이가 있을 수 있다. 최근 주거 환경의 오븐 50대를 다룬 연구 [30] 등은 측정 조건을 더 확인해 비교할 자료다. 표 1의 일부 연구는 초록과 기관 안내문에서 확인한 범위를 사용했다.
+이번 검토의 불확실성은 측정 자료와 인체 모델에서 나온다. 측정 자료는 특정 시기·지역의 제품을 다루며, BfS의 평균값은 현재 국내 제품의 누설 분포와 차이가 있을 수 있다. 최근 주거 환경의 오븐 50대를 다룬 연구 [26] 등은 측정 조건을 더 확인해 비교할 자료다. 표 1의 일부 연구는 초록과 기관 안내문에서 확인한 범위를 사용했다.
 
-수치해석에서는 누설 전력의 크기와 공간 분포를 구분해야 한다. 두 누설 조건은 같은 모델의 전력을 조정해 만들었으므로, 고장으로 문 형상이나 누설 방향이 바뀌면 해당 구조로 다시 계산해야 한다. 오븐 형상은 하나이며, 근접 해석은 단순 문 모델과 얼굴 위치 하나만 다루었다. 30 cm 이상의 평면파 계산은 공간 분포와 오븐·인체 상호작용을 단순화한다. 여러 방향의 전파를 다룬 연구는 반사 환경이 전신 SAR에 영향을 준다고 설명한다 [31].
+수치해석에서는 누설 전력의 크기와 공간 분포를 구분해야 한다. 두 누설 조건은 같은 모델의 전력을 조정해 만들었으므로, 고장으로 문 형상이나 누설 방향이 바뀌면 해당 구조로 다시 계산해야 한다. 오븐 형상은 하나이며, 근접 해석은 단순 문 모델과 얼굴 위치 하나만 다루었다. 30 cm 이상의 평면파 계산은 공간 분포와 오븐·인체 상호작용을 단순화한다. 여러 방향의 전파를 다룬 연구는 반사 환경이 전신 SAR에 영향을 준다고 설명한다 [27].
 
 인체 물성과 열해석에도 추가 확인이 필요하다. 아동 모델의 주 연조직에는 기본 설정의 지방 물성을 사용했고, 열해석의 조직 분포는 내보낸 자료에서 간접 복원했다. 또한 격자 수렴과 실측 검증을 거치지 않아 계산 오차를 정량화하지 못했다. 이런 불확실성 때문에 기준 부근의 고누설 결과는 실제 제품의 평가를 시작할 조건으로 읽어야 한다.
+
+암이나 자각 증상에 관한 자료는 연구별 노출 조건을 함께 읽어야 한다. IARC는 2011년 휴대전화 사용자의 신경교종 보고 등을 근거로 무선주파수 전자기장을 2B군으로 분류했다 [28]. 2024년 WHO 의뢰 고찰은 인간 관찰연구의 주요 암 결과 [29]와 단시간 유발 실험의 자각 증상 [30]에서 관련성을 뒷받침하는 일관된 근거를 찾지 못했다. 2025년 동물 고찰은 장기 노출에 따른 신경교종·심장 신경초종 증가의 근거를 높게 평가했다 [31]. 이 자료들은 주로 휴대전화나 동물의 장기 노출을 다루므로, 가정용 전자레인지의 짧은 저누설 노출과 비교하려면 노출량·시간·대상의 차이를 검토해야 한다.
 
 별도로 구분할 위험도 있다. 인터록이 고장 나 문을 연 채 동작한 오븐에 손을 넣었을 때 통증이 생긴 사례 [32]는 이번 문 닫힘 조건과 노출 양상이 다르다. 심박조율기의 간섭 가능성 [14] 역시 조직 가열과 다른 지표로 평가한다. 이 글은 문을 닫고 작동하는 제품의 누설에 따른 열적 영향을 중심으로 통념을 검토했다.
 
 ## 제4장 결론
 
-전자레인지 앞에 서 있으면 해로운지 판단하려면 문틈으로 새는 양에서 출발해 인체 흡수량과 온도 상승까지 확인해야 한다. 검토한 누설 측정 자료와 저누설 조건의 해석에서 SAR은 기본 제한의 3% 이하, 온도 상승은 역치의 수백분의 일 수준이었다. 따라서 누설이 평균 수준인 제품 앞에 서 있는 것만으로 몸이 해를 입을 만큼 가열된다고 보기는 어렵다.
+저누설 조건(문에서 5 cm 누설 0.5 W/m²)에서 문 앞 30 cm–1 m의 성인·아동과 문에 얼굴을 댄 아동의 SAR은 기본 제한의 3% 이하, 국부 온도 상승은 0.004°C 미만이었다. 따라서 누설이 평균 수준인 제품 앞에 서 있는 것만으로 몸이 해를 입을 만큼 가열된다고 보기는 어렵다.
 
 누설이 사용 중 허용 상한에 이르면 일부 인체 배치의 SAR은 기본 제한에 근접하거나 이를 넘었다. 높은 누설의 영향은 제품 구조와 사람이 받는 노출 분포에 따라 달라지므로 실제 사용 조건을 반영한 평가가 필요하다. 이번 계산은 그 차이를 살펴본 탐색적 결과이며, 정확한 예측을 위해 인체 물성과 해석 모델의 검증을 보완해야 한다. 장기 건강영향은 별도의 노출 조건과 근거를 바탕으로 검토할 과제다.
 
@@ -175,28 +175,28 @@ ICNIRP는 조직의 온도 특성에 따라 국부 온도 상승의 운영 역�
 
 [19] Guy, A. W., Lin, J. C., Kramar, P. O., & Emery, A. F. (1975). Effect of 2450-MHz radiation on the rabbit eye. *IEEE Transactions on Microwave Theory and Techniques, 23*(6), 492–498. https://doi.org/10.1109/TMTT.1975.1128603
 
-[20] Baan, R., Grosse, Y., Lauby-Secretan, B., El Ghissassi, F., Bouvard, V., Benbrahim-Tallaa, L., Guha, N., Islami, F., Galichet, L., & Straif, K. (2011). Carcinogenicity of radiofrequency electromagnetic fields. *The Lancet Oncology, 12*(7), 624–626. https://doi.org/10.1016/S1470-2045(11)70147-4
+[20] Hirata, A., Kodera, S., Wang, J., & Fujiwara, O. (2007). Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions. *Bioelectromagnetics, 28*(6), 484–487. https://doi.org/10.1002/bem.20335
 
-[21] Karipidis, K., et al. (2024). The effect of exposure to radiofrequency fields on cancer risk in the general and working population: A systematic review of human observational studies. *Environment International, 191*, 108983. https://doi.org/10.1016/j.envint.2024.108983
+[21] Flintoft, I. D., Robinson, M. P., Melia, G. C. R., Dawson, J. F., & Marvin, A. C. (2014). Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study. *Physics in Medicine and Biology, 59*(13), 3297–3317. https://doi.org/10.1088/0031-9155/59/13/3297
 
-[22] Bosch-Capblanch, X., et al. (2024). The effects of radiofrequency electromagnetic fields exposure on human self-reported symptoms: A systematic review of human experimental studies. *Environment International, 187*, 108612. https://doi.org/10.1016/j.envint.2024.108612
+[22] Uusitupa, T., Laakso, I., Ilvonen, S., & Nikoskinen, K. (2010). SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures. *Physics in Medicine and Biology, 55*(4), 1157–1176. https://doi.org/10.1088/0031-9155/55/4/017
 
-[23] Mevissen, M., et al. (2025). Effects of radiofrequency electromagnetic field exposure on cancer in laboratory animal studies, a systematic review. *Environment International, 199*, 109482. https://doi.org/10.1016/j.envint.2025.109482
+[23] Piuzzi, E., Bernardi, P., Cavagnaro, M., Pisa, S., & Lin, J. C. (2011). Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz). *IEEE Transactions on Electromagnetic Compatibility, 53*(1), 38–47. https://doi.org/10.1109/TEMC.2010.2053376
 
-[24] Hirata, A., Kodera, S., Wang, J., & Fujiwara, O. (2007). Dominant factors influencing whole-body average SAR due to far-field exposure in whole-body resonance frequency and GHz regions. *Bioelectromagnetics, 28*(6), 484–487. https://doi.org/10.1002/bem.20335
+[24] Bundesamt für Gesundheit. (n.d.). *Faktenblatt Mikrowellenofen*. Retrieved October 20, 2026, from https://www.bag.admin.ch/dam/en/sd-web/JbnegZr3mAZv/faktenblatt-mikrowellenofen.pdf
 
-[25] Flintoft, I. D., Robinson, M. P., Melia, G. C. R., Dawson, J. F., & Marvin, A. C. (2014). Average absorption cross-section of the human body measured at 1–12 GHz in a reverberant chamber: Results of a human volunteer study. *Physics in Medicine and Biology, 59*(13), 3297–3317. https://doi.org/10.1088/0031-9155/59/13/3297
+[25] Silva, J. da L. A., de Sousa, V. A., Jr., Rodrigues, M. E. C., Pinheiro, F. S. R., da Silva, G. S., Mendonça, H. B., Galdino, F. E. S., & Silva, R. Q. de F. H. (2024). Analysis of measurements in a microwave oven with high level of non-ionizing radiation (NIR) before and after repair. *Journal of Communication and Information Systems, 39*(1), 160–163. https://doi.org/10.14209/jcis.2024.16
 
-[26] Uusitupa, T., Laakso, I., Ilvonen, S., & Nikoskinen, K. (2010). SAR variation study from 300 to 5000 MHz for 15 voxel models including different postures. *Physics in Medicine and Biology, 55*(4), 1157–1176. https://doi.org/10.1088/0031-9155/55/4/017
+[26] Silva, J. da L. A., et al. (2025). Measurement of non-ionizing radiation (NIR) from Wi-Fi access points and microwave ovens in residential environments. *Journal of Electromagnetic Waves and Applications, 39*(3), 268–289. https://doi.org/10.1080/09205071.2024.2449120
 
-[27] Piuzzi, E., Bernardi, P., Cavagnaro, M., Pisa, S., & Lin, J. C. (2011). Analysis of adult and child exposure to uniform plane waves at mobile communication systems frequencies (900 MHz–3 GHz). *IEEE Transactions on Electromagnetic Compatibility, 53*(1), 38–47. https://doi.org/10.1109/TEMC.2010.2053376
+[27] Kientega, T., et al. (2011). A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz. *Annals of Telecommunications, 66*, 419–428. https://doi.org/10.1007/s12243-011-0261-z
 
-[28] Bundesamt für Gesundheit. (n.d.). *Faktenblatt Mikrowellenofen*. Retrieved October 20, 2026, from https://www.bag.admin.ch/dam/en/sd-web/JbnegZr3mAZv/faktenblatt-mikrowellenofen.pdf
+[28] Baan, R., Grosse, Y., Lauby-Secretan, B., El Ghissassi, F., Bouvard, V., Benbrahim-Tallaa, L., Guha, N., Islami, F., Galichet, L., & Straif, K. (2011). Carcinogenicity of radiofrequency electromagnetic fields. *The Lancet Oncology, 12*(7), 624–626. https://doi.org/10.1016/S1470-2045(11)70147-4
 
-[29] Silva, J. da L. A., de Sousa, V. A., Jr., Rodrigues, M. E. C., Pinheiro, F. S. R., da Silva, G. S., Mendonça, H. B., Galdino, F. E. S., & Silva, R. Q. de F. H. (2024). Analysis of measurements in a microwave oven with high level of non-ionizing radiation (NIR) before and after repair. *Journal of Communication and Information Systems, 39*(1), 160–163. https://doi.org/10.14209/jcis.2024.16
+[29] Karipidis, K., et al. (2024). The effect of exposure to radiofrequency fields on cancer risk in the general and working population: A systematic review of human observational studies. *Environment International, 191*, 108983. https://doi.org/10.1016/j.envint.2024.108983
 
-[30] Silva, J. da L. A., et al. (2025). Measurement of non-ionizing radiation (NIR) from Wi-Fi access points and microwave ovens in residential environments. *Journal of Electromagnetic Waves and Applications, 39*(3), 268–289. https://doi.org/10.1080/09205071.2024.2449120
+[30] Bosch-Capblanch, X., et al. (2024). The effects of radiofrequency electromagnetic fields exposure on human self-reported symptoms: A systematic review of human experimental studies. *Environment International, 187*, 108612. https://doi.org/10.1016/j.envint.2024.108612
 
-[31] Kientega, T., et al. (2011). A surrogate model to assess the whole body SAR induced by multiple plane waves at 2.4 GHz. *Annals of Telecommunications, 66*, 419–428. https://doi.org/10.1007/s12243-011-0261-z
+[31] Mevissen, M., et al. (2025). Effects of radiofrequency electromagnetic field exposure on cancer in laboratory animal studies, a systematic review. *Environment International, 199*, 109482. https://doi.org/10.1016/j.envint.2025.109482
 
 [32] Oleson, J., Samulski, T., Clegg, S., Das, S., & Grant, W. (1994). Heating rate modeling and measurements in phantom and in vivo of the human upper extremity in a defective 2450 MHz microwave oven. *Journal of Microwave Power and Electromagnetic Energy, 29*(2), 101–108. https://doi.org/10.1080/08327823.1994.11688237
