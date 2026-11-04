@@ -2,6 +2,7 @@
 
 공식 가이드: 원고는 **라이너 스콜라에서 작성**하고 **[내보내기] → PDF**로 제출한다. 권장 분량은 참고문헌 제외 공백 포함 약 10,000자(PDF 약 5쪽).
 
+- 붙여 넣기용 원고: `paper_liner_paste.md` (HTML 없음, 그림·표 자리에 [삽입] 표시)
 - 원고: `paper_liner.md` (교정본 REV02 기준, 그림 4, 표 2). 미리보기: `paper_liner_preview.pdf` (제출용 아님)
 - 원고를 고칠 때는 `paper_liner_src.md`(인용을 [@키]로 적은 원본)를 고친 뒤 `python3 cite_numbers.py paper_liner_src.md paper_liner.md`로 번호를 다시 매긴다.
 - 그림 파일(번호순): `fig_setup_3d_labeled.png`(1), `fig_leak_liner.png`(2), `fig_nf_liner.png`(3, 두 패널, 색 눈금에 고누설(저누설) 값; `make_nf_fig.py`), `fig_summary_liner.png`(4)
